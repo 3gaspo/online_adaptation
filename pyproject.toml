@@ -5,21 +5,20 @@ description = "Causal rolling retrieval and online adaptation of frozen time-ser
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "catboost>=1.2.8",
-    "chronos-forecasting==2.0.1",
+    "catboost>=1.2.10",
+    "chronos-forecasting>=2.3.1",
     "einops>=0.8.2",
-    "faiss-cpu>=1.9.0,<2",
-    "hydra-core>=1.3.2",
-    "huggingface-hub>=0.19.0",
+    "faiss-cpu>=1.15.0",
+    "huggingface-hub>=1.27.0",
+    "hydra-core>=1.3.5",
     "jupyter>=1.1.1",
-    "matplotlib>=3.9.4",
-    "numpy>=2.2.0",
-    "pandas>=2.2.3",
+    "matplotlib>=3.11.1",
+    "numpy>=2.5.2",
+    "pandas>=3.0.5",
     "seaborn>=0.13.2",
-    "tabpfn==6.3.1",
-    "tirex-2==0.2.1",
-    "torch>=2.8.0,<2.10",
-    "tsicl==0.2.0",
+    "tabpfn>=8.4.0",
+    "torch==2.5.1",
+    "tsicl>=0.2.1",
 ]
 
 [tool.setuptools.packages.find]
