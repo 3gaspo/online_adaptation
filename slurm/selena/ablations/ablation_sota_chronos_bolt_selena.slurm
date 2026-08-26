@@ -5,6 +5,7 @@
 #SBATCH --error=logs_selena/%x_%j.err
 #SBATCH --time=23:00:00
 #SBATCH --partition=an
+#SBATCH --qos=an_preemptable
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
