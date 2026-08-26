@@ -70,6 +70,11 @@ else
   paths=(logs outputs)
   [ -d logs ] || { printf 'logs directory not found\n' >&2; exit 1; }
   [ -d outputs ] || { printf 'outputs directory not found\n' >&2; exit 1; }
+  if [ -d logs_selena ] || [ -d outputs_selena ]; then
+    [ -d logs_selena ] || { printf 'logs_selena directory not found\n' >&2; exit 1; }
+    [ -d outputs_selena ] || { printf 'outputs_selena directory not found\n' >&2; exit 1; }
+    paths+=(logs_selena outputs_selena)
+  fi
   [ -n "$message" ] || message="slurm: publish all logs and outputs"
 fi
 
@@ -81,7 +86,7 @@ exclusions=(
 if [ -n "$job_id" ]; then
   printf 'Publishing job %s paths:\n' "$job_id"
 else
-  printf 'Publishing all logs and lightweight outputs:\n'
+  printf 'Publishing all logs and lightweight outputs, including Selena trees when present:\n'
 fi
 printf '  %s\n' "${paths[@]}"
 git add -v -f -- "${paths[@]}" "${exclusions[@]}"

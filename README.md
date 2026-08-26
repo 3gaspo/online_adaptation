@@ -423,20 +423,27 @@ existing `outputs_selena/` and `logs_selena/` payloads. The Selena directory
 placeholders are mirrored, but existing contents are protected from deletion.
 Git metadata and dependency manifests are never transferred.
 
-After Selena jobs finish, copy lightweight artifacts back without deleting
-anything already present on DGX:
+After Selena jobs finish, run the result helper from the project checkout on
+DGX. DGX initiates the SSH connection and pulls the lightweight artifacts, so
+Selena needs no outbound SSH/SCP access:
 
 ```bash
 bash sync_results_to_dgx.sh
 ```
 
-Only `outputs_selena/` and `logs_selena/` are copied in that direction, into
-the same named DGX directories. Analysis and publication remain on DGX, and
-the returned artifacts never merge into DGX `outputs/` or `logs/`.
+Only `outputs_selena/` and `logs_selena/` are pulled into the same named DGX
+directories without deletion. Do not run this helper on Selena. Analysis and
+publication remain on DGX, and returned artifacts never merge into DGX
+`outputs/` or `logs/`.
 
 ## Maintenance
 
 `PENDING_UPDATES.md` records focused checks, deferred cluster checks, and rerun
 scope. `CLUSTER_STATUS.txt` records the latest submitted or analyzed workflow.
 After a terminal cluster job, `publish_job.sh <job-id>` is the manual artifact
-publishing path; Slurm workflows never run Git commands.
+publishing path; Slurm workflows never run Git commands. Running
+`bash publish_job.sh` without a job ID publishes `logs/`, lightweight
+`outputs/`, and the paired `logs_selena/`/lightweight `outputs_selena/` trees
+under the same `*.pt`, `*.npy`, and `*.cbm` exclusions. A partial Selena
+namespace fails closed; numeric job-ID mode still selects only the exact
+standard log pair.

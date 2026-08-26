@@ -28,21 +28,36 @@ class SlurmWorkflowTest(unittest.TestCase):
             self.assertIn(f"--exclude='{excluded}'", code)
         self.assertIn("selena.hpc.edf.fr", code)
         self.assertIn("--delete", code)
-        self.assertIn("dgx-front.retd.edf.fr", results)
+        self.assertNotIn("dgx-front.retd.edf.fr", results)
+        self.assertIn(
+            'SOURCE_ROOT="$nni@selena.hpc.edf.fr:~/codes/$PROJECT_NAME"',
+            results,
+        )
+        self.assertIn('DESTINATION_ROOT="$PROJECT_ROOT"', results)
+        self.assertIn('mkdir -p "$DESTINATION_ROOT/outputs_selena"', results)
         self.assertIn("--include='outputs_selena/.gitkeep'", code)
         self.assertIn("--exclude='outputs_selena/***'", code)
         self.assertIn("--include='logs_selena/.gitkeep'", code)
         self.assertIn("--exclude='logs_selena/***'", code)
         self.assertIn('"$SOURCE_ROOT/outputs_selena/"', results)
         self.assertIn('"$SOURCE_ROOT/logs_selena/"', results)
+        self.assertIn("pulled from Selena to DGX", results)
         self.assertNotIn("--delete", results)
 
     def test_fronts_and_runner_follow_the_single_task_contract(self) -> None:
-        fronts = sorted(ROOT.glob("*.slurm"))
-        dgx_fronts = [path for path in fronts if "_selena" not in path.stem]
-        selena_fronts = [path for path in fronts if "_selena" in path.stem]
+        slurm_root = ROOT / "slurm"
+        dgx_fronts = sorted((slurm_root / "dgx").glob("*/*.slurm"))
+        selena_fronts = sorted((slurm_root / "selena").glob("*/*.slurm"))
+        fronts = dgx_fronts + selena_fronts
+        self.assertFalse(list(ROOT.glob("*.slurm")))
         self.assertEqual(len(dgx_fronts), 16)
         self.assertEqual(len(selena_fronts), 16)
+        self.assertEqual(len(list((slurm_root / "dgx/main").glob("*.slurm"))), 2)
+        self.assertEqual(len(list((slurm_root / "dgx/ablations").glob("*.slurm"))), 14)
+        self.assertEqual(len(list((slurm_root / "selena/main").glob("*.slurm"))), 2)
+        self.assertEqual(
+            len(list((slurm_root / "selena/ablations").glob("*.slurm"))), 14
+        )
         self.assertEqual(
             {path.stem for path in selena_fronts},
             {f"{path.stem}_selena" for path in dgx_fronts},
@@ -71,7 +86,12 @@ class SlurmWorkflowTest(unittest.TestCase):
             self.assertIn("#SBATCH --error=logs/%x_%j.err", text, front.name)
             self.assertIn("#SBATCH --partition=h100", text, front.name)
             self.assertNotIn("#SBATCH --wckey=", text, front.name)
-            pair = ROOT / f"{front.stem}_selena.slurm"
+            pair = (
+                slurm_root
+                / "selena"
+                / front.parent.name
+                / f"{front.stem}_selena.slurm"
+            )
             pair_text = pair.read_text(encoding="utf-8")
             family = next(
                 line for line in text.splitlines() if line.startswith("EXPERIMENT_FAMILY=")

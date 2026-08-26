@@ -18,22 +18,19 @@ if [[ ! "$nni" =~ ^[a-z][a-z0-9_-]*$ ]]; then
     exit 1
 fi
 
-SOURCE_ROOT="$PROJECT_ROOT"
-DESTINATION_ROOT="$nni@dgx-front.retd.edf.fr:/home/$nni/codes/$PROJECT_NAME"
+SOURCE_ROOT="$nni@selena.hpc.edf.fr:~/codes/$PROJECT_NAME"
+DESTINATION_ROOT="$PROJECT_ROOT"
 
-if [ ! -d "$SOURCE_ROOT/outputs_selena" ] || [ ! -d "$SOURCE_ROOT/logs_selena" ]; then
-    echo "ERROR: expected $SOURCE_ROOT/outputs_selena and $SOURCE_ROOT/logs_selena on Selena" >&2
-    exit 1
-fi
+mkdir -p "$DESTINATION_ROOT/outputs_selena" "$DESTINATION_ROOT/logs_selena"
 
-echo "Synchronizing $PROJECT_NAME Selena outputs to DGX..."
+echo "Pulling $PROJECT_NAME Selena outputs to DGX..."
 rsync -rlptz --partial --info=progress2 \
     "$SOURCE_ROOT/outputs_selena/" \
     "$DESTINATION_ROOT/outputs_selena/"
 
-echo "Synchronizing $PROJECT_NAME Selena logs to DGX..."
+echo "Pulling $PROJECT_NAME Selena logs to DGX..."
 rsync -rlptz --partial --info=progress2 \
     "$SOURCE_ROOT/logs_selena/" \
     "$DESTINATION_ROOT/logs_selena/"
 
-echo "SUCCESS: outputs_selena and logs_selena were transferred to DGX."
+echo "SUCCESS: outputs_selena and logs_selena were pulled from Selena to DGX."

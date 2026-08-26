@@ -1,5 +1,38 @@
 # Pending updates
 
+## 2026-08-26 — Cluster launcher hierarchy
+
+- Scope and behavior: moved the 16 DGX and 16 Selena submission fronts from
+  the project root into `slurm/<cluster>/main/` and
+  `slurm/<cluster>/ablations/` without changing their resources, families,
+  artifact roots, or project-root resolution contract.
+- Affected contracts: launcher locations and the focused architecture checks;
+  submissions must still run from the project root so `SLURM_SUBMIT_DIR`
+  resolves the repository correctly.
+- Focused checks: the direct Slurm workflow contract ran 2 tests successfully
+  and verified the complete 16-pair hierarchy. The prepared runtime lacks
+  pytest, so the separate pytest-only profile check was not run.
+- Deferred integration and documentation: update README, LaTeX, and cluster
+  handoff commands in the planned documentation pass, then run the recursive
+  DGX-to-Selena code sync to apply the same hierarchy remotely. No scientific
+  rerun or artifact migration is required.
+
+## 2026-08-26 — DGX-initiated Selena return and publication
+
+- Scope and behavior: `sync_results_to_dgx.sh` now runs on DGX and pulls the
+  isolated Selena trees. Unscoped publication includes paired `logs_selena/`
+  and lightweight `outputs_selena/` under the existing heavy-payload
+  exclusions; numeric job-ID mode remains standard-log-only.
+- Affected contracts: result helper, publisher, focused workflow regression,
+  README, shared guidance, and cluster handoff.
+- Focused checks: Bash syntax passed for all 15 maintained scripts, all five
+  publisher checks and both Online Adaptation workflow checks passed, and the
+  nine publisher copies plus five suffix-result helpers are each byte-identical.
+- Deferred integration: exercise one real pull and unscoped publication after
+  a Selena test job. The README changed; the guideline's all-log/lightweight-
+  output wording remains accurate, so LaTeX/PDF files are unchanged. No
+  scientific rerun or artifact migration is required.
+
 ## 2026-08-26 — Selena overflow fronts and isolated artifacts
 
 - Scope and behavior: added a `_selena.slurm` counterpart for all 16 DGX

@@ -693,7 +693,8 @@ def test_profile_contract() -> None:
     project_root = Path(__file__).resolve().parents[2]
     runner = (project_root / "src/slurm/run_family.sh").read_text(encoding="utf-8")
     config = (project_root / "src/conf/config.yaml").read_text(encoding="utf-8")
-    scope_front = project_root / "ablation_general_scope.slurm"
+    slurm_root = project_root / "slurm"
+    scope_front = slurm_root / "dgx/ablations/ablation_general_scope.slurm"
     assert DEFAULT_N_STORE == 30_000
     assert DEFAULT_N_FIT == 100
     assert ExtractionConfig(dataset="synthetic", lookback=4, horizon=2).n_fit == 100
@@ -715,12 +716,14 @@ def test_profile_contract() -> None:
     assert "fitting_scope: same_user" in config
     assert '"fitting_scope=${FITTING_SCOPE:-same_user}"' in runner
     assert scope_front.is_file()
-    assert not (project_root / "ablation_retrieval_scope.slurm").exists()
+    assert not (
+        slurm_root / "dgx/ablations/ablation_retrieval_scope.slurm"
+    ).exists()
     assert "EXPERIMENT_FAMILY=general_scope_ablation" in scope_front.read_text(
         encoding="utf-8"
     )
     front_families = set()
-    for front in project_root.glob("*.slurm"):
+    for front in slurm_root.glob("*/*/*.slurm"):
         assignments = [
             line
             for line in front.read_text(encoding="utf-8").splitlines()
