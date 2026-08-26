@@ -4,18 +4,21 @@
 
 - Scope and behavior: moved the 16 DGX and 16 Selena submission fronts from
   the project root into `slurm/<cluster>/main/` and
-  `slurm/<cluster>/ablations/` without changing their resources, families,
-  artifact roots, or project-root resolution contract.
+  `slurm/<cluster>/ablations/`; every Selena front now selects QoS
+  `an_preemptable`. Families, artifact roots, and project-root resolution are
+  unchanged.
 - Affected contracts: launcher locations and the focused architecture checks;
   submissions must still run from the project root so `SLURM_SUBMIT_DIR`
   resolves the repository correctly.
-- Focused checks: the direct Slurm workflow contract ran 2 tests successfully
-  and verified the complete 16-pair hierarchy. The prepared runtime lacks
-  pytest, so the separate pytest-only profile check was not run.
-- Deferred integration and documentation: update README, LaTeX, and cluster
-  handoff commands in the planned documentation pass, then run the recursive
-  DGX-to-Selena code sync to apply the same hierarchy remotely. No scientific
-  rerun or artifact migration is required.
+- Focused checks: both direct Slurm workflow tests passed and verified the
+  complete 16-pair hierarchy and QoS contract. README, AGENTS guidance,
+  cluster handoff, experiment guideline, and executive-summary paths were
+  reconciled. Two clean LaTeX passes produced the six-page guideline and
+  one-page executive summary; all seven pages were visually inspected without
+  clipping or overlap.
+- Deferred integration: run the recursive DGX-to-Selena code sync to apply the
+  hierarchy and QoS remotely. No scientific rerun or artifact migration is
+  required.
 
 ## 2026-08-26 — DGX-initiated Selena return and publication
 

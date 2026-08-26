@@ -243,28 +243,31 @@ Submit from this project root. Every front defaults to the complete ordered
 comma-separated value.
 
 ```bash
-sbatch 01_main_online_ridge.slurm
-EXPERIMENT_MODE=small sbatch 01_main_online_ridge.slurm
-EXPERIMENT_MODE=full sbatch 02_online_gates.slurm
+sbatch slurm/dgx/main/01_main_online_ridge.slurm
+EXPERIMENT_MODE=small sbatch slurm/dgx/main/01_main_online_ridge.slurm
+EXPERIMENT_MODE=full sbatch slurm/dgx/main/02_online_gates.slurm
 ```
 
-Every DGX front has a matching `_selena.slurm` overflow front. For example:
+Every DGX front under `slurm/dgx/` has a matching `_selena.slurm` overflow
+front under `slurm/selena/`. For example:
 
 ```bash
-sbatch 01_main_online_ridge_selena.slurm
-EXPERIMENT_MODE=full sbatch 02_online_gates_selena.slurm
+sbatch slurm/selena/main/01_main_online_ridge_selena.slurm
+EXPERIMENT_MODE=full sbatch slurm/selena/main/02_online_gates_selena.slurm
 ```
 
 The Selena variants keep the same family, profile, stages, and scientific
-arguments while using partition `an`, an exclusive non-requeued allocation,
-WCKey `P12CU:DATASCIENCE`, distinct job names, and `selena_`-prefixed launch
-IDs. They write Slurm streams to `logs_selena/` and all manifests, arrays,
+arguments while using partition `an`, QoS `an_preemptable`, an exclusive
+non-requeued allocation, WCKey `P12CU:DATASCIENCE`, distinct job names, and
+`selena_`-prefixed launch IDs. They write Slurm streams to `logs_selena/` and all manifests, arrays,
 metrics, figures, and tables to `outputs_selena/`; DGX fronts continue to use
 `logs/` and `outputs/`. The shared `LOGS_ROOT` and `OUTPUTS_ROOT` variables
 default to those DGX directories and remain available for an explicit custom
 storage root.
 
-The remaining fronts are focused studies:
+The remaining DGX fronts are focused studies under
+`slurm/dgx/ablations/`; their Selena counterparts are under
+`slurm/selena/ablations/`:
 
 - `ablation_{n_store,n_fit,fit_stride,alpha,k,l,h}.slurm`;
 - `ablation_feature_design.slurm` and `ablation_formulation.slurm`;

@@ -36,10 +36,10 @@ and every report use a common evaluation-date intersection.
 
 \section*{Planned evidence}
 The first required evidence is the Electricity test profile from
-\texttt{01\_main\_online\_ridge.slurm}. It must establish that checkpoint
+\path{slurm/dgx/main/01_main_online_ridge.slurm}. It must establish that checkpoint
 loading, causal extraction, balanced datastore limits, TS-RAG inference,
 common-date reporting, and cache size are operational. The second smoke run is
-\texttt{02\_online\_gates.slurm}, primarily to measure CatBoost refit cost.
+\path{slurm/dgx/main/02_online_gates.slurm}, primarily to measure CatBoost refit cost.
 
 Only after these checks should the small profile be run on Electricity, Solar,
 and Traffic. The full profile then adds raw ETT and prepared TIME datasets.

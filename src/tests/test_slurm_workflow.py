@@ -112,6 +112,7 @@ class SlurmWorkflowTest(unittest.TestCase):
             self.assertIn("#SBATCH --output=logs_selena/%x_%j.out", text, front.name)
             self.assertIn("#SBATCH --error=logs_selena/%x_%j.err", text, front.name)
             self.assertIn("#SBATCH --partition=an", text, front.name)
+            self.assertIn("#SBATCH --qos=an_preemptable", text, front.name)
             self.assertIn("#SBATCH --exclusive", text, front.name)
             self.assertIn("#SBATCH --no-requeue", text, front.name)
             self.assertIn("#SBATCH --wckey=P12CU:DATASCIENCE", text, front.name)
