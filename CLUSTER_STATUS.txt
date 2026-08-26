@@ -1,0 +1,6 @@
+Updated: 2026-08-24
+Latest completed workflow: none (new project)
+Artifacts analyzed: none
+Current/next workflow: submit 01_main_online_ridge.slurm with EXPERIMENT_MODE=test
+Known job IDs/dependencies: none
+Notes: first validate the normalized v1 window/query/context tables, cadence alignment, and all-user batch timing with 01_main_online_ridge.slurm in test mode; then validate the source-faithful TS-RAG path and run 02_online_gates.slurm test mode before scaling.

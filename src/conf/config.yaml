@@ -1,0 +1,45 @@
+family: main
+mode: test
+stages: extract,adapt,tables
+seed: 1
+n_store: 30000
+n_fit: 100
+fitting_scope: same_user
+alpha: 0.01
+max_k: 20
+candidate_k_grid: [1, 5, 10, 15]
+used_k: null
+tune_alpha: true
+ridge_validation_ratio: 0.2
+ridge_alpha_grid: [0.1, 0.01, 0.001]
+tsrag_k: 5
+purpose: publication
+conflict_policy: overwrite_exact
+skip_completed: true
+table_config_policy: distinct
+table_repeat_policy: selected
+data_root: datasets
+weights_root: weights
+outputs_root: outputs
+device: cuda
+query_stride: 127
+store_stride: 0
+fit_stride: 0
+align_period: true
+period: 0
+normalization: none
+retrieval_covariate_mode: null
+search_chunk_size: 512
+representation_batch_size: 512
+tsrag_batch_size: 256
+catboost_iterations: 300
+catboost_depth: 4
+catboost_learning_rate: 0.03
+catboost_refit_stride: 1
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job:
+    chdir: false

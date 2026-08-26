@@ -1,0 +1,58 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{booktabs,hyperref}
+\setlength{\emergencystretch}{3em}
+\title{Fully Online Retrieval Adaptation\\Executive Summary}
+\author{}
+\date{21 August 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Current evidence}
+No cluster experiment has yet completed in this new project. Consequently,
+there is no accuracy conclusion, selected ablation value, or claim that online
+adaptation improves a frozen backbone.
+
+\section*{Implemented protocol}
+The project now supports a genuinely causal no-split evaluation. Each query
+retrieves from a balanced complete-date store capped by $N_{\mathrm{store}}$
+for cross-user retrieval, or up to $N_{\mathrm{store}}$ labeled origins for
+the query user under same-user retrieval,
+and the ridge or gate fits on exactly $N_{\mathrm{fit}}$ already matured rows
+for the query user. The defaults are 30,000 store windows, 1,000 fitting rows
+per query user, all-user raw Euclidean retrieval, same-user fitting, and a
+rolling full ridge. An all-user fitting scope remains available. At every forecast, the
+oldest 80\% of the causal fitting window trains candidate ridges and the newest
+20\% selects $\alpha\in\{10^{-1},10^{-2},10^{-3}\}$ and
+$K\in\{1,5,10,15\}$; the chosen pair is then refitted on the complete window.
+
+Extraction is persistent and independently manifested, allowing changes to
+adaptation parameters to reuse matching features. Ridge writes rolling
+coefficient means and standard deviations; CatBoost writes rolling feature
+importance means and standard deviations. Ridge also records each per-query
+selected pair and validation loss. Fixed-store/fixed-fit comparisons
+and every report use a common evaluation-date intersection.
+
+\section*{Planned evidence}
+The first required evidence is the Electricity test profile from
+\texttt{01\_main\_online\_ridge.slurm}. It must establish that checkpoint
+loading, causal extraction, balanced datastore limits, TS-RAG inference,
+common-date reporting, and cache size are operational. The second smoke run is
+\texttt{02\_online\_gates.slurm}, primarily to measure CatBoost refit cost.
+
+Only after these checks should the small profile be run on Electricity, Solar,
+and Traffic. The full profile then adds raw ETT and prepared TIME datasets.
+The resulting ablations will characterize alpha/K sensitivity without using
+final evaluation outcomes for selection, determine whether
+$N_{\mathrm{store}}$ and $N_{\mathrm{fit}}$ should differ, and how retrieval
+and fitting scope interact across users.
+
+\section*{Interpretation limit}
+The Chronos-Bolt SOTA table places causal online MSE beside published TS-RAG
+and Cross-RAG MSE only as contextual evidence. Their numbers use official test
+windows and train-split standardization, whereas the new experiment has no
+fixed split. They must not be interpreted as paired estimates unless a later
+run reproduces the published evaluation contract exactly.
+
+\end{document}

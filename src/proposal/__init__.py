@@ -1,0 +1,8 @@
+"""Causal rolling extraction, adaptation, and reporting."""
+
+DEFAULT_ALPHA = 1e-2
+DEFAULT_MAX_K = 20
+DEFAULT_CANDIDATE_K_GRID = (1, 5, 10, 15)
+DEFAULT_TSRAG_K = 5
+DEFAULT_N_STORE = 30_000
+DEFAULT_N_FIT = 100

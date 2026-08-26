@@ -1,0 +1,520 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,left=2.1cm,right=2.1cm,top=1.8cm,bottom=1.8cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,tabularx,array,hyperref}
+\usepackage{algorithm,algpseudocode}
+\hypersetup{hidelinks}
+\setlength{\emergencystretch}{3em}
+\newcommand{\Nstore}{N_{\mathrm{store}}}
+\newcommand{\Nfit}{N_{\mathrm{fit}}}
+\newcommand{\Sstore}{S_{\mathrm{store}}}
+\newcommand{\Sfit}{S_{\mathrm{fit}}}
+\newcommand{\Sq}{S_q}
+\newcommand{\Kmax}{K_{\max}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\MAE}{MAE}
+\title{Fully Online Retrieval Adaptation\\Experiment Guideline}
+\author{}
+\date{24 August 2026}
+
+\begin{document}
+\maketitle
+
+\section{Problem}
+
+Let $Z=(z_{t,u})\in\mathbb R^{T\times U}$ be one time-series panel, where
+$t\in\{0,\ldots,T-1\}$ is a date index and
+$u\in\{1,\ldots,U\}$ is a series (called a user in the code). For a query
+date $q$, a lookback length $L$, and a forecast horizon $H$, define
+\[
+ x_{q,u}=(z_{q-L+1,u},\ldots,z_{q,u})\in\mathbb R^L,
+ \qquad
+ y_{q,u}=(z_{q+1,u},\ldots,z_{q+H,u})\in\mathbb R^H.
+\]
+The task is to predict every $y_{q,u}$. There is no train/validation/test
+split. At date $q$, a row dated $r$ may be retrieved or fitted only if
+\[
+ r+H\le q,                                                     \tag{1}
+\]
+so its complete target $y_{r,u}$ is already observed. The experiment asks
+whether these causal rows improve a frozen forecasting model.
+
+\section{Mathematical definition}
+
+\subsection{Datastore, fitting dates, and queries}
+
+Let $P$ be the dataset period: $P=24$ for hourly data, $P=7$ for daily data,
+and $P=96$ for 15-minute data. Let $\Sstore$, $\Sfit$, and $\Sq$ be the
+datastore, fitting, and evaluation-query strides. With periodic alignment,
+the latest causal datastore date for query $q$ is
+\[
+ b_q=q-P\left\lceil\frac HP\right\rceil .                    \tag{2}
+\]
+Without alignment, $b_q=q-H$. The available datastore-date grid is
+\[
+ \mathcal D_q^\infty
+ =\{b_q-j\Sstore:j\in\mathbb N_0,\ b_q-j\Sstore\ge L-1\},    \tag{3}
+\]
+where $\mathbb N_0=\{0,1,2,\ldots\}$. Aligned runs require $\Sstore$ to be a
+multiple of $P$.
+
+Let $\Nstore$ be the datastore-size setting and let $M$ be its maximum number
+of dates:
+\[
+ M=
+ \begin{cases}
+ \Nstore, & \text{same-user retrieval},\\
+ \lfloor\Nstore/U\rfloor, & \text{all-user or other-user retrieval}.
+ \end{cases}                                                   \tag{4}
+\]
+Thus cross-user retrieval requires $\Nstore\ge U$ and never keeps a partial
+oldest date. A rolling store $\mathcal D_q$ contains the latest $M$ dates of
+$\mathcal D_q^\infty$; a fixed store contains its earliest $M$ dates.
+
+Fitting dates are selected independently of $\mathcal D_q$. Let
+\[
+ c_q=
+ \begin{cases}
+ q-P\lceil H/P\rceil,
+   & \text{alignment on and }P\mid\Sfit,\\
+ q-H, & \text{otherwise},
+ \end{cases}
+\]
+where $P\mid\Sfit$ means that $\Sfit$ is a multiple of $P$. The rolling
+fitting set is the latest $\Nfit$ dates in
+\[
+ \mathcal F_q^\infty
+ =\{c_q-j\Sfit:j\in\mathbb N_0,\ c_q-j\Sfit\ge L-1\}.        \tag{5}
+\]
+Here $\Nfit$ always counts dates per user. Same-user fitting uses $\Nfit$
+rows for each user; all-user fitting uses $\Nfit U$ rows for one shared fit.
+A fixed fit freezes the first complete $\mathcal F_q$ for each phase modulo
+$\Sfit$.
+
+The first evaluated date $q_0$ is the first date for which $q_0$ and every
+date in $\mathcal F_{q_0}$ have $\Kmax$ retrievable neighbors and
+$|\mathcal F_{q_0}|=\Nfit$. The evaluated dates are
+\[
+ \mathcal Q=\{q_0+j\Sq:j\in\mathbb N_0,\ q_0+j\Sq\le T-H-1\}.\tag{6}
+\]
+
+\subsection{Retrieval}
+
+Let $\phi(x)\in\mathbb R^J$ be the retrieval representation of a lookback,
+where $J$ is its number of features, and let $d$ be the configured distance.
+The default is $\phi(x)=x$ and
+\[
+ d(x,x')=\|x-x'\|_2.                                         \tag{7}
+\]
+For each $(q,u)$, exact search returns the $\Kmax$ smallest-distance windows
+$(r_{q,u,k},v_{q,u,k})$, $k\in\{1,\ldots,\Kmax\}$, where
+$r_{q,u,k}\in\mathcal D_q$ is a date and $v_{q,u,k}$ is a user. The allowed
+users are all $v$, only $v=u$, or only $v\ne u$, according to retrieval scope.
+
+Let $\mu(x)$ and $\sigma(x)$ be the mean and population standard deviation of
+the entries of $x$, and let $\eps=10^{-8}$. A value $a$ attached to a neighbor
+lookback $x'$ is put on the query scale by
+\[
+ R_x(a;x')=
+ \frac{a-\mu(x')}{\max\{\sigma(x'),\eps\}}
+ \max\{\sigma(x),\eps\}+\mu(x).                             \tag{8}
+\]
+
+\subsection{Signals used by the ridge}
+
+Let $f:\mathbb R^L\to\mathbb R^H$ be the frozen forecaster. For every
+$(q,u)$ and neighbor rank $k$, define
+\begin{align*}
+ V_{q,u} &= f(x_{q,u}), &&\text{vanilla forecast},\\
+ Y_{q,u,k} &= R_{x_{q,u}}(y_{r_{q,u,k},v_{q,u,k}};
+                         x_{r_{q,u,k},v_{q,u,k}}),
+ &&\text{retrieved future},\\
+ N_{q,u,k} &= R_{x_{q,u}}(f(x_{r_{q,u,k},v_{q,u,k}});
+                         x_{r_{q,u,k},v_{q,u,k}}),
+ &&\text{forecast of the retrieved lookback}.
+\end{align*}
+For a chosen $K\le\Kmax$, the distance-weighted retrieved future is
+\[
+ \bar Y_{q,u,K}=\sum_{k=1}^K w_{q,u,k}Y_{q,u,k},\qquad
+ w_{q,u,k}=\frac{e^{-\delta_{q,u,k}}}
+                  {\sum_{j=1}^K e^{-\delta_{q,u,j}}},
+\]
+\[
+ \delta_{q,u,k}=\frac{d_{q,u,k}-\min_{j\le K}d_{q,u,j}}
+ {\max\{\operatorname{sd}(d_{q,u,1:K}),\eps\}},             \tag{9}
+\]
+where $d_{q,u,k}$ is the stored retrieval distance and $\operatorname{sd}$ is
+population standard deviation.
+
+The code also defines a context forecast $C_{q,u,K}$ by calling the canonical
+backbone with the first $K$ rescaled neighbor pairs translated into named
+covariates. With \path{retrieval_covariate_mode=past_and_future}, the past
+covariates are the neighbor lookbacks and the future covariates are their known
+horizons; \code{past} omits the latter and \code{none} disables the wrapper.
+Chronos-2 therefore computes
+\[
+ C_{q,u,K}=f\!\left(x_{q,u};\widetilde X_{q,u,1:K},
+                    \widetilde Y_{q,u,1:K}\right),             \tag{10}
+\]
+through the official pipeline. The model alias remains \code{chronos2} in all
+three modes. Passing context to a backbone that declares no covariate support
+raises an error; it is never replaced by $V_{q,u}$. The five-backbone profile
+uses the covariate-free \code{y_ridge_shared} design, while the primary
+Chronos-2 ridge and gate profiles use the context forecast.
+
+For one date, user, and horizon position, the feature vector is selected from
+the following signals. Each $Y$ or $N$ entry denotes all ranks $1,\ldots,K$.
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Design name & Feature signals \\
+\midrule
+\texttt{cov} & $V,C$ \\
+\texttt{avgy} & $V,\bar Y$ \\
+\texttt{y} & $V,Y_1,\ldots,Y_K$ \\
+\texttt{cov\_y} & $V,C,Y_1,\ldots,Y_K$ \\
+\texttt{cov\_avgy} & $V,C,\bar Y$ \\
+\texttt{residual} & $V,Y_1,\ldots,Y_K,N_1,\ldots,N_K$ \\
+\texttt{full} & $V,C,Y_1,\ldots,Y_K,N_1,\ldots,N_K$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The main method is \texttt{full\_ridge\_shared}. Let $D\in\mathbb R^{nH\times p}$
+contain its $p=2+2K$ features for $n$ fitting date--user rows, and let
+$e\in\mathbb R^{nH}$ contain $y-V$. If the fitting loss is nMSE, each date--user
+row of $D$ and $e$ is first divided by
+$\max\{\sigma(x_{r,u}),\eps\}$; for MSE it is divided by $1$. Let
+\[
+ S=\operatorname{diag}(s_1,\ldots,s_p),\qquad
+ s_j=\max\left\{\sqrt{\frac1{nH}\sum_{i=1}^{nH}D_{ij}^2},10^{-12}\right\}.
+\]
+For ridge value $\alpha\ge0$, the fitted coefficients are
+\[
+ \widehat\beta
+ =S^{-1}\left(\frac{S^{-1}D^\top D S^{-1}}{nH}+\alpha I_p\right)^{-1}
+ \frac{S^{-1}D^\top e}{nH},                                  \tag{11}
+\]
+where $I_p$ is the $p\times p$ identity matrix. The prediction is
+\[
+ \widehat y_{q,u}=V_{q,u}+D_{q,u}\widehat\beta.              \tag{12}
+\]
+Same-user fitting gives one $\widehat\beta$ per $(q,u)$; all-user fitting gives
+one $\widehat\beta$ per $q$. Shared ridge uses one coefficient vector for all
+$H$ forecast positions. Horizon ridge fits one vector $\widehat\beta_h$ for
+each $h\in\{1,\ldots,H\}$.
+
+Delta ridge removes $V$ from $D$, replaces every remaining signal $A$ by
+$A-V$, and still predicts (12). Convex fitting uses the unmodified signals,
+targets $y$, and solves
+\[
+ \min_{\beta\in\mathbb R^p}\frac1{nH}\|y-D\beta\|_2^2
+ \quad\text{subject to}\quad \beta_j\ge0,
+ \quad\sum_{j=1}^p\beta_j=1;                                \tag{13}
+\]
+its prediction is $D\widehat\beta$.
+
+\subsection{Selection at each query}
+
+Let $\rho\in(0,1)$ be the validation ratio and
+$m=\lceil\rho\Nfit\rceil$. When $\alpha$ or $K$ is selected, the oldest
+$\Nfit-m$ dates of $\mathcal F_q$ fit each candidate and the newest $m$ dates
+score it. The default candidate sets are
+\[
+ \mathcal A=\{10^{-1},10^{-2},10^{-3}\},\qquad
+ \mathcal K=\{1,5,10,15\},\qquad \Kmax=20,\qquad \rho=0.2. \tag{14}
+\]
+The selected pair minimizes validation MSE or nMSE. Exact ties choose smaller
+$K$, then larger $\alpha$. The selected pair is refitted on all of
+$\mathcal F_q$. Supplying \texttt{used\_k} fixes $K$ but does not fix
+$\alpha$; setting \texttt{tune\_alpha=False} fixes $\alpha$ but does not fix
+$K$.
+
+\subsection{Gate ablations and TS-RAG comparison}
+
+For a gate candidate $A_{r,u}\in\{C_{r,u,K},\bar Y_{r,u,K}\}$, define its
+horizon-averaged advantage
+\[
+ a_{r,u}=\frac1H\sum_{h=1}^H
+ \frac{(y_{r,u,h}-V_{r,u,h})^2-(y_{r,u,h}-A_{r,u,h})^2}
+ {c_{r,u}^2},                                                 \tag{15}
+\]
+where $c_{r,u}=1$ for MSE fitting and
+$c_{r,u}=\max\{\sigma(x_{r,u}),\eps\}$ for nMSE fitting. For the method named
+\texttt{bayes}, the score $s_{q,u}$ is the mean of $a_{r,u}$ over the fitting
+rows. For \texttt{catboost}, define $\Delta=A-V$,
+$E=Y_{1:K}-V$, $G=Y_{1:K}-N_{1:K}$, the rescaled neighbor lookbacks
+$X_k=R_{x_{r,u}}(x_{r_k,v_k};x_{r_k,v_k})$, neighbor ages
+$g_k=r-r_k$, and same-user indicators $o_k=\mathbf 1[v_k=u]$. Means and
+population standard deviations below use every entry of the indicated array.
+The regressor input is
+\begin{align*}
+ \psi_{r,u}=(&\operatorname{mean}\Delta,\operatorname{sd}\Delta,
+ \operatorname{mean}E,\operatorname{sd}E,
+ \operatorname{mean}G,\operatorname{sd}G,
+ \mu(x_{r,u}),\sigma(x_{r,u}),\\
+ &\operatorname{mean}X,\operatorname{sd}X,
+ \operatorname{mean}o,\operatorname{mean}g,\operatorname{sd}g,
+ \operatorname{mean}d,\operatorname{sd}d,\min d)\in\mathbb R^{16}. \tag{16}
+\end{align*}
+CatBoost is fitted to map $\psi_{r,u}$ to $a_{r,u}$, and its output is
+$s_{q,u}$. Let
+$\tau_{q,u}$ be the population standard deviation of the fitting advantages.
+Both methods predict
+\[
+ \widehat y_{q,u}=V_{q,u}+
+ \operatorname{sigmoid}(s_{q,u}/\tau_{q,u})(A_{q,u}-V_{q,u}),\tag{17}
+\]
+where $\operatorname{sigmoid}(x)=(1+e^{-x})^{-1}$. When $\tau_{q,u}=0$, the
+weight is $1$, $0$, or $1/2$ for $s_{q,u}>0$, $s_{q,u}<0$, or $s_{q,u}=0$.
+The current gate
+front uses $A=C$, $K=20$, and backbones with (10); hence its predictions are
+exactly $V$ under the current code.
+
+The TS-RAG comparison is source-adapted from
+\href{https://github.com/UConn-DSIS/TS-RAG/tree/73ac807789d2e61b8a3dfc8514e3fc947fe185cc}
+{UConn-DSIS/TS-RAG commit 73ac807}. It is fixed to $L=512$, $H=64$, $K=5$,
+Chronos-Bolt, and same-user retrieval. Its retriever uses the final Chronos-T5
+token $\phi(x)$, float32 \texttt{faiss.IndexFlatL2}, a $K+1$ search, and removal
+of the final returned column. Its ARM receives the original, unscaled retrieved
+lookback--future sequences. Only the set of dates allowed by (1)--(4) differs
+from the released retrieval procedure.
+
+\section{Measures}
+
+For prediction $\widehat y_{q,u}$ and query scale
+$s_{q,u}=\max\{\sigma(x_{q,u}),\eps\}$, define
+\[
+ \MSE_{q,u}=\frac1H\sum_{h=1}^H
+ (y_{q,u,h}-\widehat y_{q,u,h})^2,
+ \qquad
+ \mathrm{nMSE}_{q,u}=\frac{\MSE_{q,u}}{s_{q,u}^2},            \tag{18}
+\]
+\[
+ \MAE_{q,u}=\frac1H\sum_{h=1}^H
+ |y_{q,u,h}-\widehat y_{q,u,h}|,
+ \qquad
+ \mathrm{nMAE}_{q,u}=\frac{\MAE_{q,u}}{s_{q,u}}.             \tag{19}
+\]
+Every aggregate is an unweighted mean over the retained date--user rows.
+Methods are compared only on their common query dates. If $m$ denotes an
+adapted method and $v$ its matching vanilla forecast, report
+\[
+ I^{\MSE}_m=100\frac{\MSE_v-\MSE_m}{\MSE_v},\qquad
+ I^{\mathrm{nMSE}}_m=100\frac{\mathrm{nMSE}_v-\mathrm{nMSE}_m}
+ {\mathrm{nMSE}_v},                                          \tag{20}
+\]
+and the strict win rate
+\[
+ W_m=100\frac1{|\mathcal Q|U}
+ \sum_{q\in\mathcal Q}\sum_{u=1}^U
+ \mathbf 1[\MSE_{m,q,u}<\MSE_{v,q,u}],                       \tag{21}
+\]
+where $\mathbf 1[\cdot]$ is $1$ when its condition is true and $0$ otherwise.
+The report also saves population standard deviation across per-user means,
+the mean over the worst $\lceil0.1U\rceil$ users selected separately for MSE
+and nMSE, and the percentage of users improved.
+
+Reported time is extraction time plus adaptation/evaluation time. It is also
+divided by $|\mathcal Q|U$. A separate cold-batch value measures the first
+all-user query with empty in-memory caches.
+
+\section{Runs}
+
+The default ridge run uses raw Euclidean all-user retrieval, same-user fitting,
+rolling store and fit, $\Nstore=30{,}000$, $\Nfit=100$,
+$\Sstore=\Sfit=P$, seed $1$, and (14). Test runs use $\Sq=257$; small and full
+runs use $\Sq=127$. The frozen backbone is Chronos-2. The main family also adds
+the TS-RAG configuration defined above.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}p{.14\linewidth}X@{}}
+\toprule
+Mode & Datasets and $(L,H)$ settings \\
+\midrule
+test & Electricity, long range only \\
+small & Electricity, Solar, and Traffic; short, mid, and long ranges \\
+full & small plus raw ETTh1, ETTh2, ETTm1, ETTm2 and every prepared TIME
+dataset; short, mid, and long ranges \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Frequency & short & mid & long \\
+\midrule
+hourly & $(168,24)$ & $(336,48)$ & $(504,168)$ \\
+daily & $(7,1)$ & $(14,2)$ & $(30,7)$ \\
+15-minute & $(96,4)$ & $(192,8)$ & $(672,96)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Focused fronts change only the listed values:
+\begin{center}
+\scriptsize
+\begin{tabularx}{\linewidth}{@{}p{.30\linewidth}X@{}}
+\toprule
+Front & Values \\
+\midrule
+\path{ablation_n_store.slurm} & test: $\{1000,2000,5000\}$; publication:
+$\{10000,20000,30000,50000\}$ \\
+\path{ablation_n_fit.slurm} & test: $\{50,100,500\}$; publication adds $1000$ \\
+\path{ablation_fit_stride.slurm} & $\Sfit\in\{1,P\}$ \\
+\path{ablation_alpha.slurm} & fixed $\alpha\in\{0,10^{-4},10^{-3},10^{-2},10^{-1},1\}$; select $K$ \\
+\path{ablation_k.slurm} & fixed $K\in\{1,3,5,10,15,20\}$; select $\alpha$ \\
+\path{ablation_l.slurm} & $H=24$, $L\in\{24,96,168,336,504,512,720\}$ \\
+\path{ablation_h.slurm} & $L=504$, $H\in\{24,48,64,96,168,336,504\}$ \\
+\path{ablation_feature_design.slurm} & the seven designs in the signal table \\
+\path{ablation_formulation.slurm} & ridge, delta ridge, and convex; shared and horizon forms \\
+\path{ablation_fixed_protocol.slurm} & rolling/fixed store crossed with rolling/fixed fit \\
+\path{ablation_general_scope.slurm} & all/same/other-user retrieval crossed with all/same-user fitting \\
+\path{ablation_homogeneous.slurm} & all channels versus declared same-quantity channels on ETT and Weather \\
+\path{ablation_backbones.slurm} & Chronos-2, Chronos-Bolt, TS-ICL, and TabPFN-TS at $(512,64)$; TiRex-2 remains implemented but excluded \\
+\path{ablation_sota_chronos_bolt.slurm} & causal Chronos-Bolt at $(512,64)$ beside published TS-RAG/Cross-RAG rows; protocols are labeled non-comparable \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The gate front evaluates \texttt{bayes\_cov\_shared\_soft} and
+\texttt{catboost\_cov\_shared\_soft}. CatBoost uses 300 trees in small/full
+and 2 trees in test, depth $4$, learning rate $0.03$, and refit stride $1$.
+
+\section{Code}
+
+\subsection{Data objects}
+
+Let $W=T-L-H+1$ be the number of valid window dates, $R$ the number of unique
+query and fitting dates that require retrieval, $B$ the number of unique
+window IDs that require a vanilla forecast, and $J$ the retrieval-feature
+dimension. The source CSV is loaded once as \texttt{CsvTimeSeries}; overlapping
+lookbacks and targets remain sliding views of $Z$.
+
+\begin{center}
+\scriptsize
+\begin{tabularx}{\linewidth}{@{}p{.27\linewidth}p{.18\linewidth}X@{}}
+\toprule
+Object & Shape or key & Stored value and code owner \\
+\midrule
+\texttt{tables/windows} & $W$ dates, $U$ users & dates, timestamps, user names;
+\path{src/proposal/extraction.py::_window_metadata} \\
+\texttt{tables/window\_statistics} & $W\times U$ & lookback mean, standard
+deviation, constant flag; same owner \\
+\texttt{tables/window\_computation} & optional $A\times U\times J$ and
+$B\times H$ & compact retrieval representations and forecasts, where $A$ is
+the number of dates requiring a representation;
+\path{src/pipeline/extraction.py::extract_online_features} \\
+\texttt{tables/retrieval\_neighbors} & $R\times U\times\Kmax$ & neighbor
+window ID and configured/raw/normalized distances; also $R$ dates, query flags,
+and candidate counts; same owner \\
+\path{context_cache/K_*/window_*.npy} & $(r,K)\mapsto\mathbb R^{U\times H}$
+& requested context forecasts only;
+\path{src/proposal/extraction.py::ContextForecastCache} \\
+\path{selected_hyperparameters.csv} & $(q,u)$ or $q$ & selected $\alpha$,
+$K$, validation loss, parameter count;
+\path{src/pipeline/adaptation.py::evaluate_online_linear} \\
+\path{coefficient_trajectory.npy} & query, optional user, optional horizon,
+feature & refitted ridge coefficients; same owner \\
+\path{per_user_date_metrics.csv} & $(q,u,\text{method})$ & (18)--(21)
+and vanilla values; \path{src/proposal/ridge.py} \\
+\path{metrics.json}, \path{compute_timing.json} & one result & aggregate
+measures and complete/cold times; \path{src/results/efficiency.py} and
+\path{src/pipeline/adaptation.py} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+A stable window ID is
+\[
+ \operatorname{id}(r,u)=\operatorname{pos}(r)U+(u-1),         \tag{22}
+\]
+Here $\operatorname{pos}(r)$ is the zero-based position of date $r$ in the
+valid-date array, so $0\le\operatorname{pos}(r)<W$.
+\texttt{open\_extraction\_arrays} in
+\path{src/pipeline/contracts.py} reconstructs source windows, retrieved values,
+and sparse forecast joins from these IDs.
+
+\subsection{Pipeline}
+
+\begin{algorithm}[H]
+\caption{Extraction}
+\footnotesize
+\begin{algorithmic}[1]
+\Require panel $Z$; settings $L,H,\Nstore,\Nfit,\Sstore,\Sfit,\Sq,\Kmax$
+\State build sliding views $x_{r,u},y_{r,u}$ and store their IDs, means, and scales
+\State build $\mathcal Q$ from (6)
+\ForAll{$q\in\mathcal Q$}
+  \State build $\mathcal F_q$ from (5)
+\EndFor
+\State $\mathcal R\gets\mathcal Q\cup\bigcup_{q\in\mathcal Q}\mathcal F_q$
+\ForAll{$r\in\mathcal F_{q_0}\cup\{q_0\}$ first, then remaining $r\in\mathcal R$ by date}
+  \State build $\mathcal D_r$ from (3)--(4)
+  \For{$u=1$ to $U$}
+    \State exact-search the allowed users and save ranks $1{:}\Kmax$
+  \EndFor
+\EndFor
+\State forecast each query or selected-neighbor window ID once
+\State save extraction arrays, diagnostics, manifest, and time
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Adaptation and evaluation}
+\footnotesize
+\begin{algorithmic}[1]
+\Require extraction arrays; method; fitting scope; candidate $\alpha$ and $K$ values
+\ForAll{$q\in\mathcal Q$ in chronological order}
+  \State reconstruct $\mathcal F_q$ from (5)
+  \If{method is ridge, delta ridge, or convex}
+    \State build the chosen design from $V,C,\bar Y,Y_{1:K},N_{1:K}$
+    \State select $\alpha,K$ on the newest validation dates when enabled
+    \State refit on all $\mathcal F_q$ with (11) or (13)
+    \State predict with (12) or $D\widehat\beta$
+  \ElsIf{method is a gate}
+    \State fit the mean-advantage or CatBoost score from (15)
+    \State predict with (17)
+  \Else
+    \State run TS-RAG ARM on its raw retrieved sequences
+  \EndIf
+  \State save (18)--(19) for every user and the all-user date batch
+\EndFor
+\State aggregate (20)--(21), user measures, coefficients/importances, and time
+\end{algorithmic}
+\end{algorithm}
+
+The direct code path is
+\begin{center}
+\small
+\path{src/scripts/extract.py} $\longrightarrow$
+\path{src/pipeline/extraction.py} $\longrightarrow$
+\path{src/scripts/adapt.py} $\longrightarrow$
+\path{src/pipeline/adaptation.py} $\longrightarrow$
+\path{src/scripts/tables.py}.
+\end{center}
+Date selection is in \path{src/proposal/datastore.py}; ridge designs and solves
+are in \path{src/proposal/ridge.py}; gates are in
+\path{src/proposal/gates.py}; TS-RAG is in
+\path{src/external_models/tsrag/} and \path{src/pipeline/tsrag.py}; run lists are
+defined only in \path{src/pipeline/profiles.py}.
+
+\section{Execution}
+
+Each root \texttt{.slurm} file sets one family and calls
+\path{src/slurm/run_family.sh}. The default order is
+\texttt{extract,adapt,tables}; \texttt{STAGES} may contain a recovery subset.
+Each stage uses Hydra and the same seed. Completed runs with the exact recorded
+settings are reused. Training and full inference run only on the cluster.
+Generated arrays, metrics, figures, and tables are under \path{outputs/}; run
+logs are under \path{logs/}.
+
+No online-adaptation result has yet been analyzed. This document therefore
+defines computations and runs only; it makes no performance claim.
+
+\end{document}

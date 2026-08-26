@@ -1,0 +1,30 @@
+{
+  "source": "https://arxiv.org/pdf/2603.14709",
+  "source_table": "Table 4",
+  "metric": "mse",
+  "metric_space": "per-channel train-split standardized values",
+  "protocol": {"lookback": 512, "horizon": 64, "backbone": "chronos_bolt"},
+  "published_results": {
+    "TS-RAG": {
+      "ETTh1": 0.357,
+      "ETTh2": 0.246,
+      "ETTm1": 0.298,
+      "ETTm2": 0.147,
+      "Weather": 0.151,
+      "Electricity": 0.112,
+      "exchange_rate": 0.071,
+      "Average": 0.197
+    },
+    "Cross-RAG": {
+      "ETTh1": 0.341,
+      "ETTh2": 0.243,
+      "ETTm1": 0.290,
+      "ETTm2": 0.143,
+      "Weather": 0.144,
+      "Electricity": 0.112,
+      "exchange_rate": 0.064,
+      "Average": 0.191
+    }
+  },
+  "comparability_note": "Published values use official test windows and train-split standardization. Online-adaptation values use the causal no-split protocol and are shown side by side, not treated as paired estimates."
+}

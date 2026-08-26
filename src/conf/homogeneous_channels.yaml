@@ -1,0 +1,13 @@
+homogeneous_targets:
+  ETTh1: [HUFL, HULL, MUFL, MULL, LUFL, LULL]
+  ETTh2: [HUFL, HULL, MUFL, MULL, LUFL, LULL]
+  ETTm1: [HUFL, HULL, MUFL, MULL, LUFL, LULL]
+  ETTm2: [HUFL, HULL, MUFL, MULL, LUFL, LULL]
+  Weather: ["T (degC)", "Tpot (K)", "Tdew (degC)", "Tlog (degC)"]
+
+all_targets_are_homogeneous:
+  - Electricity
+  - Solar
+  - Traffic
+  - exchange_rate
+  - TIME
