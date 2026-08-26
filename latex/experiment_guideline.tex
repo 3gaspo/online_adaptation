@@ -506,13 +506,16 @@ defined only in \path{src/pipeline/profiles.py}.
 
 \section{Execution}
 
-Each root \texttt{.slurm} file sets one family and calls
+Each DGX root \texttt{.slurm} file has a matching \texttt{\_selena.slurm}
+overflow front. Both set the same family and call
 \path{src/slurm/run_family.sh}. The default order is
 \texttt{extract,adapt,tables}; \texttt{STAGES} may contain a recovery subset.
 Each stage uses Hydra and the same seed. Completed runs with the exact recorded
 settings are reused. Training and full inference run only on the cluster.
-Generated arrays, metrics, figures, and tables are under \path{outputs/}; run
-logs are under \path{logs/}.
+DGX arrays, metrics, figures, and tables are under \path{outputs/}, and run
+logs are under \path{logs/}. Selena fronts preserve the same relative artifact
+identity under \path{outputs_selena/} and write their streams under
+\path{logs_selena/}, so returned overflow work never collides with DGX trees.
 
 No online-adaptation result has yet been analyzed. This document therefore
 defines computations and runs only; it makes no performance claim.

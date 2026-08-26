@@ -58,7 +58,9 @@ else
   PROFILE_QUERY_STRIDE="${QUERY_STRIDE:-127}"
   PROFILE_CATBOOST_ITERATIONS="${CATBOOST_ITERATIONS:-300}"
 fi
-mkdir -p "$PROJECT_ROOT/logs" "$PROJECT_ROOT/outputs"
+LOGS_ROOT="${LOGS_ROOT:-$PROJECT_ROOT/logs}"
+OUTPUTS_ROOT="${OUTPUTS_ROOT:-$PROJECT_ROOT/outputs}"
+mkdir -p "$LOGS_ROOT" "$OUTPUTS_ROOT"
 
 export HF_HUB_DISABLE_PROGRESS_BARS=1
 export TRANSFORMERS_VERBOSITY=error
@@ -68,7 +70,7 @@ COMMON_ARGS=(
   "mode=${EXPERIMENT_MODE:-test}"
   "data_root=$DATA_ROOT"
   "weights_root=$WEIGHTS_ROOT"
-  "outputs_root=$PROJECT_ROOT/outputs"
+  "outputs_root=$OUTPUTS_ROOT"
   "device=${DEVICE:-cuda}"
   "seed=${SEED:-1}"
   "purpose=$PROFILE_PURPOSE"

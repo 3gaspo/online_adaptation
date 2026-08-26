@@ -1,6 +1,7 @@
-Updated: 2026-08-24
+Updated: 2026-08-26
 Latest completed workflow: none (new project)
 Artifacts analyzed: none
-Current/next workflow: submit 01_main_online_ridge.slurm with EXPERIMENT_MODE=test
+Current/next workflow: submit 01_main_online_ridge.slurm with EXPERIMENT_MODE=test; after its DGX contract is checked, submit 01_main_online_ridge_selena.slurm with EXPERIMENT_MODE=test to validate Selena scheduling, isolated outputs_selena/logs_selena, and result synchronization
 Known job IDs/dependencies: none
-Notes: first validate the normalized v1 window/query/context tables, cadence alignment, and all-user batch timing with 01_main_online_ridge.slurm in test mode; then validate the source-faithful TS-RAG path and run 02_online_gates.slurm test mode before scaling.
+Notes: all 16 DGX fronts now have scientific-equivalent Selena counterparts. First validate the normalized v1 window/query/context tables, cadence alignment, and all-user batch timing with 01_main_online_ridge.slurm in test mode; then validate the Selena transfer boundary, the source-faithful TS-RAG path, and 02_online_gates.slurm test mode before scaling. No Selena front or transfer has yet run.
+Runtime roots are always overridable: DGX defaults to outputs/ and logs/, while Selena explicitly selects outputs_selena/ and logs_selena/.

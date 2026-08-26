@@ -1,5 +1,28 @@
 # Pending updates
 
+## 2026-08-26 — Selena overflow fronts and isolated artifacts
+
+- Scope and behavior: added a `_selena.slurm` counterpart for all 16 DGX
+  fronts. Every pair retains the same family, mode, stages, and scientific
+  arguments; Selena selects partition `an`, exclusive non-requeued execution,
+  the project WCKey, a distinct job name, and a `selena_` launch ID. The shared
+  runner exposes overridable `OUTPUTS_ROOT` and `LOGS_ROOT`; they default to
+  `outputs/` and `logs/`, while Selena selects `outputs_selena/` and
+  `logs_selena/`.
+- Affected files and contracts: 16 new fronts, shared runner, sync pair,
+  ignored placeholders, focused workflow regression, README/guidance, cluster
+  handoff, experiment guideline, and the shared requirement now governing all
+  runnable experiment projects. The return sync preserves the Selena directory
+  names on DGX and never merges into standard artifacts.
+- Focused checks completed: Git Bash syntax passed across all 52 affected
+  TSFM/Online shell files; both Online Adaptation workflow tests passed and
+  verified all 16 DGX/Selena pairs; two clean LaTeX passes produced six pages;
+  all six rendered pages were visually inspected with no clipping or overlap.
+- Deferred integration and documentation: submit one Selena test front and
+  exercise both sync directions on the real clusters. Scientific identity and
+  DGX behavior are unchanged; no existing artifact, migration, or rerun is
+  affected.
+
 ## 2026-08-26 — Shared resources and four-model backbone launch
 
 - Scope and behavior: retained Adaptation's project-local, immediate-parent,

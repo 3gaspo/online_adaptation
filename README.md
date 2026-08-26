@@ -248,6 +248,22 @@ EXPERIMENT_MODE=small sbatch 01_main_online_ridge.slurm
 EXPERIMENT_MODE=full sbatch 02_online_gates.slurm
 ```
 
+Every DGX front has a matching `_selena.slurm` overflow front. For example:
+
+```bash
+sbatch 01_main_online_ridge_selena.slurm
+EXPERIMENT_MODE=full sbatch 02_online_gates_selena.slurm
+```
+
+The Selena variants keep the same family, profile, stages, and scientific
+arguments while using partition `an`, an exclusive non-requeued allocation,
+WCKey `P12CU:DATASCIENCE`, distinct job names, and `selena_`-prefixed launch
+IDs. They write Slurm streams to `logs_selena/` and all manifests, arrays,
+metrics, figures, and tables to `outputs_selena/`; DGX fronts continue to use
+`logs/` and `outputs/`. The shared `LOGS_ROOT` and `OUTPUTS_ROOT` variables
+default to those DGX directories and remain available for an explicit custom
+storage root.
+
 The remaining fronts are focused studies:
 
 - `ablation_{n_store,n_fit,fit_stride,alpha,k,l,h}.slurm`;
@@ -387,6 +403,36 @@ store/fitting strides, compact source-window joins, common compute timing, rolli
 rolling Bayes, date-based cross-user fitting, per-user and W10 metrics,
 coefficient artifacts, common-date report intersection, `L+H` setting-shift
 sampling, neighbor-date summaries, and raw/instance-normalized distance plots.
+
+## Synchronizing DGX and Selena
+
+Keep `$HOME/codes/.secrets/proxy.credentials` outside the project on both
+clusters. Its first line contains the NNI; the synchronization scripts read
+only that line and lowercase it for SSH account and home-directory paths.
+
+After updating the DGX checkout, mirror its code to Selena with:
+
+```bash
+bash sync_code_to_selena.sh
+```
+
+The transfer derives the project directory name from the checkout and makes
+Selena's code match DGX while preserving `.venv`, `.secrets`,
+`pyproject.toml`, `uv.lock`, `datasets/`, `weights/`, `outputs/`, `logs/`, and
+existing `outputs_selena/` and `logs_selena/` payloads. The Selena directory
+placeholders are mirrored, but existing contents are protected from deletion.
+Git metadata and dependency manifests are never transferred.
+
+After Selena jobs finish, copy lightweight artifacts back without deleting
+anything already present on DGX:
+
+```bash
+bash sync_results_to_dgx.sh
+```
+
+Only `outputs_selena/` and `logs_selena/` are copied in that direction, into
+the same named DGX directories. Analysis and publication remain on DGX, and
+the returned artifacts never merge into DGX `outputs/` or `logs/`.
 
 ## Maintenance
 
