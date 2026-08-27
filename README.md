@@ -183,7 +183,7 @@ model's project wrapper. `retrieval_covariate_mode=past_and_future` supplies
 both the rescaled neighbor lookbacks and their known horizons, `past` supplies
 only lookback values, and `none` disables covariates without changing the model
 alias. Any context-bearing method fails explicitly when the selected backbone
-does not support covariates. The five-backbone compatibility profile therefore
+does not support covariates. The four-backbone compatibility profile therefore
 uses the covariate-free `y_ridge_shared` design; the primary Chronos-2 ridge and
 gate profiles exercise retrieved covariates.
 
@@ -258,7 +258,7 @@ EXPERIMENT_MODE=full sbatch slurm/selena/main/02_online_gates_selena.slurm
 
 The Selena variants keep the same family, profile, stages, and scientific
 arguments while using partition `an`, QoS `an_preemptable`, an exclusive
-non-requeued allocation, WCKey `P12CU:DATASCIENCE`, distinct job names, and
+allocation without disabling cluster requeue, WCKey `P12CU:DATASCIENCE`, distinct job names, and
 `selena_`-prefixed launch IDs. They write Slurm streams to `logs_selena/` and all manifests, arrays,
 metrics, figures, and tables to `outputs_selena/`; DGX fronts continue to use
 `logs/` and `outputs/`. The shared `LOGS_ROOT` and `OUTPUTS_ROOT` variables
@@ -276,8 +276,7 @@ The remaining DGX fronts are focused studies under
   `same_user`, `other_users`) with fitting scope (`all`, `same_user`);
 - `ablation_homogeneous.slurm`;
 - `ablation_sota_chronos_bolt.slurm`;
-- `ablation_backbones.slurm` (Chronos-2, Chronos-Bolt, TS-ICL, TabPFN-TS;
-  TiRex-2 remains adapter-supported but is commented out for now).
+- `ablation_backbones.slurm` (Chronos-2, Chronos-Bolt, Chronos-T5, and TS-ICL).
 
 The publication `N_fit` sweep is `{50,100,500,1000}`. The fitting-stride
 front holds `N_fit=100` and compares every causally available date
@@ -298,9 +297,7 @@ Weather retains its four temperature channels (`T`, `Tpot`, `Tdew`, and
 `TSRAG_K`, `RETRIEVAL_COVARIATE_MODE`, `STAGES`,
 `RUN_CONFLICT_POLICY`, and `SKIP_COMPLETE` are launcher overrides. Expected
 weight locations are `chronos2/`, `chronos-bolt-base/`,
-`chronos-t5-base/`, `ts-rag/`, `tirex2/`,
-`tsicl/tsicl-v1.ckpt`, and
-`tabpfnts/tabpfn-v2.5-regressor-v2.5_default.ckpt` below the resolved
+`chronos-t5-base/`, `ts-rag/`, and `tsicl/tsicl-v1.ckpt` below the resolved
 weights root.
 `QUERY_STRIDE` and `CATBOOST_ITERATIONS` may override the smoke controls;
 `small` and `full` default to query stride 127.
@@ -359,22 +356,23 @@ interval with the causal dates available at each query. The retrieved
 lookback--future sequences are passed to ARM on their original raw scale;
 evaluation dates, metrics, and artifact writing are project-specific.
 
-The `chronos2`, `chronos_bolt`, `ts_icl`, `tirex2`, and `tabpfn_ts` keys are
+The `chronos2`, `chronos_bolt`, `chronos_t5`, and `ts_icl` keys are
 the only foundation-model aliases. They use
 the same byte-identical thin adapters and TIME input contract as TSFM
-evaluation and TimeTensors. Chronos-2 and Chronos-Bolt use the official
+evaluation and TimeTensors. Chronos-2, Chronos-Bolt, and Chronos-T5 use the official
 `chronos-forecasting==2.0.1` pipelines. The project-specific retrieval wrapper
 translates context into past and optional future covariates on top of the
-canonical adapter, so it does not introduce another model name. TS-ICL,
-TiRex-2, and TabPFN-TS use thin adapters over
-`tsicl==0.2.0`, `tirex-2==0.2.1`, and `tabpfn==6.3.1`. Their
-architectures and native inference paths are not copied or reimplemented.
+canonical adapter, so it does not introduce another model name. TS-ICL uses
+a thin adapter over `tsicl>=0.2.1`; its architecture and native inference path
+are not copied or reimplemented. The former TabPFN adapter source remains
+unregistered without its dependency, and the retired TiREx-2 adapter is archived.
 
 ## Dataset configuration and manifests
 
 The CSV loader automatically reads `config.json` beside a selected CSV.
 Portable top-level values are overridden by an `online_adaptation` object, and
-explicit run settings override both; `drop_users` remains additive. The
+explicit run settings override both. For `drop_users`, null inherits, `[]`
+keeps every CSV user, and a nonempty value replaces the dataset default. The
 selected path and applied keys are logged.
 
 The same `python -m src.scripts.prepare_time_csv` command used by the sibling
@@ -443,6 +441,12 @@ publication remain on DGX, and returned artifacts never merge into DGX
 
 `PENDING_UPDATES.md` records focused checks, deferred cluster checks, and rerun
 scope. `CLUSTER_STATUS.txt` records the latest submitted or analyzed workflow.
+Brief daily triage compares stored fingerprints and updates those records only
+for new source, artifact, or cluster state; unchanged blockers are carried
+forward. Broad weekly maintenance verifies changed entries against the
+implementation, runs complementary lightweight integration checks, reconciles
+the README and LaTeX documents, and renders affected PDFs before resolving
+entries.
 After a terminal cluster job, `publish_job.sh <job-id>` is the manual artifact
 publishing path; Slurm workflows never run Git commands. Running
 `bash publish_job.sh` without a job ID publishes `logs/`, lightweight
@@ -450,3 +454,13 @@ publishing path; Slurm workflows never run Git commands. Running
 under the same `*.pt`, `*.npy`, and `*.cbm` exclusions. A partial Selena
 namespace fails closed; numeric job-ID mode still selects only the exact
 standard log pair.
+
+Before staging, each selected non-excluded file larger than 100,000,000 bytes
+is replaced for publication by `<original>.sample.txt`. Text samples contain
+source metadata and the first 10% of content, capped at 10,000,000 bytes;
+binary samples contain metadata only. The header retains the first UTC time
+when the associated file became stale on Git because of its size. The original
+is excluded literally from
+both staging and commit selection. `PUBLISH_MAX_FILE_BYTES` and
+`PUBLISH_SAMPLE_MAX_BYTES` override the positive byte limits, with the sample
+limit required to remain smaller.

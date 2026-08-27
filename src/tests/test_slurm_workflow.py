@@ -114,7 +114,7 @@ class SlurmWorkflowTest(unittest.TestCase):
             self.assertIn("#SBATCH --partition=an", text, front.name)
             self.assertIn("#SBATCH --qos=an_preemptable", text, front.name)
             self.assertIn("#SBATCH --exclusive", text, front.name)
-            self.assertIn("#SBATCH --no-requeue", text, front.name)
+            self.assertNotIn("#SBATCH --no-requeue", text, front.name)
             self.assertIn("#SBATCH --wckey=P12CU:DATASCIENCE", text, front.name)
             self.assertIn('OUTPUTS_ROOT="$PROJECT_ROOT/outputs_selena"', text)
             self.assertIn('LOGS_ROOT="$PROJECT_ROOT/logs_selena"', text)

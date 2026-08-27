@@ -1,8 +1,8 @@
-Updated: 2026-08-26
+Updated: 2026-08-27
 Latest completed workflow: none (new project)
-Artifacts analyzed: none
-Current/next workflow: from the project root, submit slurm/dgx/main/01_main_online_ridge.slurm with EXPERIMENT_MODE=test; after its DGX contract is checked, submit slurm/selena/main/01_main_online_ridge_selena.slurm with EXPERIMENT_MODE=test to validate Selena scheduling, isolated outputs_selena/logs_selena, and result synchronization
-Known job IDs/dependencies: none
-Notes: all 16 DGX fronts under slurm/dgx/ now have scientific-equivalent Selena counterparts under slurm/selena/. First validate the normalized v1 window/query/context tables, cadence alignment, and all-user batch timing with the main ridge front in test mode; then validate the Selena transfer boundary, the source-faithful TS-RAG path, and the online-gates front in test mode before scaling. Selena uses QoS an_preemptable. No Selena front or transfer has yet run.
+Artifacts analyzed: synchronized Selena logs for jobs 2897236, 2910601, 2910733, and 2910734, plus the job-2910733 extraction manifest
+Current/next workflow: query Selena job 2910733. Its manifest has remained running since 2026-08-26T22:23:54Z with no completed artifacts. If the scheduler says it is terminal, use the supported lifecycle recovery to reconcile the stale manifest; otherwise wait for completion. Then rerun the main test front and its gates under the replacement-exclusion contract.
+Known job IDs/dependencies: 2897236 failed before launch because .venv was missing; 2910601 was cancelled; 2910733 launched main extraction; 2910734 stopped because the matching extraction manifest was already running
+Notes: all 16 DGX fronts under slurm/dgx/ have scientific-equivalent Selena counterparts under slurm/selena/. No completed scientific result exists. The current code records replacement drop_users precedence and allows Selena requeue, but the synchronized 2910733 run must be resolved before the first end-to-end contract can be accepted. Selena uses QoS an_preemptable.
 Runtime roots are always overridable: DGX defaults to outputs/ and logs/, while Selena explicitly selects outputs_selena/ and logs_selena/.
 Result synchronization runs on DGX as an inbound Selena pull. An unscoped publisher run includes the paired Selena artifact trees under the standard lightweight exclusions.

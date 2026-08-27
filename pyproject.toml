@@ -16,7 +16,6 @@ dependencies = [
     "numpy>=2.5.2",
     "pandas>=3.0.5",
     "seaborn>=0.13.2",
-    "tabpfn>=8.4.0",
     "torch==2.5.1",
     "tsicl>=0.2.1",
 ]

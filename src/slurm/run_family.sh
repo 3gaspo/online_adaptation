@@ -69,6 +69,7 @@ COMMON_ARGS=(
   "family=$EXPERIMENT_FAMILY"
   "mode=${EXPERIMENT_MODE:-test}"
   "data_root=$DATA_ROOT"
+  "drop_users=${DROP_USERS_OVERRIDE:-null}"
   "weights_root=$WEIGHTS_ROOT"
   "outputs_root=$OUTPUTS_ROOT"
   "device=${DEVICE:-cuda}"

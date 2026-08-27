@@ -19,6 +19,7 @@ skip_completed: true
 table_config_policy: distinct
 table_repeat_policy: selected
 data_root: datasets
+drop_users: null
 weights_root: weights
 outputs_root: outputs
 device: cuda

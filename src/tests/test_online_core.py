@@ -361,9 +361,8 @@ def test_retrieval_context_becomes_configured_covariates() -> None:
     assert FOUNDATION_MODEL_ALIASES == (
         "chronos2",
         "chronos_bolt",
+        "chronos_t5",
         "ts_icl",
-        "tirex2",
-        "tabpfn_ts",
     )
 
 
@@ -843,7 +842,7 @@ def test_profile_contract() -> None:
     assert {
         task["backbone"]
         for task in tasks_for_family("backbone_ablation", "test", project_root)
-    } == {"chronos2", "chronos_bolt", "ts_icl", "tabpfn_ts"}
+    } == {"chronos2", "chronos_bolt", "chronos_t5", "ts_icl"}
     assert {
         task["method"]
         for task in tasks_for_family("backbone_ablation", "test", project_root)

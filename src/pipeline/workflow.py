@@ -125,9 +125,8 @@ def _weight_path(weights_root: Path, backbone: str) -> Path:
     relative = {
         "chronos2": "chronos2",
         "chronos_bolt": "chronos-bolt-base",
-        "tirex2": "tirex2",
+        "chronos_t5": "chronos-t5-base",
         "ts_icl": "tsicl/tsicl-v1.ckpt",
-        "tabpfn_ts": "tabpfnts/tabpfn-v2.5-regressor-v2.5_default.ckpt",
     }[backbone]
     return weights_root / relative
 
@@ -143,7 +142,7 @@ def _load_backbone(
     weight_path = _weight_path(weights_root, backbone)
     if not weight_path.exists():
         raise FileNotFoundError(f"missing {backbone} weights: {weight_path}")
-    if backbone in {"ts_icl", "tirex2", "tabpfn_ts"}:
+    if backbone == "ts_icl":
         return load_pretrained_model(
             backbone,
             lags=int(task["lookback"]),
@@ -291,6 +290,7 @@ def _run_extraction(
             _dataset_path(data_root, task["dataset"]),
             dataset_name=task["dataset"].split("/")[-1],
             target_cols=target_cols,
+            drop_users=cfg.drop_users,
         )
         device = resolve_device(str(cfg.device))
         model = _load_backbone(
@@ -437,6 +437,7 @@ def _run_adaptation(
             _dataset_path(data_root, task["dataset"]),
             dataset_name=task["dataset"].split("/")[-1],
             target_cols=target_cols,
+            drop_users=cfg.drop_users,
         )
         if task["method"] == "tsrag":
             eval_start = first_fitted_query_date(

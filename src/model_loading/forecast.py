@@ -13,9 +13,8 @@ from einops import rearrange, repeat
 FOUNDATION_MODEL_ALIASES = (
     "chronos2",
     "chronos_bolt",
+    "chronos_t5",
     "ts_icl",
-    "tirex2",
-    "tabpfn_ts",
 )
 
 
@@ -357,7 +356,7 @@ def load_model(
     """Load a minimal extraction forecaster.
 
     Built-ins include ``persistence``, ``chronos2``, ``chronos_bolt``,
-    ``ts_icl``, ``tirex2``, and ``tabpfn_ts``.
+    ``chronos_t5``, and ``ts_icl``.
     """
     raw_name = str(name)
     key = raw_name.lower()
@@ -375,18 +374,14 @@ def load_model(
         from src.external_models.chronos_bolt import ChronosBolt
 
         registry[key] = ChronosBolt
+    elif key == "chronos_t5":
+        from src.external_models.chronos_t5 import ChronosT5
+
+        registry[key] = ChronosT5
     elif key == "ts_icl":
         from src.external_models.ts_icl import TSICLForecaster
 
         registry[key] = TSICLForecaster
-    elif key == "tirex2":
-        from src.external_models.tirex2 import TiRex2Forecaster
-
-        registry[key] = TiRex2Forecaster
-    elif key == "tabpfn_ts":
-        from src.external_models.tabpfn import TabPFNTS
-
-        registry[key] = TabPFNTS
     if key not in registry:
         raise ValueError(f"unknown extraction model {name!r}")
     constructor_kwargs = dict(kwargs)

@@ -17,7 +17,7 @@
 \DeclareMathOperator{\MAE}{MAE}
 \title{Fully Online Retrieval Adaptation\\Experiment Guideline}
 \author{}
-\date{24 August 2026}
+\date{27 August 2026}
 
 \begin{document}
 \maketitle
@@ -40,6 +40,13 @@ split. At date $q$, a row dated $r$ may be retrieved or fitted only if
 \]
 so its complete target $y_{r,u}$ is already observed. The experiment asks
 whether these causal rows improve a frozen forecasting model.
+
+The CSV loader discovers \code{config.json} beside the selected dataset.
+Portable top-level values are overridden by the \code{online_adaptation}
+object and then by explicit run settings. For \code{drop_users}, null or
+omission inherits the preceding level, an empty list retains every CSV user,
+and a nonempty value replaces the preceding list. Exclusions are applied once
+while reading the CSV and the effective list is recorded in the run manifest.
 
 \section{Mathematical definition}
 
@@ -160,7 +167,7 @@ Chronos-2 therefore computes
 \]
 through the official pipeline. The model alias remains \code{chronos2} in all
 three modes. Passing context to a backbone that declares no covariate support
-raises an error; it is never replaced by $V_{q,u}$. The five-backbone profile
+raises an error; it is never replaced by $V_{q,u}$. The four-backbone profile
 uses the covariate-free \code{y_ridge_shared} design, while the primary
 Chronos-2 ridge and gate profiles use the context forecast.
 
@@ -378,7 +385,7 @@ $\{10000,20000,30000,50000\}$ \\
 \path{ablation_fixed_protocol.slurm} & rolling/fixed store crossed with rolling/fixed fit \\
 \path{ablation_general_scope.slurm} & all/same/other-user retrieval crossed with all/same-user fitting \\
 \path{ablation_homogeneous.slurm} & all channels versus declared same-quantity channels on ETT and Weather \\
-\path{ablation_backbones.slurm} & Chronos-2, Chronos-Bolt, TS-ICL, and TabPFN-TS at $(512,64)$; TiRex-2 remains implemented but excluded \\
+\path{ablation_backbones.slurm} & Chronos-2, Chronos-Bolt, Chronos-T5, and TS-ICL at $(512,64)$ \\
 \path{ablation_sota_chronos_bolt.slurm} & causal Chronos-Bolt at $(512,64)$ beside published TS-RAG/Cross-RAG rows; protocols are labeled non-comparable \\
 \bottomrule
 \end{tabularx}

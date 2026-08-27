@@ -5,8 +5,7 @@ from importlib import import_module
 __all__ = [
     "Chronos2",
     "ChronosBolt",
-    "TabPFNTS",
-    "TiRex2Forecaster",
+    "ChronosT5",
     "TSICLForecaster",
 ]
 
@@ -14,8 +13,7 @@ __all__ = [
 _OWNERS = {
     "Chronos2": "chronos2",
     "ChronosBolt": "chronos_bolt",
-    "TabPFNTS": "tabpfn",
-    "TiRex2Forecaster": "tirex2",
+    "ChronosT5": "chronos_t5",
     "TSICLForecaster": "ts_icl",
 }
 

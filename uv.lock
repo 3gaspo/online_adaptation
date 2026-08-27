@@ -1792,7 +1792,6 @@ dependencies = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "seaborn" },
-    { name = "tabpfn" },
     { name = "torch" },
     { name = "tsicl" },
 ]
@@ -1810,7 +1809,6 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.5.2" },
     { name = "pandas", specifier = ">=3.0.5" },
     { name = "seaborn", specifier = ">=0.13.2" },
-    { name = "tabpfn", specifier = ">=8.4.0" },
     { name = "torch", specifier = "==2.5.1" },
     { name = "tsicl", specifier = ">=0.2.1" },
 ]
@@ -2784,33 +2782,6 @@ dependencies = [
 sdist = { url = "https://nexus.retd.edf.fr/repository/pypi-all/packages/sympy/1.13.1/sympy-1.13.1.tar.gz", hash = "sha256:9cebf7e04ff162015ce31c9c6c9144daa34a93bd082f54fd8f12deca4f47515f" }
 wheels = [
     { url = "https://nexus.retd.edf.fr/repository/pypi-all/packages/sympy/1.13.1/sympy-1.13.1-py3-none-any.whl", hash = "sha256:db36cdc64bf61b9b24578b6f7bab1ecdd2452cf008f34faa33776680c26d66f8" },
-]
-
-[[package]]
-name = "tabpfn"
-version = "8.4.0"
-source = { registry = "https://nexus.retd.edf.fr/repository/pypi-all/simple" }
-dependencies = [
-    { name = "einops" },
-    { name = "filelock" },
-    { name = "huggingface-hub" },
-    { name = "joblib" },
-    { name = "lightgbm" },
-    { name = "mlx", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "safetensors" },
-    { name = "scikit-learn" },
-    { name = "scipy" },
-    { name = "torch" },
-    { name = "tqdm" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://nexus.retd.edf.fr/repository/pypi-all/packages/tabpfn/8.4.0/tabpfn-8.4.0.tar.gz", hash = "sha256:a21d2e7b183829277e1a718eed5a894d075c43530648a9519cb1cf6728b76bda" }
-wheels = [
-    { url = "https://nexus.retd.edf.fr/repository/pypi-all/packages/tabpfn/8.4.0/tabpfn-8.4.0-py3-none-any.whl", hash = "sha256:f292cc3c57ef02da0add323474c8ae85272c857a311efbc405eb7dd4aeb065b0" },
 ]
 
 [[package]]

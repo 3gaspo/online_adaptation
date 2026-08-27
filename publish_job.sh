@@ -109,6 +109,11 @@ for selected_path in "${paths[@]}"; do
 
     sample_relative="${relative}.sample.txt"
     sample_file="$project_root/$sample_relative"
+    stale_at_utc=""
+    if [ -f "$sample_file" ]; then
+      stale_at_utc="$(sed -n 's/^git_stale_at_utc: //p' "$sample_file" | head -n 1)"
+    fi
+    [ -n "$stale_at_utc" ] || stale_at_utc="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
     sample_bytes=$(( (file_bytes + 9) / 10 ))
     if [ "$sample_bytes" -gt "$max_sample_bytes" ]; then
       sample_bytes="$max_sample_bytes"
@@ -118,6 +123,8 @@ for selected_path in "${paths[@]}"; do
       printf 'Oversized publication artifact sample\n'
       printf 'source: %s\n' "$relative"
       printf 'original_bytes: %s\n' "$file_bytes"
+      printf 'git_stale_at_utc: %s\n' "$stale_at_utc"
+      printf 'git_stale_reason: associated file became stale on Git due to file size\n'
       if LC_ALL=C grep -Iq -m 1 . -- "$file"; then
         printf 'sample: first %s bytes (10%% capped at %s bytes)\n\n' \
           "$sample_bytes" "$max_sample_bytes"

@@ -13,7 +13,6 @@
 PROJECT_ROOT="${SLURM_SUBMIT_DIR:-$(pwd)}"
 EXPERIMENT_MODE="${EXPERIMENT_MODE:-test}"
 EXPERIMENT_FAMILY=backbone_ablation
-# TiRex-2 remains adapter-supported but is commented out of the task profile.
 export PROJECT_ROOT EXPERIMENT_MODE EXPERIMENT_FAMILY
 cd "$PROJECT_ROOT"
 source "$PROJECT_ROOT/src/slurm/run_family.sh"

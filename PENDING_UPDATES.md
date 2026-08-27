@@ -1,5 +1,55 @@
 # Pending updates
 
+- 2026-08-27: Replaced the backbone-ablation set with `chronos2`,
+  `chronos_bolt`, `chronos_t5`, and `ts_icl`; removed TiREx-2 and TabPFN from
+  dependencies, locks, registries, weight routing, and profiles; retained the
+  unregistered TabPFN source and archived the TiREx-2 adapter. Affected
+  contracts: foundation adapters, extraction factory, profile/weight routing,
+  dependency metadata, focused tests, README, and experiment guideline. The
+  dependency-free foundation checks, Python compilation, and the rebuilt
+  seven-page guideline passed; every page passed visual inspection. The broader
+  online core check remains unavailable in the shared runtime because `einops`
+  is not installed there. Deferred: synchronize the cluster environment and
+  rerun the backbone ablation; main online results are unaffected solely by
+  this model-axis change.
+
+- 2026-08-27: Added a stable oversized-sample header recording the first UTC
+  time and file-size reason that the associated artifact became stale on Git.
+  Affected contracts: `publish_job.sh`, README publication guidance, and the
+  shared focused publisher regressions. All five publisher checks passed; Git
+  Bash syntax and byte parity passed for all nine active publisher copies. No
+  scientific rerun or LaTeX change is required. Deferred integration: exercise
+  one real oversized publication and inspect the generated header on DGX.
+
+## 2026-08-27 — Daily maintenance evidence
+
+- Direct loader, configuration, workflow, README, repository-status, manifest,
+  and synchronized-log inspection confirmed the replacement contract and found
+  no completed scientific artifact. The complementary online-diagnostics
+  script exited successfully in the thesis runtime.
+- The reconciled guideline compiled in two clean passes; all seven rendered
+  pages passed visual inspection. Publisher Bash syntax, cross-project byte
+  parity, and the representative regression passed.
+- Selena job 2910733 remains represented by a running extraction manifest with
+  no artifact; job 2910734 stopped at the matching running-manifest gate. Query
+  scheduler state and reconcile terminal state through the supported lifecycle
+  path before rerunning the main test and gates. Real oversized publication
+  also remains pending.
+
+## 2026-08-27 — Oversized artifact sampling
+
+- Behavior and affected contracts: before staging, the thesis-standard
+  publisher excludes each selected non-excluded file above 100,000,000 bytes
+  literally and represents it as `<original>.sample.txt`. Text samples
+  contain source metadata and the first 10% capped at 10,000,000 bytes; binary
+  samples retain metadata only. Publisher, README, shared publication
+  guidance, and the maintained publisher regressions changed.
+- Focused checks: Git Bash syntax passed for all nine active publisher copies,
+  all five focused publisher checks passed, and both publisher and test copies
+  are byte-identical.
+- Deferred integration and reruns: exercise one real oversized log publication
+  on DGX. No scientific rerun, artifact migration, or LaTeX change is required.
+
 ## 2026-08-26 — Cluster launcher hierarchy
 
 - Scope and behavior: moved the 16 DGX and 16 Selena submission fronts from
@@ -40,7 +90,7 @@
 
 - Scope and behavior: added a `_selena.slurm` counterpart for all 16 DGX
   fronts. Every pair retains the same family, mode, stages, and scientific
-  arguments; Selena selects partition `an`, exclusive non-requeued execution,
+  arguments; Selena selects partition `an`, exclusive execution without disabling cluster requeue,
   the project WCKey, a distinct job name, and a `selena_` launch ID. The shared
   runner exposes overridable `OUTPUTS_ROOT` and `LOGS_ROOT`; they default to
   `outputs/` and `logs/`, while Selena selects `outputs_selena/` and
@@ -659,3 +709,21 @@ the long covariate setting to wrap produced a clean six-page PDF after final
 pdfLaTeX passes. Every page passed visual inspection. The Slurm assertion and
 LaTeX-defect entries are resolved. Real checkpoint, FAISS, CatBoost, cluster,
 lifecycle, artifact, and publisher checks remain pending.
+
+## 2026-08-27 — Replacement dataset exclusions and requeue-capable fronts
+
+- Behavior and affected contracts: the CSV loader now lets project-scoped and
+  explicit `drop_users` replace defaults; null inherits and `[]` keeps all
+  users. Hydra and the shared workflow expose the run override, and every
+  Selena front stopped disabling scheduler requeue.
+- Focused checks completed: three dataset/Slurm unit tests passed, changed
+  Python files compiled, all active experiment Bash/Slurm syntax passed, and
+  `git diff --check` passed.
+- Deferred integration: the only synchronized main log is job 2897236, which
+  predates the user's repaired environment and still records the missing
+  `.venv` guard. Pull and inspect the currently running replacement job after
+  it finishes.
+- README/LaTeX and reruns: README documents replacement precedence and Selena
+  requeue behavior. The guideline should be reconciled during maintenance; no
+  result claim changed. Rerun configurations only where shared and scoped/run
+  exclusions differ under the new precedence.

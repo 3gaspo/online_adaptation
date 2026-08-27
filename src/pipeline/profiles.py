@@ -314,9 +314,8 @@ def _unfiltered_tasks_for_family(
             for backbone in (
                 "chronos2",
                 "chronos_bolt",
+                "chronos_t5",
                 "ts_icl",
-                "tabpfn_ts",
-                # "tirex2",  # Adapter-supported; excluded from launches for now.
             )
         ]
     if family == "sota_backbone_ablation":

@@ -55,18 +55,6 @@ DATASET_CONFIG_KEYS = {
 }
 
 
-def _merge_drop_users(*values: Any) -> list[Any]:
-    merged: list[Any] = []
-    seen: set[str] = set()
-    for value in values:
-        for item in _as_list(value):
-            key = str(item)
-            if key not in seen:
-                merged.append(item)
-                seen.add(key)
-    return merged
-
-
 def _dataset_config_path(
     path: str | Path,
     dataset_config: str | Path | None = None,
@@ -85,10 +73,8 @@ def _dataset_config_options(raw: Mapping[str, Any]) -> dict[str, Any]:
     if scoped is not None:
         if not isinstance(scoped, Mapping):
             raise ValueError("dataset config field 'online_adaptation' must be an object")
-        if "drop_users" in scoped:
-            options["drop_users"] = _merge_drop_users(
-                options.get("drop_users"), scoped["drop_users"]
-            )
+        if scoped.get("drop_users") is not None:
+            options["drop_users"] = _as_list(scoped["drop_users"])
         options.update(
             {
                 key: value
@@ -284,7 +270,11 @@ def load_csv_dataset(
     config = load_dataset_config(path, dataset_config)
     target_cols = _configured_value(target_cols, config.get("target_cols"))
     date_col = _configured_value(date_col, config.get("date_col"))
-    drop_users = _merge_drop_users(config.get("drop_users"), drop_users)
+    drop_users = (
+        _as_list(config.get("drop_users"))
+        if drop_users is None
+        else _as_list(drop_users)
+    )
     rename_users = bool(_configured_value(rename_users, config.get("rename_users"), False))
     aggr = _configured_value(aggr, config.get("aggr"))
     aggr_period = str(_configured_value(aggr_period, config.get("aggr_period"), "h"))
