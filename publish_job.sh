@@ -83,15 +83,66 @@ exclusions=(
   ':(exclude,glob)**/*.npy'
   ':(exclude,glob)**/*.cbm'
 )
+max_publish_bytes="${PUBLISH_MAX_FILE_BYTES:-100000000}"
+max_sample_bytes="${PUBLISH_SAMPLE_MAX_BYTES:-10000000}"
+for limit in "$max_publish_bytes" "$max_sample_bytes"; do
+  [[ "$limit" =~ ^[1-9][0-9]*$ ]] || {
+    printf 'publisher byte limits must be positive integers\n' >&2
+    exit 2
+  }
+done
+[ "$max_sample_bytes" -lt "$max_publish_bytes" ] || {
+  printf 'PUBLISH_SAMPLE_MAX_BYTES must be smaller than PUBLISH_MAX_FILE_BYTES\n' >&2
+  exit 2
+}
+
+sample_paths=()
+oversize_exclusions=()
+for selected_path in "${paths[@]}"; do
+  while IFS= read -r -d '' file; do
+    relative="${file#"$project_root"/}"
+    case "$relative" in
+      *.pt|*.npy|*.cbm) continue ;;
+    esac
+    file_bytes="$(stat -c '%s' -- "$file")"
+    [ "$file_bytes" -gt "$max_publish_bytes" ] || continue
+
+    sample_relative="${relative}.sample.txt"
+    sample_file="$project_root/$sample_relative"
+    sample_bytes=$(( (file_bytes + 9) / 10 ))
+    if [ "$sample_bytes" -gt "$max_sample_bytes" ]; then
+      sample_bytes="$max_sample_bytes"
+    fi
+    mkdir -p -- "$(dirname "$sample_file")"
+    {
+      printf 'Oversized publication artifact sample\n'
+      printf 'source: %s\n' "$relative"
+      printf 'original_bytes: %s\n' "$file_bytes"
+      if LC_ALL=C grep -Iq -m 1 . -- "$file"; then
+        printf 'sample: first %s bytes (10%% capped at %s bytes)\n\n' \
+          "$sample_bytes" "$max_sample_bytes"
+        head -c "$sample_bytes" -- "$file"
+      else
+        printf 'sample: binary or empty content omitted\n'
+      fi
+    } > "$sample_file"
+    sample_paths+=("$sample_relative")
+    oversize_exclusions+=(":(exclude,literal)$relative")
+    printf 'Replacing oversized artifact (%s bytes) with %s\n' \
+      "$file_bytes" "$sample_relative"
+  done < <(find "$project_root/$selected_path" -type f -print0)
+done
+publish_paths=("${paths[@]}" "${sample_paths[@]}")
+
 if [ -n "$job_id" ]; then
   printf 'Publishing job %s paths:\n' "$job_id"
 else
   printf 'Publishing all logs and lightweight outputs, including Selena trees when present:\n'
 fi
 printf '  %s\n' "${paths[@]}"
-git add -v -f -- "${paths[@]}" "${exclusions[@]}"
-if ! git diff --cached --quiet -- "${paths[@]}" "${exclusions[@]}"; then
-  git commit --only -m "$message" -- "${paths[@]}" "${exclusions[@]}"
+git add -v -f -- "${publish_paths[@]}" "${exclusions[@]}" "${oversize_exclusions[@]}"
+if ! git diff --cached --quiet -- "${publish_paths[@]}" "${exclusions[@]}" "${oversize_exclusions[@]}"; then
+  git commit --only -m "$message" -- "${publish_paths[@]}" "${exclusions[@]}" "${oversize_exclusions[@]}"
 else
   printf 'No new artifact changes; pushing existing local commits.\n'
 fi
