@@ -1,7 +1,134 @@
 {
   "artifacts": {
-    "files": [],
-    "required": []
+    "files": [
+      {
+        "path": "online_extraction_manifest.json",
+        "size": 7668
+      },
+      {
+        "path": "extraction_timing.json",
+        "size": 3905
+      },
+      {
+        "path": "setting_diagnostics.csv",
+        "size": 856
+      },
+      {
+        "path": "setting_diagnostics_samples.csv",
+        "size": 436436
+      },
+      {
+        "path": "setting_diagnostics_sampling.json",
+        "size": 3327
+      },
+      {
+        "path": "setting_diagnostics.png",
+        "size": 102602
+      },
+      {
+        "path": "neighbor_diagnostics.csv",
+        "size": 3266
+      },
+      {
+        "path": "neighbor_diagnostics_per_user.csv",
+        "size": 49750
+      },
+      {
+        "path": "neighbor_diagnostics_all_samples.png",
+        "size": 141063
+      },
+      {
+        "path": "neighbor_diagnostics_per_user.png",
+        "size": 140039
+      },
+      {
+        "path": "tables/windows/dates.npy",
+        "size": 205192
+      },
+      {
+        "path": "tables/windows/timestamps.npy",
+        "size": 6562176
+      },
+      {
+        "path": "tables/windows/users.npy",
+        "size": 159872
+      },
+      {
+        "path": "tables/window_statistics/lookback_mean.npy",
+        "size": 31990112
+      },
+      {
+        "path": "tables/window_statistics/lookback_std.npy",
+        "size": 31990112
+      },
+      {
+        "path": "tables/window_statistics/constant.npy",
+        "size": 7997624
+      },
+      {
+        "path": "tables/retrieval_neighbors/retrieval_window_dates.npy",
+        "size": 72848
+      },
+      {
+        "path": "tables/retrieval_neighbors/is_evaluation_query.npy",
+        "size": 9218
+      },
+      {
+        "path": "tables/retrieval_neighbors/neighbor_window_id.npy",
+        "size": 453772928
+      },
+      {
+        "path": "tables/retrieval_neighbors/distance.npy",
+        "size": 226886528
+      },
+      {
+        "path": "tables/retrieval_neighbors/raw_distance.npy",
+        "size": 226886528
+      },
+      {
+        "path": "tables/retrieval_neighbors/instance_distance.npy",
+        "size": 226886528
+      },
+      {
+        "path": "tables/retrieval_neighbors/candidate_count.npy",
+        "size": 72848
+      },
+      {
+        "path": "tables/window_computation/forecast_window_id.npy",
+        "size": 36445984
+      },
+      {
+        "path": "tables/window_computation/forecast_value.npy",
+        "size": 3061452032
+      }
+    ],
+    "required": [
+      "online_extraction_manifest.json",
+      "extraction_timing.json",
+      "setting_diagnostics.csv",
+      "setting_diagnostics_samples.csv",
+      "setting_diagnostics_sampling.json",
+      "setting_diagnostics.png",
+      "neighbor_diagnostics.csv",
+      "neighbor_diagnostics_per_user.csv",
+      "neighbor_diagnostics_all_samples.png",
+      "neighbor_diagnostics_per_user.png",
+      "tables/windows/dates.npy",
+      "tables/windows/timestamps.npy",
+      "tables/windows/users.npy",
+      "tables/window_statistics/lookback_mean.npy",
+      "tables/window_statistics/lookback_std.npy",
+      "tables/window_statistics/constant.npy",
+      "tables/retrieval_neighbors/retrieval_window_dates.npy",
+      "tables/retrieval_neighbors/is_evaluation_query.npy",
+      "tables/retrieval_neighbors/neighbor_window_id.npy",
+      "tables/retrieval_neighbors/distance.npy",
+      "tables/retrieval_neighbors/raw_distance.npy",
+      "tables/retrieval_neighbors/instance_distance.npy",
+      "tables/retrieval_neighbors/candidate_count.npy",
+      "tables/window_computation/forecast_window_id.npy",
+      "tables/window_computation/forecast_value.npy"
+    ]
   },
   "config": {
     "experiment": {},
@@ -72,7 +199,7 @@
         "slurm_job_id": "2910733"
       }
     ],
-    "finished_at_utc": null,
+    "finished_at_utc": "2026-08-26T23:33:31.531828+00:00",
     "launch_id": "2910733",
     "launched_at_utc": "2026-08-26T22:23:54.077057+00:00",
     "mode": "test",
@@ -89,7 +216,7 @@
   "seed_status": {
     "1": {
       "artifacts": [],
-      "status": "running"
+      "status": "completed"
     }
   },
   "seeds": [
@@ -100,7 +227,7 @@
     "path": "5d0d294b7bbd93df62354f3db7b70a9984ba44f3fa641baffb854d92220dc5ad",
     "pipeline": "d7aa1b59d7ddc929c48de472ad1c0613f55c6855713d0b215c40f376901dc72a"
   },
-  "status": "running",
+  "status": "completed",
   "table": {
     "column_config": [],
     "display_name": "chronos2",
