@@ -58,21 +58,20 @@ class SlurmWorkflowTest(unittest.TestCase):
         compute_fronts = [front for front in fronts if "_tables" not in front.stem]
         table_fronts = [front for front in fronts if "_tables" in front.stem]
         self.assertFalse(list(ROOT.glob("*.slurm")))
-        self.assertEqual(len(dgx_fronts), 20)
-        self.assertEqual(len(selena_fronts), 16)
+        self.assertEqual(len(dgx_fronts), 16)
+        self.assertEqual(len(selena_fronts), 20)
         self.assertEqual(len(list((slurm_root / "dgx/main").glob("*.slurm"))), 2)
         self.assertEqual(len(list((slurm_root / "dgx/ablations").glob("*.slurm"))), 14)
-        self.assertEqual(len(list((slurm_root / "dgx/deadline").glob("*.slurm"))), 4)
+        self.assertEqual(len(list((slurm_root / "dgx/deadline").glob("*.slurm"))), 0)
         self.assertEqual(len(list((slurm_root / "selena/main").glob("*.slurm"))), 2)
         self.assertEqual(
             len(list((slurm_root / "selena/ablations").glob("*.slurm"))), 14
         )
         self.assertEqual(
-            {path.stem for path in selena_fronts},
+            {path.stem for path in selena_fronts if path.parent.name != "deadline"},
             {
                 f"{path.stem}_selena"
                 for path in dgx_fronts
-                if path.parent.name != "deadline"
             },
         )
         required = (
@@ -117,8 +116,6 @@ class SlurmWorkflowTest(unittest.TestCase):
             self.assertIn(f"#SBATCH --error=logs/%x_{job_pattern}.err", text, front.name)
             self.assertIn("#SBATCH --partition=h100", text, front.name)
             self.assertNotIn("#SBATCH --wckey=", text, front.name)
-            if front.parent.name == "deadline":
-                continue
             pair = (
                 slurm_root
                 / "selena"
@@ -165,15 +162,15 @@ class SlurmWorkflowTest(unittest.TestCase):
 
         deadline_fronts = {
             path.name: path.read_text(encoding="utf-8")
-            for path in (slurm_root / "dgx/deadline").glob("*.slurm")
+            for path in (slurm_root / "selena/deadline").glob("*.slurm")
         }
         self.assertEqual(
             set(deadline_fronts),
             {
-                "fixed_online_per_user.slurm",
-                "fixed_fixed_shared.slurm",
-                "fixed_ablation_remainder.slurm",
-                "tsrag_priority_t3.slurm",
+                "fixed_online_per_user_selena.slurm",
+                "fixed_fixed_shared_selena.slurm",
+                "fixed_ablation_remainder_selena.slurm",
+                "tsrag_priority_t3_selena.slurm",
             },
         )
         for name, text in deadline_fronts.items():
@@ -186,11 +183,11 @@ class SlurmWorkflowTest(unittest.TestCase):
             else:
                 self.assertIn("DATASETS_OVERRIDE=null", text)
                 self.assertIn("EXPERIMENT_FAMILY=deadline_tsrag_comparison", text)
-            if name == "fixed_online_per_user.slurm":
+            if name == "fixed_online_per_user_selena.slurm":
                 self.assertIn("DEADLINE_PART=online_per_user", text)
                 self.assertIn("DEADLINE_FINALIZE=false", text)
                 self.assertIn('STAGES="${STAGES:-extract,adapt}"', text)
-            elif name == "fixed_fixed_shared.slurm":
+            elif name == "fixed_fixed_shared_selena.slurm":
                 self.assertIn("DEADLINE_PART=fixed_shared", text)
                 self.assertIn("DEADLINE_FINALIZE=false", text)
                 self.assertIn('STAGES="${STAGES:-extract,adapt}"', text)

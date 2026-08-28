@@ -22,10 +22,10 @@ map.
 |---|---|
 | `slurm/dgx/main/01_main_online_ridge.slurm` | Does rolling full ridge or a causal gate improve on vanilla Chronos-2? |
 | `slurm/dgx/main/02_tsrag_comparison.slurm` | How does online full ridge compare with released TS-RAG on identical dates at `512:64`? |
-| `slurm/dgx/deadline/fixed_online_per_user.slurm` | How does fully online per-user ridge perform on the short Electricity/Solar deadline grid? |
-| `slurm/dgx/deadline/fixed_fixed_shared.slurm` | How does a fully fixed shared ridge perform on the same short deadline grid? |
-| `slurm/dgx/deadline/fixed_ablation_remainder.slurm` | What do the six remaining datastore/training/scope arms add after both fixed-protocol anchors succeed? |
-| `slurm/dgx/deadline/tsrag_priority_t3.slurm` | How do cadence-aligned ridge and native TS-RAG compare at `512:64` on Electricity, Solar, four ETT panels, and three priority TIME panels? |
+| `slurm/selena/deadline/fixed_online_per_user_selena.slurm` | How does fully online per-user ridge perform on the short Electricity/Solar deadline grid? |
+| `slurm/selena/deadline/fixed_fixed_shared_selena.slurm` | How does a fully fixed shared ridge perform on the same short deadline grid? |
+| `slurm/selena/deadline/fixed_ablation_remainder_selena.slurm` | What do the six remaining datastore/training/scope arms add after both fixed-protocol anchors succeed? |
+| `slurm/selena/deadline/tsrag_priority_t3_selena.slurm` | How do cadence-aligned ridge and native TS-RAG compare at `512:64` on Electricity, Solar, four ETT panels, and three priority TIME panels? |
 
 ## Ablation fronts
 
@@ -46,5 +46,6 @@ map.
 | `slurm/dgx/ablations/ablation_sota_chronos_bolt.slurm` | causal Chronos-Bolt comparison with published contextual values |
 | `slurm/dgx/ablations/ablation_backbones.slurm` | Chronos-2, Chronos-Bolt, Chronos-T5, TS-ICL compatibility |
 
-Standard DGX fronts have matching Selena fronts with identical science.
+Standard DGX fronts have matching Selena fronts with identical science. The
+four deadline fronts are Selena-only.
 Reports require identical evaluated dates within each comparison.

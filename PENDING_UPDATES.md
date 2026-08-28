@@ -1,5 +1,16 @@
 # Pending updates
 
+- 2026-08-28: Corrected deadline execution placement to Selena-only. Added four
+  scratch-routed `an`/`an_preemptable` fronts for the online per-user, fixed
+  shared, fixed remainder, and priority ridge-versus-TS-RAG runs; removed their
+  DGX counterparts and updated the public commands, experiment catalog,
+  guideline, cluster handoff, and static front contract. Focused check:
+  `python -m unittest src.tests.test_slurm_workflow` passed both tests in the
+  shared thesis runtime. Deferred integration: pull this correction on DGX,
+  preview and perform the code mirror to Selena, then submit from the mirrored
+  Selena project. No scientific result identity changed relative to the
+  immediately preceding deadline checkpoint.
+
 - 2026-08-28: Reconciled the five-view documentation contract by reducing the
   public README to a 112-line goal/setup/execution quickstart and leaving
   formulation, architecture, all main/deadline/ablation fronts, protocol, and

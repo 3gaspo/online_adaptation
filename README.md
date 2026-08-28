@@ -53,14 +53,14 @@ the same science, for example:
 EXPERIMENT_MODE=test sbatch slurm/selena/main/01_main_online_ridge_selena.slurm
 ```
 
-Four short-range deadline fronts are intentionally separate from the standard
-cadence-aware profiles:
+Four deadline fronts are intentionally separate from the standard
+cadence-aware profiles; the fixed-protocol fronts use only the short range:
 
 ```bash
-sbatch slurm/dgx/deadline/fixed_online_per_user.slurm
-sbatch slurm/dgx/deadline/fixed_fixed_shared.slurm
-sbatch slurm/dgx/deadline/fixed_ablation_remainder.slurm
-sbatch slurm/dgx/deadline/tsrag_priority_t3.slurm
+sbatch slurm/selena/deadline/fixed_online_per_user_selena.slurm
+sbatch slurm/selena/deadline/fixed_fixed_shared_selena.slurm
+sbatch slurm/selena/deadline/fixed_ablation_remainder_selena.slurm
+sbatch slurm/selena/deadline/tsrag_priority_t3_selena.slurm
 ```
 
 The fixed remainder should use an `afterok` dependency on both fixed anchor

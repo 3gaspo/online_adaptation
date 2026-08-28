@@ -13,17 +13,17 @@ RETAINED DIAGNOSTIC HISTORY
   reusable; retained logs are diagnostic evidence only.
 
 JOBS AWAITING MANUAL REVIEW AND SUBMISSION
-The user is reviewing four deadline DGX fronts before submission. No job ID or
+The user is reviewing four deadline Selena fronts before submission. No job ID or
 scheduler state exists yet.
 
 1. Fully online per-user fixed-protocol anchor:
-   `sbatch slurm/dgx/deadline/fixed_online_per_user.slurm`
+   `sbatch slurm/selena/deadline/fixed_online_per_user_selena.slurm`
 2. Fully fixed shared fixed-protocol anchor:
-   `sbatch slurm/dgx/deadline/fixed_fixed_shared.slurm`
+   `sbatch slurm/selena/deadline/fixed_fixed_shared_selena.slurm`
 3. Remaining fixed-protocol arms, after both anchors succeed:
-   `sbatch slurm/dgx/deadline/fixed_ablation_remainder.slurm`
+   `sbatch slurm/selena/deadline/fixed_ablation_remainder_selena.slurm`
 4. Priority ridge-versus-TS-RAG comparison:
-   `sbatch slurm/dgx/deadline/tsrag_priority_t3.slurm`
+   `sbatch slurm/selena/deadline/tsrag_priority_t3_selena.slurm`
 
 Record each returned job ID immediately after submission. After termination,
 pull its logs and lightweight report artifacts to DGX, publish them, and
