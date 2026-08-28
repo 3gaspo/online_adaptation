@@ -1,0 +1,114 @@
+{
+  "artifacts": {
+    "files": [],
+    "required": []
+  },
+  "config": {
+    "experiment": {},
+    "model": {
+      "distance_metric": "euclidean",
+      "distance_space": "raw",
+      "fit_stride": 24,
+      "homogeneous": "all",
+      "max_k": 20,
+      "n_fit": 100,
+      "n_store": 30000,
+      "retrieval_covariate_mode": "past_and_future",
+      "retrieval_scope": "all",
+      "store_mode": "rolling"
+    },
+    "pipeline": {
+      "align_period": true,
+      "artifact_schema": "online_extraction_v1",
+      "fit_stride": 24,
+      "normalization": "none",
+      "period": 24,
+      "query_stride": 257,
+      "store_stride": 24
+    },
+    "runtime": {
+      "device": "cuda"
+    }
+  },
+  "identity": {
+    "backbone": "chronos2",
+    "dataset": "Electricity",
+    "horizon": 168,
+    "lookback": 504,
+    "model_config": {
+      "distance_metric": "euclidean",
+      "distance_space": "raw",
+      "fit_stride": 24,
+      "homogeneous": "all",
+      "max_k": 20,
+      "n_fit": 100,
+      "n_store": 30000,
+      "retrieval_covariate_mode": "past_and_future",
+      "retrieval_scope": "all",
+      "store_mode": "rolling"
+    },
+    "model_config_order": [
+      "retrieval_covariate_mode",
+      "distance_space",
+      "distance_metric",
+      "max_k",
+      "retrieval_scope",
+      "n_store",
+      "n_fit",
+      "fit_stride",
+      "store_mode",
+      "homogeneous"
+    ]
+  },
+  "inputs": {},
+  "launch": {
+    "attempts": [
+      {
+        "launch_id": "2913487",
+        "launched_at_utc": "2026-08-27T12:22:48.448714+00:00",
+        "mode": "test",
+        "purpose": "smoke",
+        "slurm_array_task_id": null,
+        "slurm_job_id": "2913487"
+      }
+    ],
+    "finished_at_utc": null,
+    "launch_id": "2913487",
+    "launched_at_utc": "2026-08-27T12:22:48.448714+00:00",
+    "mode": "test",
+    "ready_at_utc": null,
+    "started_at_utc": "2026-08-27T12:22:48.452144+00:00"
+  },
+  "manifest_id": "ff9ee69f-0091-440b-9162-e5f5b43f6d8b",
+  "project": "online_adaptation",
+  "purposes": [
+    "smoke"
+  ],
+  "run_index": 0,
+  "schema_version": 1,
+  "seed_status": {
+    "1": {
+      "artifacts": [],
+      "status": "running"
+    }
+  },
+  "seeds": [
+    1
+  ],
+  "signatures": {
+    "computation": "1b3df16a2d2e1fce59d915c0eea6ed74d76df7950adc0fd857a1626f26286edb",
+    "path": "5d0d294b7bbd93df62354f3db7b70a9984ba44f3fa641baffb854d92220dc5ad",
+    "pipeline": "d7aa1b59d7ddc929c48de472ad1c0613f55c6855713d0b215c40f376901dc72a"
+  },
+  "status": "running",
+  "table": {
+    "column_config": [],
+    "display_name": "chronos2",
+    "row_config": []
+  },
+  "workflow": {
+    "path": [
+      "online_extraction"
+    ]
+  }
+}

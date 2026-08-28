@@ -1,0 +1,38 @@
+Error executing job with overrides: ['family=main', 'mode=test', 'data_root=/fssmall/home/h61084/codes/datasets', 'drop_users=null', 'weights_root=/fssmall/home/h61084/codes/weights', 'outputs_root=/fssmall/home/h61084/codes/online_adaptation/outputs_selena', 'device=cuda', 'seed=1', 'purpose=smoke', 'n_store=30000', 'n_fit=100', 'fitting_scope=same_user', 'alpha=0.01', 'max_k=20', 'candidate_k_grid=[1,5,10,15]', 'used_k=null', 'tune_alpha=true', 'ridge_validation_ratio=0.2', 'ridge_alpha_grid=[0.1,0.01,0.001]', 'tsrag_k=5', 'query_stride=257', 'store_stride=0', 'fit_stride=0', 'align_period=true', 'period=0', 'retrieval_covariate_mode=null', 'catboost_iterations=2', 'conflict_policy=overwrite_exact', 'skip_completed=true']
+Traceback (most recent call last):
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 331, in _run_extraction
+    extract_online_features(
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/extraction.py", line 426, in extract_online_features
+    arrays["forecast_window_id"] = _memmap(
+                                   ^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/proposal/extraction.py", line 126, in _memmap
+    path.parent.mkdir(parents=True, exist_ok=True)
+  File "/software/rd/tools/python/3.12_pypsa/lib/python3.12/pathlib.py", line 1311, in mkdir
+    os.mkdir(self, mode)
+OSError: [Errno 122] Disk quota exceeded: '/fssmall/home/h61084/codes/online_adaptation/outputs_selena/online_extraction/electricity/504_168/chronos2/past_and_future/raw/euclidean/20/all/30000/100/24/rolling/all/run_0/tables/window_computation'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/fssmall/home/h61084/codes/online_adaptation/src/scripts/extract.py", line 11, in main
+    run_stage(cfg, "extract")
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 624, in run_stage
+    run_workflow(cfg, stages_override={stage})
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 569, in run_workflow
+    _run_extraction(
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 357, in _run_extraction
+    mark_status(allocation.run_dir, "interrupted")
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/runs.py", line 552, in mark_status
+    _atomic_json(root / MANIFEST_NAME, manifest)
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/runs.py", line 164, in _atomic_json
+    temporary.write_text(json.dumps(plain(payload), indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+  File "/software/rd/tools/python/3.12_pypsa/lib/python3.12/pathlib.py", line 1047, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/software/rd/tools/python/3.12_pypsa/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 122] Disk quota exceeded: '/fssmall/home/h61084/codes/online_adaptation/outputs_selena/online_extraction/electricity/504_168/chronos2/past_and_future/raw/euclidean/20/all/30000/100/24/rolling/all/run_0/manifest.json.tmp'
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+srun: error: sean0001: task 0: Exited with exit code 1
