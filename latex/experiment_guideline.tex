@@ -555,6 +555,11 @@ identity under \path{outputs_selena/} and write their streams under
 \path{logs_selena/}, so returned overflow work never collides with DGX trees.
 Selena uses partition \texttt{an} with QoS \texttt{an\_preemptable}.
 
+Lightweight synchronization and publication transfer requested logs plus only
+aggregate \path{outputs*/reports/} artifacts; they do not traverse per-run or
+diagnostics trees. Detailed transfer adds non-binary outputs and diagnostics,
+while full synchronization is reserved for binary recovery payloads.
+
 No online-adaptation result has yet been analyzed. This document therefore
 defines computations and runs only; it makes no performance claim.
 

@@ -1,0 +1,69 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,array,microtype}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\definecolor{navy}{HTML}{17365D}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\title{\color{navy}Fully Online Retrieval Adaptation\\[3pt]\large Causal problem formulation and proposed ridge adaptor}
+\author{Thesis project}
+\date{Standalone method note}
+\begin{document}
+\maketitle
+\begin{abstract}
+This note isolates the scientific formulation from implementation and cluster
+operations. It is intended to be readable on its own and reusable when drafting
+a paper introduction or method section.
+\end{abstract}
+
+\section{Online forecasting task}
+For user $u$ and query date $s$, the frozen backbone observes
+$X_{u,s}=x_u(s-L+1{:}s)$ and predicts $Y_{u,s}=x_u(s+1{:}s+H)$.
+Every object used at $s$ must be measurable before the prediction is made.
+
+\section{Causal datastore and fitting sets}
+A candidate window ending at $r$ is eligible only if $r+H\le s$. The
+datastore is therefore
+\[
+ \mathcal D_s=\{(X_{v,r},Y_{v,r}):r+H\le s,\ (v,r)\text{ satisfies the
+ configured scope and capacity}\}.
+\]
+Retrieval returns the first $K$ elements of one ranking computed up to
+$K_{\max}$. Fitting dates are selected independently:
+\[
+ \mathcal F_{u,s}=\{r_1,\ldots,r_{N_{\rm fit}}:r_i+H\le s\},
+\]
+with either one set per user or one all-user set per date.
+
+\section{Proposed adaptor}
+For each fitting example, let $\phi_{u,r,K}$ contain the declared vanilla,
+retrieval-context, covariance, and retrieved-target signals. Shared ridge fits
+\[
+ \widehat\beta_{s,\alpha,K}
+ =\arg\min_\beta\sum_{(u,r)\in\mathcal F_s}
+ \|Y_{u,r}-\phi_{u,r,K}^{\top}\beta\|_2^2
+ +\alpha\|\beta\|_2^2.
+\]
+Features are divided by their fitting-set root mean square before
+regularization. The newest fitting subset selects $(\alpha,K)$, ties prefer
+smaller $K$ and stronger regularization, and the selected pair is refit on the
+complete causal fitting set.
+
+\section{Prediction and alternatives}
+The online prediction is
+\[
+ \widehat Y_{u,s}=\phi_{u,s,K_s}^{\top}\widehat\beta_s.
+\]
+Matched alternatives include a simplex-constrained mixture, a causal soft
+Bayes gate, a parameter-free covariate-informed prediction, vanilla inference,
+and source-adapted TS-RAG on its native fixed protocol.
+
+\section{Claims tested}
+The study asks whether adaptation improves average and worst-user error,
+whether gains survive fixed/rolling and scope controls, and whether the
+accuracy improvement justifies extraction, fitting, and cold-batch cost.
+Methods are compared only on identical evaluation dates.
+\end{document}

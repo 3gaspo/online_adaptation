@@ -53,37 +53,42 @@ proxy_script="${PROXY_SCRIPT_PATH:-$HOME/codes/proxy.sh}"
 . "$proxy_script"
 git pull --ff-only origin main
 
+paths=()
 if [ -n "$job_id" ]; then
   shopt -s nullglob
-  out_logs=("$project_root"/logs/*_"$job_id".out)
-  err_logs=("$project_root"/logs/*_"$job_id".err)
+  out_logs=("$project_root"/logs/*_"$job_id".out "$project_root"/logs_selena/*_"$job_id".out)
+  err_logs=("$project_root"/logs/*_"$job_id".err "$project_root"/logs_selena/*_"$job_id".err)
   shopt -u nullglob
   [ "${#out_logs[@]}" -eq 1 ] || {
-    printf 'expected exactly one logs/*_%s.out file; found %s\n' "$job_id" "${#out_logs[@]}" >&2
+    printf 'expected exactly one local or Selena *_%s.out file; found %s\n' "$job_id" "${#out_logs[@]}" >&2
     exit 1
   }
   [ "${#err_logs[@]}" -eq 1 ] || {
-    printf 'expected exactly one logs/*_%s.err file; found %s\n' "$job_id" "${#err_logs[@]}" >&2
+    printf 'expected exactly one local or Selena *_%s.err file; found %s\n' "$job_id" "${#err_logs[@]}" >&2
     exit 1
   }
 
   job_name="$(basename "${out_logs[0]}" "_${job_id}.out")"
-  paths=(
+  paths+=(
     "${out_logs[0]#"$project_root"/}"
     "${err_logs[0]#"$project_root"/}"
   )
   [ -n "$message" ] || message="slurm: publish $job_name $job_id"
 else
-  paths=(logs outputs)
   [ -d logs ] || { printf 'logs directory not found\n' >&2; exit 1; }
-  [ -d outputs ] || { printf 'outputs directory not found\n' >&2; exit 1; }
-  if [ -d logs_selena ] || [ -d outputs_selena ]; then
-    [ -d logs_selena ] || { printf 'logs_selena directory not found\n' >&2; exit 1; }
-    [ -d outputs_selena ] || { printf 'outputs_selena directory not found\n' >&2; exit 1; }
-    paths+=(logs_selena outputs_selena)
-  fi
+  paths+=(logs)
+  if [ -d logs_selena ]; then paths+=(logs_selena); fi
   [ -n "$message" ] || message="slurm: publish $publish_size logs and outputs"
 fi
+
+for output_tree in outputs outputs_selena; do
+  [ -d "$output_tree" ] || continue
+  if [ "$publish_size" = detailed ]; then
+    paths+=("$output_tree")
+  elif [ -d "$output_tree/reports" ]; then
+    paths+=("$output_tree/reports")
+  fi
+done
 
 exclusions=(
   ':(exclude,glob)**/*.pt'
@@ -92,11 +97,8 @@ exclusions=(
 )
 if [ "$publish_size" = lightweight ]; then
   exclusions+=(
-    ':(exclude,glob)**/window_metrics.csv'
-    ':(exclude,glob)**/per_user_date_metrics.csv'
-    ':(exclude,glob)**/setting_diagnostics_samples.csv'
-    ':(exclude,glob)**/criterion_loss.pdf'
-    ':(exclude,glob)**/example_prediction.pdf'
+    ':(exclude,glob)**/reports/**/plots/**'
+    ':(exclude,glob)**/reports/**/averaged_inputs/**'
   )
 fi
 max_publish_bytes="${PUBLISH_MAX_FILE_BYTES:-100000000}"
@@ -122,7 +124,7 @@ for selected_path in "${paths[@]}"; do
     esac
     if [ "$publish_size" = lightweight ]; then
       case "$relative" in
-        */window_metrics.csv|*/per_user_date_metrics.csv|*/setting_diagnostics_samples.csv|*/criterion_loss.pdf|*/example_prediction.pdf) continue ;;
+        */reports/*/plots/*|*/reports/*/averaged_inputs/*) continue ;;
       esac
     fi
     file_bytes="$(stat -c '%s' -- "$file")"
@@ -163,9 +165,9 @@ done
 publish_paths=("${paths[@]}" "${sample_paths[@]}")
 
 if [ -n "$job_id" ]; then
-  printf 'Publishing job %s paths:\n' "$job_id"
+  printf 'Publishing job %s logs and %s artifact paths:\n' "$job_id" "$publish_size"
 else
-  printf 'Publishing all logs and %s outputs, including Selena trees when present:\n' "$publish_size"
+  printf 'Publishing all logs and %s artifact paths, including Selena trees when present:\n' "$publish_size"
 fi
 printf '  %s\n' "${paths[@]}"
 git add -v -f -- "${publish_paths[@]}" "${exclusions[@]}" "${oversize_exclusions[@]}"

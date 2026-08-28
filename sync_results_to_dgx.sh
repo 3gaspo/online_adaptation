@@ -51,27 +51,10 @@ mkdir -p "$DESTINATION_ROOT/outputs_selena" "$DESTINATION_ROOT/logs_selena"
 OUTPUT_FILTERS=()
 if [ "$SYNC_SIZE" = lightweight ]; then
     OUTPUT_FILTERS=(
-        '--include=*/'
-        '--exclude=window_metrics.csv'
-        '--exclude=per_user_date_metrics.csv'
-        '--exclude=setting_diagnostics_samples.csv'
-        '--exclude=criterion_loss.pdf'
-        '--exclude=example_prediction.pdf'
-        '--include=*.json'
-        '--include=*.csv'
-        '--include=*.tsv'
-        '--include=*.tex'
-        '--include=*.md'
-        '--include=*.txt'
-        '--include=*.log'
-        '--include=*.yaml'
-        '--include=*.yml'
-        '--include=*.png'
-        '--include=*.svg'
-        '--include=*.pdf'
-        '--include=*.html'
-        '--include=*.complete'
-        '--include=.gitkeep'
+        '--exclude=/reports/**/plots/***'
+        '--exclude=/reports/**/averaged_inputs/***'
+        '--include=/reports/'
+        '--include=/reports/***'
         '--exclude=*'
     )
 elif [ "$SYNC_SIZE" = detailed ]; then
@@ -115,4 +98,4 @@ else
         "$DESTINATION_ROOT/logs_selena/"
 fi
 
-echo "SUCCESS: $SYNC_SIZE outputs_selena and requested logs_selena were pulled from Selena to DGX."
+echo "SUCCESS: $SYNC_SIZE outputs_selena artifacts and requested logs_selena were pulled from Selena to DGX."

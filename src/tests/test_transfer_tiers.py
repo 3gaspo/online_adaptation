@@ -13,11 +13,16 @@ class TransferTierContractTest(unittest.TestCase):
 
         self.assertIn('SYNC_SIZE="lightweight"', sync)
         self.assertIn('lightweight|detailed|full)', sync)
-        self.assertIn("--exclude=window_metrics.csv", sync)
-        self.assertIn("--exclude=per_user_date_metrics.csv", sync)
-        self.assertIn("--exclude=setting_diagnostics_samples.csv", sync)
-        self.assertIn("--include=*.json", sync)
-        self.assertIn("--include=*.csv", sync)
+        self.assertIn("--include=/reports/", sync)
+        self.assertIn("--include=/reports/***", sync)
+        self.assertIn("--exclude=/reports/**/plots/***", sync)
+        self.assertIn("--exclude=/reports/**/averaged_inputs/***", sync)
+        lightweight = sync.split('if [ "$SYNC_SIZE" = lightweight ]; then', 1)[1].split(
+            'elif [ "$SYNC_SIZE" = detailed ]; then', 1
+        )[0]
+        self.assertNotIn("--include=*/", lightweight)
+        self.assertNotIn("--include=*.json", lightweight)
+        self.assertNotIn("--include=*.csv", lightweight)
         self.assertIn('"${OUTPUT_FILTERS[@]}"', sync)
         self.assertIn("--job-id", sync)
         self.assertIn('"--include=*_${JOB_ID}.out"', sync)
@@ -29,11 +34,10 @@ class TransferTierContractTest(unittest.TestCase):
 
         self.assertIn('publish_size="lightweight"', publisher)
         self.assertIn('lightweight|detailed)', publisher)
-        self.assertIn("**/window_metrics.csv", publisher)
-        self.assertIn("**/per_user_date_metrics.csv", publisher)
-        self.assertIn("**/setting_diagnostics_samples.csv", publisher)
-        self.assertIn("**/criterion_loss.pdf", publisher)
-        self.assertIn("**/example_prediction.pdf", publisher)
+        self.assertIn('paths+=("$output_tree/reports")', publisher)
+        self.assertIn('if [ "$publish_size" = detailed ]', publisher)
+        self.assertNotIn("**/window_metrics.csv", publisher)
+        self.assertNotIn("**/per_user_date_metrics.csv", publisher)
         self.assertIn("**/*.pt", publisher)
         self.assertIn("**/*.npy", publisher)
         self.assertIn("**/*.cbm", publisher)

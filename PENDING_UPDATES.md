@@ -1,5 +1,16 @@
 # Pending updates
 
+- 2026-08-28: Reconciled the five-view documentation contract by reducing the
+  public README to a 112-line goal/setup/execution quickstart and leaving
+  formulation, architecture, all main/deadline/ablation fronts, protocol, and
+  evidence in their designated views. The validator now enforces README
+  ownership, owner links, complete DGX-front coverage, and absence of stale
+  LaTeX artifacts. The shared six-project documentation check passed; the
+  current seven-page guideline was rebuilt and visually inspected, and the
+  two-page method note remains current. Planned result reruns are unchanged.
+  Deferred integration: preview code sync on DGX, inspect every `*deleting`
+  line, then perform the real sync.
+
 - 2026-08-28: Added exactly two deadline-only DGX jobs for the four-arm
   Electricity/Solar short/long fixed ablation and the three-panel TIME ridge
   versus TS-RAG comparison. The fixed ablation precomputes a shared
@@ -820,3 +831,18 @@ lifecycle, artifact, and publisher checks remain pending.
   requeue behavior. The guideline should be reconciled during maintenance; no
   result claim changed. Rerun configurations only where shared and scoped/run
   exclusions differ under the new precedence.
+
+## 2026-08-28 — Report-only default artifact transfer
+
+- Behavior and affected contracts: lightweight result sync and publication now
+  select requested logs plus only `outputs*/reports/`, without traversing the
+  dataset/setting/model-scaled run trees. Detailed/full tiers retain explicit
+  access to non-binary diagnostics and recovery payloads.
+- Focused check completed: the shared transfer-tier contract check passed in
+  all six active experiment repositories (13 tests total).
+- Deferred integration: exercise one real DGX pull and manual publisher run;
+  no synchronization, commit, or push was performed locally.
+- README/LaTeX and reruns: README and guideline source document the compact
+  default; re-render the guideline during maintenance. All online-adaptation
+  results are already scheduled for rerun, so no legacy output migration is
+  required.
