@@ -81,14 +81,15 @@ def _store_date_limit(
     n_users: int | None,
     available_dates: int,
 ) -> int:
-    if config.n_store_windows is not None:
-        if n_users is None or int(n_users) <= 0:
-            raise ValueError("n_users is required when n_store_windows is specified")
-        return min(int(available_dates), int(config.n_store_windows) // int(n_users))
-    return resolve_datastore_dates(
+    requested = resolve_datastore_dates(
         config.n_datastore_dates,
         available_datastore_dates=int(available_dates),
     )
+    if config.n_store_windows is not None:
+        if n_users is None or int(n_users) <= 0:
+            raise ValueError("n_users is required when n_store_windows is specified")
+        return min(requested, int(config.n_store_windows) // int(n_users))
+    return requested
 
 
 def _split_date_plan(

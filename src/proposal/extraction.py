@@ -53,10 +53,10 @@ class ContextForecastCache:
 
         query_x = np.asarray(self.arrays["x"][retrieval_index])
         neighbor_x = np.asarray(
-            self.arrays["neighbor_x"][retrieval_index, :, : int(k)]
+            self.arrays["neighbor_x"][retrieval_index, :, : int(k), :]
         )
         neighbor_y = np.asarray(
-            self.arrays["neighbor_y"][retrieval_index, :, : int(k)]
+            self.arrays["neighbor_y"][retrieval_index, :, : int(k), :]
         )
         context = np.concatenate(
             (

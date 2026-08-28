@@ -31,7 +31,9 @@ flowchart LR
 
 1. Resolve T0, fitting, and evaluation dates before extraction.
 2. Admit a source window only after its full target is observable.
-3. Cache ranked neighbors once at maximum K.
+3. Cache ranked neighbors once at maximum K, with at most 10,000 candidate
+   windows across users; compact array views reconstruct selected windows from
+   source data without copying the full overlapping tensor.
 4. Reconstruct each query's causal fitting dates independently of datastore
    membership.
 5. Select alpha and K on the newest fitting subset, refit on the complete

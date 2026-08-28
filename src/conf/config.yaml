@@ -7,7 +7,7 @@ deadline_finalize: false
 stages: extract,adapt,tables
 seed: 1
 n_datastore_dates: null
-n_fit: 100
+n_fit: 10
 fixed_datastore: null
 fixed_training_set: null
 eval_start_date: null
@@ -28,6 +28,7 @@ table_config_policy: distinct
 table_repeat_policy: selected
 data_root: datasets
 drop_users: null
+missing_values: null  # null/config omission defaults to zero; alternative: error
 weights_root: weights
 outputs_root: outputs
 device: cuda

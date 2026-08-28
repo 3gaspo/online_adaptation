@@ -13,7 +13,7 @@ class ExtractionConfig:
     backbone: str = "chronos2"
     n_datastore_dates: int | float = 100
     n_store_windows: int | None = None
-    n_fit: int = 100
+    n_fit: int = 10
     max_k: int = 20
     distance_space: str = "raw"
     distance_metric: str = "euclidean"
@@ -92,7 +92,7 @@ class ExtractionConfig:
 @dataclass(frozen=True)
 class AdapterConfig:
     method: str = "full_ridge_shared"
-    n_fit: int = 100
+    n_fit: int = 10
     fitting_scope: str = "same_user"
     alpha: float = 1e-2
     tune_alpha: bool = True

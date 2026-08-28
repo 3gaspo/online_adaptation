@@ -33,6 +33,9 @@ Place wide CSV datasets under `datasets/`, foundation checkpoints under
 `weights/`, and the one-line lowercaseable NNI at
 `$HOME/codes/.secrets/nni` on both clusters. Full profiles also discover
 eligible prepared TIME panels through `datasets/time/catalog.json`.
+Every profile uses 10 fitting dates and caps each datastore at 10,000 total
+cross-user windows. CSV gaps are zero-filled after aggregation by default;
+set `missing_values=error` to reject them instead.
 
 ## Main executions
 

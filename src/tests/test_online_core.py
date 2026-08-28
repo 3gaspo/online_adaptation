@@ -29,7 +29,13 @@ from src.proposal.date_planning import build_date_plan
 from src.proposal.gates import _catboost_adaptor_parameter_count
 from src.pipeline.adaptation import evaluate_online_gate, evaluate_online_linear
 from src.pipeline.extraction import extract_online_features
-from src.proposal import DEFAULT_N_DATASTORE_DATES, DEFAULT_N_FIT, DEFAULT_TSRAG_K
+from src.proposal import (
+    DEFAULT_N_DATASTORE_DATES,
+    DEFAULT_N_FIT,
+    DEFAULT_N_STORE_WINDOWS,
+    DEFAULT_TSRAG_K,
+)
+from src.proposal.extraction import ContextForecastCache
 from src.results.efficiency import write_compute_timing
 from src.results.reporting import build_online_tables
 from src.pipeline.profiles import RANGE_SETTINGS, dataset_frequency, tasks_for_family
@@ -259,6 +265,28 @@ def test_tsrag_upstream_search_rule() -> None:
     assert indices.tolist() == [[1, 2]]
     assert distances.tolist() == [[0.0, 1.0]]
 
+    class FakeInput:
+        on_cpu = False
+
+        def squeeze(self, dimension: int) -> "FakeInput":
+            assert dimension == 1
+            return self
+
+        def cpu(self) -> "FakeInput":
+            self.on_cpu = True
+            return self
+
+    class FakePipeline:
+        @staticmethod
+        def embed(value: FakeInput) -> tuple[torch.Tensor, None]:
+            assert value.on_cpu
+            return torch.zeros(1, 2, 3), None
+
+    retriever = object.__new__(TSRAGRetriever)
+    torch.nn.Module.__init__(retriever)
+    retriever.pipeline = FakePipeline()
+    assert retriever.representation(FakeInput()).shape == (1, 3)
+
 
 def test_compact_extraction_and_independent_fitting_grid() -> None:
     class Dataset:
@@ -273,20 +301,26 @@ def test_compact_extraction_and_independent_fitting_grid() -> None:
     class Model(torch.nn.Module):
         supports_context = True
 
+        def __init__(self) -> None:
+            super().__init__()
+            self.context_shape = None
+
         def forward(
             self,
             x: torch.Tensor,
             context: torch.Tensor | None = None,
         ) -> torch.Tensor:
-            del context
+            if context is not None:
+                self.context_shape = tuple(context.shape)
             return x[..., -1:].repeat(1, 1, 2)
 
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
         dataset = Dataset()
+        model = Model()
         outputs = extract_online_features(
             dataset=dataset,
-            model=Model(),
+            model=model,
             config=ExtractionConfig(
                 dataset="synthetic",
                 lookback=4,
@@ -312,8 +346,17 @@ def test_compact_extraction_and_independent_fitting_grid() -> None:
         assert arrays["x"].shape[-1] == 4
         assert arrays["y"].shape[-1] == 2
         assert np.any(~np.asarray(arrays["is_evaluation_query"], dtype=bool))
+        context = ContextForecastCache(
+            arrays=arrays,
+            output_dir=root,
+            model=model,
+            device=torch.device("cpu"),
+        )
+        assert context.get(0, 2).shape == (2, 2)
+        assert model.context_shape == (2, 2, 6)
         timing = json.loads((root / "extraction_timing.json").read_text())
         assert timing["cold_batch"]["extraction_seconds"] > 0.0
+        del context
         del arrays
         gc.collect()
 
@@ -716,16 +759,17 @@ def test_profile_contract() -> None:
     slurm_root = project_root / "slurm"
     scope_front = slurm_root / "dgx/ablations/ablation_general_scope.slurm"
     assert DEFAULT_N_DATASTORE_DATES == 100
-    assert DEFAULT_N_FIT == 100
+    assert DEFAULT_N_STORE_WINDOWS == 10_000
+    assert DEFAULT_N_FIT == 10
     assert DEFAULT_TSRAG_K == 5
-    assert ExtractionConfig(dataset="synthetic", lookback=4, horizon=2).n_fit == 100
+    assert ExtractionConfig(dataset="synthetic", lookback=4, horizon=2).n_fit == 10
     assert ExtractionConfig(
         dataset="daily", lookback=4, horizon=2, period=7, store_stride=7
     ).fit_stride == 7
-    assert AdapterConfig().n_fit == 100
-    assert runner.count('PROFILE_N_FIT="${N_FIT:-100}"') == 2
+    assert AdapterConfig().n_fit == 10
+    assert runner.count('PROFILE_N_FIT="${N_FIT:-10}"') == 2
     assert 'srun --ntasks=1 python -m "$module"' in runner
-    assert "n_fit: 100" in config
+    assert "n_fit: 10" in config
     assert "fit_stride: null" in config
     assert "retrieval_covariate_mode: null" in config
     assert '"fit_stride=${FIT_STRIDE:-null}"' in runner
@@ -754,6 +798,8 @@ def test_profile_contract() -> None:
     assert front_families == {
         "main",
         "tsrag_comparison",
+        "deadline_fixed_protocol",
+        "deadline_tsrag_comparison",
         "n_datastore_dates_ablation",
         "n_fit_ablation",
         "fit_stride_ablation",
@@ -772,6 +818,7 @@ def test_profile_contract() -> None:
     assert all(
         tasks_for_family(family, "test", project_root)
         for family in front_families
+        if not family.startswith("deadline_")
     )
     scope_tasks = tasks_for_family("general_scope_ablation", "test", project_root)
     assert {
@@ -833,7 +880,7 @@ def test_profile_contract() -> None:
     assert {(task["lookback"], task["horizon"]) for task in tsrag_fixed} == {
         (512, 64)
     }
-    assert {(task["max_k"], task["used_k"]) for task in tsrag_fixed} == {(10, 10)}
+    assert {(task["max_k"], task["used_k"]) for task in tsrag_fixed} == {(5, 5)}
     assert {task["retrieval_scope"] for task in tsrag_fixed} == {"same_user"}
     assert {task["fixed_datastore"] for task in tsrag_fixed} == {True}
     assert {task["store_stride"] for task in tsrag_fixed} == {1}

@@ -12,6 +12,7 @@ from src.proposal import (
     DEFAULT_CANDIDATE_K_GRID,
     DEFAULT_MAX_K,
     DEFAULT_N_DATASTORE_DATES,
+    DEFAULT_N_STORE_WINDOWS,
     DEFAULT_N_FIT,
     DEFAULT_TSRAG_K,
 )
@@ -58,7 +59,6 @@ DATASET_FREQUENCIES = {
     "exchange_rate": "daily",
 }
 
-DEADLINE_FIXED_DATES = {"Electricity": 26_304, "Solar": 8_760}
 DEADLINE_PRIORITY_TIME_DATASETS = (
     "time/ne_china_wind_h",
     "time/coastal_t_s_h_part11",
@@ -193,7 +193,7 @@ def _base_task(dataset: str, setting: tuple[int, int]) -> dict[str, Any]:
         "retrieval_covariate_mode": "past_and_future",
         "method": "full_ridge_shared",
         "n_datastore_dates": DEFAULT_N_DATASTORE_DATES,
-        "n_store_windows": None,
+        "n_store_windows": DEFAULT_N_STORE_WINDOWS,
         "n_fit": DEFAULT_N_FIT,
         "fitting_scope": "same_user",
         "alpha": DEFAULT_ALPHA,
@@ -235,15 +235,6 @@ def _base_grid(
     ]
 
 
-def _deadline_split_n_fit(task: dict[str, Any]) -> int:
-    n_dates = DEADLINE_FIXED_DATES[str(task["dataset"])]
-    t0_end = int(round(0.3 * n_dates))
-    t12_end = int(round(0.8 * n_dates))
-    first_fitting = max(int(task["lookback"]) - 1, t0_end - 1)
-    fitting_stop = t12_end - int(task["horizon"])
-    return len(range(first_fitting, fitting_stop, 24))
-
-
 def _unfiltered_tasks_for_family(
     family: str,
     mode: str,
@@ -270,8 +261,8 @@ def _unfiltered_tasks_for_family(
         return [
             {
                 **task,
-                "n_store_windows": 20_000,
-                "n_fit": _deadline_split_n_fit(task),
+                "n_store_windows": DEFAULT_N_STORE_WINDOWS,
+                "n_fit": DEFAULT_N_FIT,
                 "split_ratios": (0.3, 0.5, 0.2),
                 "store_stride": 24,
                 "fit_stride": 24,
@@ -307,8 +298,8 @@ def _unfiltered_tasks_for_family(
             ridge = {
                 **_base_task(dataset, (512, 64)),
                 "n_datastore_dates": DEFAULT_N_DATASTORE_DATES,
-                "n_store_windows": 20_000,
-                "n_fit": 30,
+                "n_store_windows": DEFAULT_N_STORE_WINDOWS,
+                "n_fit": DEFAULT_N_FIT,
                 "store_stride": ridge_store_stride,
                 "fit_stride": 24,
                 "align_period": True,
@@ -327,7 +318,7 @@ def _unfiltered_tasks_for_family(
                     "distance_space": "tsrag",
                     "retrieval_scope": "same_user",
                     "n_datastore_dates": DEFAULT_N_DATASTORE_DATES,
-                    "n_store_windows": 20_000,
+                    "n_store_windows": DEFAULT_N_STORE_WINDOWS,
                     "split_ratios": (0.3, 0.5, 0.2),
                     "fixed_datastore": True,
                     "include_fitting_windows": False,
@@ -398,7 +389,7 @@ def _unfiltered_tasks_for_family(
             for value in values
         ]
     if family == "n_fit_ablation":
-        values = (50, 100, 500) if mode == "test" else (50, 100, 500, 1_000)
+        values = (DEFAULT_N_FIT,)
         return [{**task, "n_fit": value} for task in base for value in values]
     if family == "fit_stride_ablation":
         return [

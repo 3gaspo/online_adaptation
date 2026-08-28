@@ -1,5 +1,24 @@
 # Pending updates
 
+- 2026-08-28: Reduced every fitting configuration to 10 dates and capped every
+  datastore at 10,000 total cross-user windows while retaining smaller
+  requested date counts. Repaired compact virtual-array neighbor slicing and
+  the TS-RAG Chronos-T5 CPU-tokenization boundary, and made aggregated CSV NaNs
+  follow the shared `zero|error` policy. Removed the synchronized local output
+  payload; all old deadline/main outputs are invalid and must be removed on
+  Selena before complete reruns. Affected contracts: dataset loading,
+  extraction/adaptation identity, date planning, every profile, Hydra/Slurm
+  defaults, contextual inference, TS-RAG retrieval, focused tests, README,
+  architecture, experiment guideline, and cluster handoff. Focused check: 11
+  direct online-core regressions plus four deadline/dataset unittests passed in
+  the shared thesis runtime; `einops` was replaced by the established no-op
+  import stub and no stub operation was called. Deferred integration: cancel job
+  2964439; remove the intended and mistakenly TSFM-routed Selena output trees;
+  mirror code; rerun both fixed anchors, the dependent remainder, and the
+  priority ridge/TS-RAG comparison; inspect real contextual and TS-RAG timing.
+  The guideline PDF and evidence-owned executive-summary protocol prose remain
+  for maintenance reconciliation; no accuracy claim changed.
+
 - 2026-08-28: Corrected deadline execution placement to Selena-only. Added four
   scratch-routed `an`/`an_preemptable` fronts for the online per-user, fixed
   shared, fixed remainder, and priority ridge-versus-TS-RAG runs; removed their

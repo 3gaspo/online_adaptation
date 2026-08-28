@@ -41,6 +41,25 @@ class DatasetConfigTest(unittest.TestCase):
         self.assertEqual(explicit_all.user_names, ["a", "b", "c"])
         self.assertEqual(explicit.user_names, ["a", "b"])
 
+    def test_missing_values_are_zero_filled_or_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pd.DataFrame(
+                {
+                    "date": pd.date_range("2024-01-01", periods=3, freq="h"),
+                    "a": [1.0, None, 3.0],
+                }
+            ).to_csv(root / "tiny.csv", index=False)
+            (root / "config.json").write_text(
+                json.dumps({"date_col": "date", "missing_values": "zero"}),
+                encoding="utf-8",
+            )
+            filled = load_csv_dataset(root, dataset_name="tiny")
+            self.assertEqual(filled.missing_values_replaced, 1)
+            self.assertEqual(float(filled.values[1, 0]), 0.0)
+            with self.assertRaisesRegex(ValueError, "1 missing values"):
+                load_csv_dataset(root, dataset_name="tiny", missing_values="error")
+
 
 if __name__ == "__main__":
     unittest.main()

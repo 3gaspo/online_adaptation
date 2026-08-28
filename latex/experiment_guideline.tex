@@ -47,6 +47,9 @@ object and then by explicit run settings. For \code{drop_users}, null or
 omission inherits the preceding level, an empty list retains every CSV user,
 and a nonempty value replaces the preceding list. Exclusions are applied once
 while reading the CSV and the effective list is recorded in the run manifest.
+After aggregation, \code{missing_values=zero} replaces every NaN with zero;
+\code{missing_values=error} rejects the dataset. Infinite values are never
+repaired by either policy.
 
 \section{Mathematical definition}
 
@@ -336,7 +339,7 @@ all-user query with empty in-memory caches.
 \section{Runs}
 
 The default ridge run uses raw Euclidean all-user retrieval, same-user fitting,
-non-fixed datastore and training set, $M=100$, $\Nfit=100$,
+non-fixed datastore and training set, $M=100$, $\Nfit=10$,
 $\Sstore=\Sfit=P$, seed $1$, and (14). Test runs use $\Sq=257$; small and full
 runs use $\Sq=127$. The frozen backbone is Chronos-2. The main family compares
 full ridge, the vanilla-plus-retrieved-outcome convex mixture, the Bayes
@@ -347,13 +350,12 @@ For the deadline experiment, four Selena-only fronts narrow this grid. The fixed
 protocol uses Electricity and Solar only at the hourly short setting
 $(L,H)=(168,24)$. It fixes T0/T1+T2/T3 to 30/50/20 percent of each source
 timeline, uses periodically aligned datastore origins, fit stride 24, and T3
-query stride 127. Here $\Nfit$ is an integer count: it retains every complete
-stride-24 fitting date in T1+T2, namely 548 dates for Electricity and 182 for
-Solar. The full $2\times2\times2$ comparison crosses fixed versus rolling
+query stride 127. Every arm uses exactly $\Nfit=10$ fitting dates. The full
+$2\times2\times2$ comparison crosses fixed versus rolling
 datastore, fixed versus online fitting set, and same-user versus all-user
 fitting. The first two fronts isolate the fully online same-user arm and the
 fully fixed all-user arm; a dependent front runs the other six arms. Every arm
-shares the exact T3 query-date grid and a global maximum of 20,000 datastore
+shares the exact T3 query-date grid and a global maximum of 10,000 datastore
 windows. Ridge selection uses the chronologically newest 20 percent of its
 integer fitting-date set for validation.
 
@@ -362,11 +364,11 @@ ETTh1, ETTh2, ETTm1, ETTm2, \path{ne_china_wind_h},
 \path{coastal_t_s_h_part11}, and \path{sg_weather_d}; Traffic and all remaining
 TIME panels stay in the main full comparison. Both methods evaluate the same
 stride-127 T3 grid beginning at the 80-percent boundary. Full online ridge
-first anchors T3 and 30 fitting dates at stride 24, then fills the preceding
-datastore up to 20,000 windows. Its datastore is periodically aligned with
+first anchors T3 and 10 fitting dates at stride 24, then fills the preceding
+datastore up to 10,000 windows. Its datastore is periodically aligned with
 stride 24 for hourly data, 96 for 15-minute data, and 7 for daily data, and it
 selects $K$ from $\{1,5,10,15\}$ together with alpha. TS-RAG instead uses its
-fixed, unstrided, same-variable T0 datastore, the same global 20,000-window
+fixed, unstrided, same-variable T0 datastore, the same global 10,000-window
 maximum, and $K=5$.
 
 \begin{center}
@@ -406,7 +408,7 @@ Front & Values \\
 \midrule
 \path{ablation_n_datastore_dates.slurm} & test: $\{25,50,100\}$; publication:
 $\{50,100,200,500\}$ \\
-\path{ablation_n_fit.slurm} & test: $\{50,100,500\}$; publication adds $1000$ \\
+\path{ablation_n_fit.slurm} & fixed checkpoint value $\{10\}$ \\
 \path{ablation_fit_stride.slurm} & $\Sfit\in\{1,P\}$ \\
 \path{ablation_alpha.slurm} & fixed $\alpha\in\{0,10^{-4},10^{-3},10^{-2},10^{-1},1\}$; select $K$ \\
 \path{ablation_k.slurm} & fixed $K\in\{1,3,5,10,15,20\}$; select $\alpha$ \\

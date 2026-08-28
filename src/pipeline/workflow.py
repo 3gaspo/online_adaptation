@@ -279,6 +279,8 @@ def _allocate_extraction(
         "n_store_windows": task.get("n_store_windows"),
         "normalization": str(cfg.normalization),
     }
+    if task["dataset"].split("/")[-1].casefold() == "weather":
+        pipeline["data.missing_values"] = str(cfg.missing_values or "zero")
     return allocate_run(
         root,
         project=PROJECT,
@@ -319,6 +321,7 @@ def _run_extraction(
             dataset_name=task["dataset"].split("/")[-1],
             target_cols=target_cols,
             drop_users=cfg.drop_users,
+            missing_values=cfg.missing_values,
         )
         device = resolve_device(str(cfg.device))
         model = _load_backbone(
@@ -447,6 +450,8 @@ def _run_adaptation(
         ).scientific_dict(),
         {"online_extraction": extraction_dir},
     )
+    if task["dataset"].split("/")[-1].casefold() == "weather":
+        pipeline["data.missing_values"] = str(cfg.missing_values or "zero")
     allocation = allocate_run(
         root,
         project=PROJECT,
@@ -483,6 +488,7 @@ def _run_adaptation(
             dataset_name=task["dataset"].split("/")[-1],
             target_cols=target_cols,
             drop_users=cfg.drop_users,
+            missing_values=cfg.missing_values,
         )
         if task["method"] == "tsrag":
             outputs = evaluate_online_tsrag(

@@ -78,9 +78,10 @@ class DeadlineProtocolTest(unittest.TestCase):
             self.assertIsInstance(task["n_fit"], int)
             self.assertEqual(plan.split_boundaries[-1], sizes[task["dataset"]][0])
             self.assertLessEqual(
-                plan.n_datastore_dates * sizes[task["dataset"]][1], 20_000
+                plan.n_datastore_dates * sizes[task["dataset"]][1], 10_000
             )
-            self.assertEqual(task["n_store_windows"], 20_000)
+            self.assertEqual(task["n_store_windows"], 10_000)
+            self.assertEqual(task["n_fit"], 10)
             self.assertEqual(task["split_ratios"], (0.3, 0.5, 0.2))
         self.assertEqual(
             arms,
@@ -199,9 +200,9 @@ class DeadlineProtocolTest(unittest.TestCase):
                 ridge_plan.evaluation_query_dates,
                 tsrag_plan.evaluation_query_dates,
             )
-            self.assertEqual(ridge["n_store_windows"], 20_000)
-            self.assertLessEqual(ridge_plan.n_datastore_dates * users, 20_000)
-            self.assertEqual(ridge["n_fit"], 30)
+            self.assertEqual(ridge["n_store_windows"], 10_000)
+            self.assertLessEqual(ridge_plan.n_datastore_dates * users, 10_000)
+            self.assertEqual(ridge["n_fit"], 10)
             self.assertEqual(ridge["fit_stride"], 24)
             self.assertTrue(ridge["align_period"])
             self.assertEqual(ridge["store_stride"], ridge["period"])
@@ -218,7 +219,7 @@ class DeadlineProtocolTest(unittest.TestCase):
             self.assertIsNone(ridge["used_k"])
             self.assertEqual(ridge["candidate_k_grid"], (1, 5, 10, 15))
             self.assertTrue(tsrag["fixed_datastore"])
-            self.assertEqual(tsrag["n_store_windows"], 20_000)
+            self.assertEqual(tsrag["n_store_windows"], 10_000)
             self.assertEqual(tsrag["retrieval_scope"], "same_user")
             self.assertEqual(tsrag["split_ratios"], (0.3, 0.5, 0.2))
             self.assertEqual(tsrag["used_k"], 5)

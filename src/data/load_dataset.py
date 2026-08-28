@@ -52,6 +52,7 @@ DATASET_CONFIG_KEYS = {
     "rename_users",
     "aggr",
     "aggr_period",
+    "missing_values",
 }
 
 
@@ -193,6 +194,7 @@ class CsvTimeSeries:
     """Date x user values for target-only forecasting experiments."""
 
     frame: pd.DataFrame
+    missing_values_replaced: int = 0
     _values: np.ndarray = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -265,6 +267,7 @@ def load_csv_dataset(
     rename_users: bool | None = None,
     aggr: str | None = None,
     aggr_period: str | None = None,
+    missing_values: str | None = None,
     dataset_config: str | Path | None = None,
 ) -> CsvTimeSeries:
     config = load_dataset_config(path, dataset_config)
@@ -278,6 +281,11 @@ def load_csv_dataset(
     rename_users = bool(_configured_value(rename_users, config.get("rename_users"), False))
     aggr = _configured_value(aggr, config.get("aggr"))
     aggr_period = str(_configured_value(aggr_period, config.get("aggr_period"), "h"))
+    missing_values = str(
+        _configured_value(missing_values, config.get("missing_values"), "zero")
+    ).lower()
+    if missing_values not in {"zero", "error"}:
+        raise ValueError("missing_values must be 'zero' or 'error'")
 
     csv_path = resolve_csv_path(path, dataset_name)
     if date_col:
@@ -291,7 +299,11 @@ def load_csv_dataset(
             pass
 
     raw = _aggregate(raw, aggr, aggr_period)
-    raw = raw.dropna(axis=0, how="any")
+    missing_count = int(raw.isna().sum().sum())
+    if missing_count and missing_values == "error":
+        raise ValueError(f"dataset contains {missing_count} missing values")
+    if missing_count:
+        raw = raw.fillna(0.0)
 
     value_cols = list(raw.columns) if target_cols is None else _column_names(target_cols)
     missing = [col for col in value_cols if col not in raw.columns]
@@ -303,7 +315,7 @@ def load_csv_dataset(
         values.columns = [f"user_{idx}" for idx in range(values.shape[1])]
     if values.empty:
         raise ValueError("dataset has no target columns after filtering")
-    return CsvTimeSeries(values)
+    return CsvTimeSeries(values, missing_values_replaced=missing_count)
 
 
 def load_json_kwargs(text_or_path: str | None) -> dict[str, Any]:

@@ -50,7 +50,7 @@ class TSRAGRetriever(nn.Module):
         pool: bool = False,
     ) -> torch.Tensor:
         del pool
-        embeddings, _ = self.pipeline.embed(x.squeeze(1))
+        embeddings, _ = self.pipeline.embed(x.squeeze(1).cpu())
         return embeddings[:, -1, :].float()
 
     def search(
