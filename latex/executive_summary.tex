@@ -4,10 +4,11 @@
 \setlength{\emergencystretch}{3em}
 \title{Fully Online Retrieval Adaptation\\Executive Summary}
 \author{}
-\date{21 August 2026}
+\date{28 August 2026}
 
 \begin{document}
 \maketitle
+\small
 
 \section*{Current evidence}
 No cluster experiment has yet completed in this new project. Consequently,
@@ -15,14 +16,13 @@ there is no accuracy conclusion, selected ablation value, or claim that online
 adaptation improves a frozen backbone.
 
 \section*{Implemented protocol}
-The project now supports a genuinely causal no-split evaluation. Each query
-retrieves from a balanced complete-date store capped by $N_{\mathrm{store}}$
-for cross-user retrieval, or up to $N_{\mathrm{store}}$ labeled origins for
-the query user under same-user retrieval,
-and the ridge or gate fits on exactly $N_{\mathrm{fit}}$ already matured rows
-for the query user. The defaults are 30,000 store windows, 1,000 fitting rows
-per query user, all-user raw Euclidean retrieval, same-user fitting, and a
-rolling full ridge. An all-user fitting scope remains available. At every forecast, the
+The project now precomputes T0, T1+T2, and T3 indexes before extraction. Each
+query retrieves from exactly $N_{\mathrm{datastore\ dates}}$ mature origins,
+and the ridge or gate fits on exactly $N_{\mathrm{fit}}$ already matured dates
+for the query user. The defaults are 100 datastore dates, 100 fitting dates per
+query user, all-user raw Euclidean retrieval, same-user fitting, and a
+non-fixed datastore and training set. An all-user fitting scope remains
+available. At every forecast, the
 oldest 80\% of the causal fitting window trains candidate ridges and the newest
 20\% selects $\alpha\in\{10^{-1},10^{-2},10^{-3}\}$ and
 $K\in\{1,5,10,15\}$; the chosen pair is then refitted on the complete window.
@@ -31,28 +31,33 @@ Extraction is persistent and independently manifested, allowing changes to
 adaptation parameters to reuse matching features. Ridge writes rolling
 coefficient means and standard deviations; CatBoost writes rolling feature
 importance means and standard deviations. Ridge also records each per-query
-selected pair and validation loss. Fixed-store/fixed-fit comparisons
-and every report use a common evaluation-date intersection.
+selected pair and validation loss. The fixed-protocol ablation crosses explicit
+fixed-datastore and fixed-training-set booleans while retaining one identical
+T3 query grid. Reports reject date mismatches and average models only across
+the same dataset and $L{:}H$ configurations.
 
 \section*{Planned evidence}
 The first required evidence is the Electricity test profile from
 \path{slurm/dgx/main/01_main_online_ridge.slurm}. It must establish that checkpoint
-loading, causal extraction, balanced datastore limits, TS-RAG inference,
-common-date reporting, and cache size are operational. The second smoke run is
-\path{slurm/dgx/main/02_online_gates.slurm}, primarily to measure CatBoost refit cost.
+loading, causal extraction, full-capacity datastore limits, the matched ridge,
+convex, Bayes, direct-covariate, and vanilla rows, identical-date reporting,
+and cache size are operational. The second smoke run is
+\path{slurm/dgx/main/02_tsrag_comparison.slurm}. It must validate the native
+TS-RAG fixed same-variable training datastore, $K=5$, and the shared
+$512{:}64$ evaluation grid.
 
 Only after these checks should the small profile be run on Electricity, Solar,
 and Traffic. The full profile then adds raw ETT and prepared TIME datasets.
 The resulting ablations will characterize alpha/K sensitivity without using
 final evaluation outcomes for selection, determine whether
-$N_{\mathrm{store}}$ and $N_{\mathrm{fit}}$ should differ, and how retrieval
+$N_{\mathrm{datastore\ dates}}$ and $N_{\mathrm{fit}}$ should differ, and how retrieval
 and fitting scope interact across users.
 
 \section*{Interpretation limit}
 The Chronos-Bolt SOTA table places causal online MSE beside published TS-RAG
-and Cross-RAG MSE only as contextual evidence. Their numbers use official test
-windows and train-split standardization, whereas the new experiment has no
-fixed split. They must not be interpreted as paired estimates unless a later
-run reproduces the published evaluation contract exactly.
+and Cross-RAG MSE only as contextual evidence. The dedicated TS-RAG workflow
+does reproduce its fixed same-variable retrieval scope and split boundaries,
+but preprocessing and metric-scale differences still have to be checked before
+combining local and published numbers.
 
 \end{document}

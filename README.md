@@ -1,10 +1,10 @@
 # Fully online retrieval adaptation
 
-This project evaluates retrieval and adaptor fitting without chronological
-train/validation/test splits. At every evaluated query date, both the retrieval
-store and the adaptor use only labeled windows already observable at that date.
-The primary method is a standardized rolling full shared ridge; the main
-comparison adds source-adapted released TS-RAG inference.
+This project evaluates retrieval and adaptor fitting on a date grid fixed before
+extraction. At every evaluated query date, both the retrieval store and the
+adaptor use only labeled windows already observable at that date. The primary
+workflow compares rolling full shared ridge with matched lightweight baselines;
+a separate `512:64` workflow compares it with released TS-RAG inference.
 
 The project supersedes the read-only fixed-split project at
 `../../archive/adaptation/`. It contains no architecture-tuning track and does
@@ -20,19 +20,22 @@ Y_s = {z_(s+1), ..., z_(s+H)}
 ```
 
 A datastore window dated `r` is eligible only when `r + H <= s`; its
-complete target is therefore known before prediction at `s`. Cross-user
-retrieval interprets `N_store` as a maximum global cardinality, requires
-`N_store >= U`, and retains the latest `floor(N_store/U)` complete window dates.
-The oldest partial date is dropped, so every user contributes the same number
-of windows; a rolling store starts once it has enough complete dates for
-`K_max` and grows causally to the cap. Same-user retrieval interprets `N_store` per query user and retains
-up to that many causal window dates for that user; before the cap is available it
-uses every eligible window. Retrieval defaults to raw Euclidean distance and
-all users. Generic extraction caches retain the nearest `max_k=20` candidates.
+complete target is therefore known before prediction at `s`.
+`N_datastore_dates` is either a positive integer number of retained window
+origins or a ratio in `(0,1]` of the complete origins on the configured
+datastore-stride grid. Retrieval scope then
+determines whether each origin contributes one same-user candidate, all users,
+or all other users. A rolling store does not start early with a partial history:
+the first fitting window has the full configured date capacity. A fixed store
+uses one immutable T0 interval for every fitting and evaluation query, with the
+same interval subset by timestamp-period alignment when enabled. Retrieval
+defaults to raw Euclidean distance and all users. Generic extraction caches
+retain the nearest `max_k=20` candidates.
 The adaptor either validates prefixes from `candidate_k_grid={1,5,10,15}` or
 uses one explicitly requested `used_k` prefix.
 
-Every fitting window is admitted only after its own horizon is observed.
+All T0, T1+T2, and T3 indexes are resolved before extraction. Every fitting
+window is admitted only after its own horizon is observed.
 `N_fit` always counts dates per user. With the default
 `fitting_scope=same_user`, each query user gets a separate fit over its latest
 `N_fit` dates. With `fitting_scope=all`, one shared fit is made per query date
@@ -40,6 +43,12 @@ from all users over those same `N_fit` dates (`N_fit * U` rows).
 `retrieval_scope` independently controls which neighbors are attached to each
 window. Fitting dates are selected independently from the complete causal date
 grid with `fit_stride`; they do not have to belong to the strided datastore.
+`fixed_training_set=false` selects the latest complete grid separately for each
+query. `fixed_training_set=true` fits once on the precomputed T1+T2 grid and
+reuses that ridge for all T3 queries. `eval_start_date` and `eval_end_date`
+accept absolute indexes or timeline ratios, and `query_stride` fixes the T3
+grid. The natural T3 start reserves a complete T0 followed by all `N_fit`
+dates, so all four fixed-protocol arms evaluate the identical T3 dates.
 At every query the ridge uses the oldest 80% of its causal fitting
 window to train candidates and the newest 20% to validate `(alpha, K)`, then
 refits the selected pair on the complete window before forecasting.
@@ -47,8 +56,7 @@ refits the selected pair on the complete window before forecasting.
 Defaults are:
 
 ```text
-N_store = 30,000 maximum global windows for cross-user retrieval
-          or 30,000 windows per query user for same-user retrieval
+N_datastore_dates = 100 retained window-origin dates
 N_fit   = 100 dates per user
 fit stride = one dataset period (24 hourly, 7 daily, 96 at 15 minutes)
 fitting scope    = same_user
@@ -73,14 +81,15 @@ selecting alpha, and every other ridge ablation selects both.
 
 Extraction runs live below `outputs/online_extraction/` and are independently
 manifested. Their identity includes dataset, `L:H`, backbone, retrieval space
-and metric, `max_k`, retrieval scope, `N_store`, `N_fit`,
-`fit_stride`, rolling/fixed store mode, and the homogeneous-channel choice. `N_fit` is part
+  and metric, `max_k`, retrieval scope, `N_datastore_dates`, `N_fit`,
+  `fit_stride`, fixed-datastore/fixed-training booleans, and the
+  homogeneous-channel choice. `N_fit` is part
 of extraction coverage because fitting windows need their own causal neighbor
 rows. Compatible generic runs share one `max_k=20` cache, including the six
 strict K-ablation runs at `{1,3,5,10,15,20}`. Validation candidates and an
 explicit `used_k` consume nearest-`K` prefixes. Changes to fitting scope,
 validation ratio or grids, linear
-design, formulation, or rolling/fixed fitting reuse a matching cache.
+  design or formulation reuse a matching cache.
 
 Each past fitting window reuses the neighbors extracted causally at that
 window's own date. Before extraction, the workflow marks the unique union of
@@ -187,14 +196,22 @@ does not support covariates. The four-backbone compatibility profile therefore
 uses the covariate-free `y_ridge_shared` design; the primary Chronos-2 ridge and
 gate profiles exercise retrieved covariates.
 
-`02_online_gates.slurm` evaluates causal shared soft Bayes and CatBoost
-advantage gates. At each query date they use the same fitting scope and exact
-`N_fit` causally available dates as ridge. The candidate weight is the sigmoid of the fitted
-advantage divided by its current fitting-set dispersion.
+`01_main_online_ridge.slurm` evaluates full shared ridge, the matched
+simplex-constrained mixture of vanilla plus retrieved outcomes, the causal
+shared soft Bayes covariate gate, the parameter-free covariate-informed
+prediction, and vanilla Chronos-2. All use the cadence-specific adaptive `L:H`
+grid. The Bayes candidate weight is the sigmoid of the fitted advantage divided
+by its current fitting-set dispersion.
 
-Every table stage first intersects evaluated query dates across methods being
-compared for each dataset and `L:H`. This is especially important for the
-rolling/fixed store and rolling/fixed fit ablation. It writes:
+`02_tsrag_comparison.slurm` is restricted to `512:64`. It compares online full
+ridge with released TS-RAG on identical evaluation dates. Native TS-RAG uses
+Chronos-Bolt, Chronos-T5 EOS retrieval features, a fixed training-split
+datastore, same-variable retrieval, unstrided origins, and `K=5`.
+
+Every table stage requires identical evaluated query dates across methods for
+each dataset and `L:H`; a mismatch fails instead of silently intersecting dates.
+Overall averages use only the common dataset and `L:H` configurations shared by
+every reported model. It writes:
 
 - `detailed_results.{csv,tex}` with dataset, setting, model, MSE, nMSE, MAE,
   nMAE, relative nMSE/MSE improvement, win rate, and common-date count;
@@ -211,7 +228,7 @@ protocol; the values are not presented as paired estimates.
 `EXPERIMENT_MODE` selects:
 
 - `test`: Electricity at its cadence-specific `long` setting only
-  (`504:168`); the Slurm smoke defaults are `N_store=30,000`, `N_fit=100`,
+  (`504:168`); the Slurm smoke defaults are `N_datastore_dates=100`, `N_fit=100`,
   query stride 257, and two CatBoost trees;
 - `small`: Electricity, Solar, and Traffic at their cadence-specific `short`,
   `mid`, and `long` settings;
@@ -232,28 +249,58 @@ Chronos-Bolt SOTA comparison, and the cross-backbone compatibility study keep
 the external checkpoint contract `512:64`. These fixed/custom configurations
 are not labeled as short, mid, or long ranges.
 
-All-user retrieval and same-user fitting are the defaults. The source-adapted TS-RAG row exists only
-at `512:64`, uses Chronos-Bolt, Chronos-T5 EOS retrieval features, same-user
-retrieval, and `K=5`.
+All-user retrieval and same-user fitting are the adaptive-workflow defaults.
+Both fixed-protocol booleans default to false. TS-RAG's separate native profile
+uses the fixed same-user training datastore described above.
 
 ## Slurm entry points
 
-Submit from this project root. Every front defaults to the complete ordered
-`STAGES=extract,adapt,tables` workflow and supports recovery by overriding that
+Submit from this project root. Fronts default to the complete ordered
+`STAGES=extract,adapt,tables` workflow and support recovery by overriding that
 comma-separated value.
 
 ```bash
 sbatch slurm/dgx/main/01_main_online_ridge.slurm
 EXPERIMENT_MODE=small sbatch slurm/dgx/main/01_main_online_ridge.slurm
-EXPERIMENT_MODE=full sbatch slurm/dgx/main/02_online_gates.slurm
+EXPERIMENT_MODE=full sbatch slurm/dgx/main/02_tsrag_comparison.slurm
 ```
 
-Every DGX front under `slurm/dgx/` has a matching `_selena.slurm` overflow
-front under `slurm/selena/`. For example:
+Every standard DGX front has a matching `_selena.slurm` overflow front. The two
+explicitly temporary deadline fronts exist only on DGX. For example:
 
 ```bash
 sbatch slurm/selena/main/01_main_online_ridge_selena.slurm
-EXPERIMENT_MODE=full sbatch slurm/selena/main/02_online_gates_selena.slurm
+EXPERIMENT_MODE=full sbatch slurm/selena/main/02_tsrag_comparison_selena.slurm
+```
+
+### Temporary deadline fronts
+
+The deadline-only fixed ablation evaluates Electricity/Solar crossed with
+short/long range and the four fixed-datastore/fixed-training-set combinations
+in one job. It fixes the
+source timeline before extraction to T0/T1+T2/T3 = 30%/50%/20%, uses a
+chronological 80%/20% train/validation split inside the T1+T2 fitting dates,
+uses fit stride 24, and evaluates every 127th valid T3 query date. Every
+datastore retains at most 20,000 globally comparable windows. A fixed
+datastore draws the most recent periodically aligned windows from T0; a rolling
+datastore draws the most recent periodically aligned windows available to its
+query. All four arms therefore have the same T3 date grid.
+
+The deadline-only TS-RAG comparison is one job fixed to `512:64`. The verified
+TIME panels are `time/ne_china_wind_h`,
+`time/coastal_t_s_h_part11`, and `time/sg_weather_d`. In each shard, online
+ridge and TS-RAG use the same T3 grid beginning at the 80% boundary, with query
+stride 127. Ridge uses a rolling all-user datastore capped
+at 20,000 windows, 30 fitting dates at fit stride 24, and selects both K from
+`[1,5,10,15]` and alpha on the fitting split. TS-RAG uses the same global
+20,000-window maximum, drawn from its fixed same-user T0 datastore with
+unstrided origins, and fixed K=5.
+
+The two complete jobs are independent and may be submitted concurrently:
+
+```bash
+sbatch slurm/dgx/deadline/fixed_ablation_30_50_20.slurm
+sbatch slurm/dgx/deadline/tsrag_time_t3.slurm
 ```
 
 The Selena variants keep the same family, profile, stages, and scientific
@@ -270,7 +317,7 @@ The remaining DGX fronts are focused studies under
 `slurm/dgx/ablations/`; their Selena counterparts are under
 `slurm/selena/ablations/`:
 
-- `ablation_{n_store,n_fit,fit_stride,alpha,k,l,h}.slurm`;
+- `ablation_{n_datastore_dates,n_fit,fit_stride,alpha,k,l,h}.slurm`;
 - `ablation_feature_design.slurm` and `ablation_formulation.slurm`;
 - `ablation_fixed_protocol.slurm`;
 - `ablation_general_scope.slurm`, crossing retrieval scope (`all`,
@@ -292,8 +339,10 @@ panels retain the six load channels and exclude `OT` in homogeneous-only runs;
 Weather retains its four temperature channels (`T`, `Tpot`, `Tdew`, and
 `Tlog`). The all-variate arm retains every non-date channel.
 
-`DATA_ROOT`, `WEIGHTS_ROOT`, `DEVICE`, `SEED`, `PURPOSE`, `N_STORE`, `N_FIT`,
-`FITTING_SCOPE`, `FIT_STRIDE`, `ALPHA`, `MAX_K`, `CANDIDATE_K_GRID`,
+`DATA_ROOT`, `WEIGHTS_ROOT`, `DEVICE`, `SEED`, `PURPOSE`,
+`N_DATASTORE_DATES`, `N_FIT`, `FIXED_DATASTORE`, `FIXED_TRAINING_SET`,
+`EVAL_START_DATE`, `EVAL_END_DATE`, `QUERY_STRIDE`, `STORE_STRIDE`,
+`ALIGN_PERIOD`, `FITTING_SCOPE`, `FIT_STRIDE`, `ALPHA`, `MAX_K`, `CANDIDATE_K_GRID`,
 `USED_K`, `TUNE_ALPHA`, `RIDGE_VALIDATION_RATIO`, `RIDGE_ALPHA_GRID`,
 `TSRAG_K`, `RETRIEVAL_COVARIATE_MODE`, `STAGES`,
 `RUN_CONFLICT_POLICY`, and `SKIP_COMPLETE` are launcher overrides. Expected
@@ -351,9 +400,9 @@ and the released MoE path is packaged over the local Chronos-Bolt base with
 strict checkpoint loading. Its retriever preserves upstream Chronos-T5-base
 bfloat16 embedding, final-token representation, float32
 `faiss.IndexFlatL2` squared-L2 search, and `top_k + 1` search followed by
-removal of the final result. The experiment changes only the same-variable
-candidate dates admitted to the index, replacing the released fixed training
-interval with the causal dates available at each query. The retrieved
+removal of the final result. The native profile preserves the released
+`only_self_train` scope: each variable retrieves only from its own immutable
+training interval. The retrieved
 lookback--future sequences are passed to ARM on their original raw scale;
 evaluation dates, metrics, and artifact writing are project-specific.
 
@@ -400,10 +449,10 @@ PYTHONPATH=. python src/tests/test_slurm_workflow.py
 PYTHONPATH=. python -m pytest src/tests/test_online_core.py src/tests/test_online_diagnostics.py src/tests/test_reporting_selection.py -q
 ```
 
-It covers balanced cross-user and per-user datastore limits, independent
-store/fitting strides, compact source-window joins, common compute timing, rolling/fixed ridge,
+It covers precomputed full-capacity datastore and fitting boundaries,
+independent store/fitting strides, compact source-window joins, common compute timing, fixed/online ridge,
 rolling Bayes, date-based cross-user fitting, per-user and W10 metrics,
-coefficient artifacts, common-date report intersection, `L+H` setting-shift
+coefficient artifacts, identical-date reporting, `L+H` setting-shift
 sampling, neighbor-date summaries, and raw/instance-normalized distance plots.
 
 ## Synchronizing DGX and Selena
@@ -437,12 +486,17 @@ Selena needs no outbound SSH/SCP access:
 
 ```bash
 bash sync_results_to_dgx.sh
+bash sync_results_to_dgx.sh --size detailed
+bash sync_results_to_dgx.sh --size full
 ```
 
-Only the scratch `outputs_selena/` and `logs_selena/` trees are pulled into the
-same named DGX directories without deletion. Do not run this helper on Selena.
-Analysis and publication remain on DGX, and returned artifacts never merge
-into DGX `outputs/` or `logs/`.
+The default lightweight tier transfers logs, manifests, aggregate metrics,
+reports, and ordinary plots while omitting row-level window/user-date/sample
+tables and per-run diagnostic plots. `detailed` adds those text and plotting
+artifacts; `full` also retrieves cluster-only `.pt`, `.npy`, `.cbm`, and other
+binary payloads for recovery or deep debugging. `--job-id ID` restricts the
+logs to the exact standard job pair. Transfers never delete DGX files. Do not
+run this helper on Selena; returned artifacts remain in the `_selena` trees.
 
 ## Maintenance
 
@@ -456,11 +510,12 @@ the README and LaTeX documents, and renders affected PDFs before resolving
 entries.
 After a terminal cluster job, `publish_job.sh <job-id>` is the manual artifact
 publishing path; Slurm workflows never run Git commands. Running
-`bash publish_job.sh` without a job ID publishes `logs/`, lightweight
-`outputs/`, and the paired `logs_selena/`/lightweight `outputs_selena/` trees
-under the same `*.pt`, `*.npy`, and `*.cbm` exclusions. A partial Selena
-namespace fails closed; numeric job-ID mode still selects only the exact
-standard log pair.
+`bash publish_job.sh` without a job ID uses the lightweight tier for `logs/`,
+`outputs/`, and paired Selena trees; `--size detailed` adds the row-level and
+per-run diagnostics omitted by default. Both tiers exclude `*.pt`, `*.npy`,
+and `*.cbm`; those cluster-only payloads are available only through full sync.
+A partial Selena namespace fails closed; numeric job-ID mode still selects
+only the exact standard log pair.
 
 Before staging, each selected non-excluded file larger than 100,000,000 bytes
 is replaced for publication by `<original>.sample.txt`. Text samples contain

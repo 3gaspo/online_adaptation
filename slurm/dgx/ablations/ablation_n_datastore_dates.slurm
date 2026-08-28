@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=abl_nstore
+#SBATCH --job-name=abl_ndates
 #SBATCH --gres=gpu:1
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
@@ -12,7 +12,7 @@
 
 PROJECT_ROOT="${SLURM_SUBMIT_DIR:-$(pwd)}"
 EXPERIMENT_MODE="${EXPERIMENT_MODE:-test}"
-EXPERIMENT_FAMILY=n_store_ablation
+EXPERIMENT_FAMILY=n_datastore_dates_ablation
 export PROJECT_ROOT EXPERIMENT_MODE EXPERIMENT_FAMILY
 cd "$PROJECT_ROOT"
 source "$PROJECT_ROOT/src/slurm/run_family.sh"

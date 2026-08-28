@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=online_gates
+#SBATCH --job-name=online_tsrag
 #SBATCH --gres=gpu:1
 #SBATCH --output=logs/%x_%j.out
 #SBATCH --error=logs/%x_%j.err
@@ -12,7 +12,7 @@
 
 PROJECT_ROOT="${SLURM_SUBMIT_DIR:-$(pwd)}"
 EXPERIMENT_MODE="${EXPERIMENT_MODE:-test}"
-EXPERIMENT_FAMILY=online_gates
+EXPERIMENT_FAMILY=tsrag_comparison
 export PROJECT_ROOT EXPERIMENT_MODE EXPERIMENT_FAMILY
 cd "$PROJECT_ROOT"
 source "$PROJECT_ROOT/src/slurm/run_family.sh"

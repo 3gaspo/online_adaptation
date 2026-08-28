@@ -1,34 +1,46 @@
 Updated: 2026-08-28
 
-Scope: this handoff records only Slurm artifacts published by current commit
-34d3417. Jobs and outputs deleted before that commit are not retained as
-history here.
+Scope: this handoff records only retained Slurm artifacts plus the current
+user-reported submissions against scratch-routing commit 54712b6. Jobs and
+outputs deleted before commit 34d3417 are not retained as history here.
 
 Synchronized job:
 - s_online_main, job 2913487: 01_main_online_ridge, test profile, Selena.
   The extraction processed all 9,090 compact windows, then failed with disk
   quota exceeded while creating the final table directory. The same quota
   failure prevented the exception handler from writing manifest.json.tmp, so
-  the sole online_extraction manifest remains marked running without a
-  ready_at_utc timestamp.
+  its online_extraction manifest was incomplete. That obsolete payload was
+  removed from the DGX/Git mirror during lightweight-artifact cleanup; its
+  exact stdout/stderr pair remains retained locally and the Selena source was
+  not modified.
 
-Current artifact state: one running extraction manifest and zero completed
-scientific runs. No main adaptation, table, gate, or report completed.
+Current artifact state: no synchronized online result payload and zero
+completed scientific runs. No main adaptation, table, gate, or report
+completed. All online scientific configurations require the current-protocol
+reruns already recorded in PENDING_UPDATES.md.
+
+Submitted jobs (not yet synchronized or published):
+- s_online_main: 01_main_online_ridge, test profile, Selena. Submitted on
+  2026-08-28; job ID and current scheduler state are not yet recorded.
+- s_online_gates: 02_online_gates, test profile, Selena. Submitted on
+  2026-08-28 with an afterok dependency on the new s_online_main job; job ID
+  and current scheduler state are not yet recorded. It can start only after
+  the main job exits successfully.
 
 Next actions:
-1. Put the one-line NNI file at $HOME/codes/.secrets/nni on DGX and Selena.
-2. Move the current Selena payload to
-   /scratch/users/<lowercase-nni>/codes/online_adaptation/outputs_selena and
-   logs_selena, then run sync_code_to_selena.sh to deploy the scratch-aware
-   fronts and ensure both scratch directories exist.
-3. Reconcile terminal launch 2913487 with the supported interrupt-launch
-   lifecycle command; because the manifest is not ready, it should become
-   interrupted rather than completed. Do not edit the manifest directly.
-4. Rerun slurm/selena/main/01_main_online_ridge_selena.slurm in test mode.
-5. After the main test completes, run
-   slurm/selena/main/02_online_gates_selena.slurm in test mode.
+1. Do not reuse or republish the obsolete 2913487 output; its retained logs are
+   diagnostic evidence only.
+2. Monitor the new main job. If it fails, the afterok gate job will not run;
+   inspect and publish the main job before resubmitting the chain.
+3. After both new jobs are terminal, pull their scratch results to DGX, publish
+   their exact job logs and lightweight artifacts, and replace the unverified
+   submission entries above with job IDs and terminal outcomes.
+4. Analyze the completed main and gate test reports before scheduling larger
+   profiles.
 
 Runtime roots: DGX uses project-local outputs/ and logs/. Selena uses the
 project-specific outputs_selena/ and logs_selena/ trees under
 /scratch/users/<lowercase-nni>/codes/online_adaptation/. Result
 synchronization remains a DGX-initiated inbound pull.
+Lightweight sync is now the default; detailed or full sync is explicit when
+row-level diagnostics or binary recovery payloads are required.

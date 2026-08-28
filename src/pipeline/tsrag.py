@@ -20,7 +20,6 @@ from src.pipeline.contracts import (
     load_array_manifest,
 )
 from src.proposal.contracts import ExtractionConfig
-from src.proposal.datastore import fitting_dates
 from src.proposal.ridge import (
     _aggregate_user_metrics,
     _date_metrics,
@@ -83,34 +82,6 @@ def _load_model(
     return model.to(device).eval()
 
 
-def first_fitted_query_date(
-    extraction_dir: str | Path,
-    n_fit: int,
-    *,
-    fitting_scope: str = "same_user",
-) -> int:
-    """First evaluated query date having ``n_fit`` causal fitting dates."""
-    if fitting_scope not in {"all", "same_user"}:
-        raise ValueError("fitting_scope must be all or same_user")
-    arrays = open_extraction_arrays(extraction_dir)
-    dates = np.asarray(arrays["retrieval_window_dates"], dtype=np.int64)
-    extraction_config = ExtractionConfig(**load_array_manifest(extraction_dir)["config"])
-    available = set(map(int, dates))
-    for current_index, current_date in enumerate(dates):
-        selected = fitting_dates(
-            int(current_date), config=extraction_config, n_fit=int(n_fit)
-        )
-        if (
-            len(selected) == int(n_fit)
-            and all(int(date) in available for date in selected)
-            and bool(arrays["is_evaluation_query"][current_index])
-        ):
-            return int(current_date)
-    raise ValueError(
-        f"no query has {n_fit} causally available fitting dates for scope {fitting_scope}"
-    )
-
-
 def evaluate_online_tsrag(
     *,
     extraction_dir: str | Path,
@@ -130,6 +101,12 @@ def evaluate_online_tsrag(
         raise ValueError(f"TS-RAG requires L={EXPECTED_LOOKBACK}")
     if extraction_config.horizon != EXPECTED_HORIZON:
         raise ValueError(f"TS-RAG requires H={EXPECTED_HORIZON}")
+    if not extraction_config.fixed_datastore:
+        raise ValueError("native TS-RAG requires a fixed training datastore")
+    if extraction_config.retrieval_scope != "same_user":
+        raise ValueError("native TS-RAG requires same-user retrieval")
+    if extraction_config.store_stride != 1 or extraction_config.align_period:
+        raise ValueError("native TS-RAG requires unstrided training-set retrieval")
     torch_device = torch.device(device)
     checkpoint = _checkpoint_file(Path(tsrag_weights).expanduser().resolve())
     model = _load_model(

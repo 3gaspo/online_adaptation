@@ -1,5 +1,72 @@
 # Pending updates
 
+- 2026-08-28: Added exactly two deadline-only DGX jobs for the four-arm
+  Electricity/Solar short/long fixed ablation and the three-panel TIME ridge
+  versus TS-RAG comparison. The fixed ablation precomputes a shared
+  T0/T1+T2/T3 30/50/20 split and stride-127 query grid. The TIME comparison
+  hard-codes `ne_china_wind_h`, `coastal_t_s_h_part11`, and `sg_weather_d` at
+  512:64; ridge uses a rolling 20,000-window cap, 30 fitting dates at stride
+  24, and fitting-set K/alpha selection, while TS-RAG uses a fixed same-user
+  T0 datastore and K=5. Every fixed or rolling datastore enforces the same
+  global 20,000-window maximum. Each job runs extraction, adaptation, and
+  tables sequentially. Affected contracts: temporary
+  profiles, date planning, workflow filtering, Slurm fronts, focused tests,
+  README, and experiment documentation. Exact synthetic date-grid checks,
+  static Slurm contracts, Bash syntax, and Python compilation passed; both
+  LaTeX PDFs rebuilt successfully. Deferred integration: submit both jobs,
+  verify the first artifacts, and use
+  measured timing to replace the current log-scaled estimates. These temporary
+  result families require new runs; no earlier result is reusable for them.
+
+- 2026-08-28: Made result transfer tiered: sync now defaults to aggregate
+  lightweight analysis artifacts, `detailed` adds row-level/per-run
+  diagnostics, and `full` explicitly retrieves binary recovery payloads;
+  publication defaults to the same lightweight scope and offers non-binary
+  `detailed` output. Removed the obsolete synchronized extraction payload from
+  the DGX/Git mirror while retaining Selena and local job logs. Affected
+  contracts: both result-transfer scripts, README, cluster handoff, Git-side
+  artifact scope, and focused transfer checks. Git Bash syntax passed for both
+  scripts, the two transfer-tier checks and existing Slurm check passed, and
+  all nine publisher copies were byte-identical. The online experiments still
+  require the reruns already mandated by the new split/model protocol; this
+  transfer-only change adds no rerun. Deferred integration: exercise all sync
+  tiers and inspect one detailed publication on DGX.
+
+- 2026-08-28: Replaced partial-history date discovery with one precomputed T0,
+  T1+T2, and T3 plan controlled by `N_DATASTORE_DATES`, fixed-datastore and
+  fixed-training-set booleans, train/validation ratio, evaluation bounds, and
+  independent strides. The fixed-protocol ablation now shares an identical T3
+  grid across all four arms. Split the main fronts into an adaptive-range
+  ridge/convex/Bayes/direct-covariate/vanilla workflow and a `512:64` ridge vs
+  native TS-RAG workflow; native TS-RAG now uses its released same-variable
+  fixed training datastore, stride 1, no periodic alignment, and K=5. Reports
+  reject date mismatches and average every model on the same dataset-setting
+  support. Fractional datastore sizes resolve against the complete
+  datastore-origin grid after applying its configured stride. Affected
+  contracts: date planning, extraction/adaptation identity,
+  profiles, Slurm fronts and overrides, version-1 manifests, reports, focused
+  tests, README, and both LaTeX summaries. Python compilation, nine focused
+  Slurm/foundation unittests, the direct reporting-selection test, profile
+  expansion checks, synthetic four-arm date-plan and fractional-size checks,
+  and the fixed-training single-fit regression passed; Git diff checking
+  passed. The prepared thesis runtime lacks pytest and einops, so the
+  dependency-bearing online-core module could not run locally. No schema was
+  incremented. Existing main runs remain internally interpretable only under
+  their retired partial-store/mixed-family protocol and are not reusable by
+  the new identities or fair tables. Required reruns are both test fronts,
+  followed by their selected small/full profiles after smoke validation.
+
+- 2026-08-28: Recorded the user-reported Selena submission of the test-profile
+  main online-ridge job followed by the test-profile online-gates job through
+  an `afterok` dependency. The submitted job IDs, queue states, logs, and new
+  artifacts have not yet been synchronized or published, so the handoff keeps
+  the prior quota failure as the latest evidence-backed terminal outcome and
+  does not claim either new job succeeded. Affected contract: operational
+  cluster handoff only. No code, README, or LaTeX change was needed. Required
+  follow-up is to verify lifecycle reconciliation for job 2913487, monitor the
+  dependency chain, synchronize and publish both terminal jobs, record their
+  IDs and outcomes, and analyze successful test reports before larger runs.
+
 - 2026-08-28: Redirected every Selena Slurm stream and default runtime output
   from the quota-limited home checkout to
   `/scratch/users/<lowercase-nni>/codes/online_adaptation/{logs_selena,outputs_selena}`.

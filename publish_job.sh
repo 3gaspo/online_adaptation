@@ -3,12 +3,13 @@
 set -euo pipefail
 
 usage() {
-  printf 'usage: bash publish_job.sh [JOB_ID] [--message TEXT] [--project-root PATH]\n' >&2
+  printf 'usage: bash publish_job.sh [JOB_ID] [--size lightweight|detailed] [--message TEXT] [--project-root PATH]\n' >&2
 }
 
 project_root="$(pwd)"
 job_id=""
 message=""
+publish_size="lightweight"
 if [ "$#" -gt 0 ] && [[ "$1" != --* ]]; then
   job_id="$1"
   shift
@@ -16,12 +17,18 @@ fi
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --job-id) job_id="$2"; shift 2 ;;
+    --size) publish_size="$2"; shift 2 ;;
     --message) message="$2"; shift 2 ;;
     --project-root) project_root="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) usage; printf 'unknown argument: %s\n' "$1" >&2; exit 2 ;;
   esac
 done
+
+case "$publish_size" in
+  lightweight|detailed) ;;
+  *) usage; printf 'publication size must be lightweight or detailed\n' >&2; exit 2 ;;
+esac
 
 if [ -n "$job_id" ] && ! [[ "$job_id" =~ ^[0-9]+$ ]]; then
   usage
@@ -75,7 +82,7 @@ else
     [ -d outputs_selena ] || { printf 'outputs_selena directory not found\n' >&2; exit 1; }
     paths+=(logs_selena outputs_selena)
   fi
-  [ -n "$message" ] || message="slurm: publish all logs and outputs"
+  [ -n "$message" ] || message="slurm: publish $publish_size logs and outputs"
 fi
 
 exclusions=(
@@ -83,6 +90,15 @@ exclusions=(
   ':(exclude,glob)**/*.npy'
   ':(exclude,glob)**/*.cbm'
 )
+if [ "$publish_size" = lightweight ]; then
+  exclusions+=(
+    ':(exclude,glob)**/window_metrics.csv'
+    ':(exclude,glob)**/per_user_date_metrics.csv'
+    ':(exclude,glob)**/setting_diagnostics_samples.csv'
+    ':(exclude,glob)**/criterion_loss.pdf'
+    ':(exclude,glob)**/example_prediction.pdf'
+  )
+fi
 max_publish_bytes="${PUBLISH_MAX_FILE_BYTES:-100000000}"
 max_sample_bytes="${PUBLISH_SAMPLE_MAX_BYTES:-10000000}"
 for limit in "$max_publish_bytes" "$max_sample_bytes"; do
@@ -104,6 +120,11 @@ for selected_path in "${paths[@]}"; do
     case "$relative" in
       *.pt|*.npy|*.cbm) continue ;;
     esac
+    if [ "$publish_size" = lightweight ]; then
+      case "$relative" in
+        */window_metrics.csv|*/per_user_date_metrics.csv|*/setting_diagnostics_samples.csv|*/criterion_loss.pdf|*/example_prediction.pdf) continue ;;
+      esac
+    fi
     file_bytes="$(stat -c '%s' -- "$file")"
     [ "$file_bytes" -gt "$max_publish_bytes" ] || continue
 
@@ -144,7 +165,7 @@ publish_paths=("${paths[@]}" "${sample_paths[@]}")
 if [ -n "$job_id" ]; then
   printf 'Publishing job %s paths:\n' "$job_id"
 else
-  printf 'Publishing all logs and lightweight outputs, including Selena trees when present:\n'
+  printf 'Publishing all logs and %s outputs, including Selena trees when present:\n' "$publish_size"
 fi
 printf '  %s\n' "${paths[@]}"
 git add -v -f -- "${publish_paths[@]}" "${exclusions[@]}" "${oversize_exclusions[@]}"

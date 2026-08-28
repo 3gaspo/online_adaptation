@@ -13,6 +13,7 @@ import types
 import numpy as np
 import torch
 
+import src.pipeline.adaptation as adaptation_pipeline
 from src.pipeline.runs import SCHEMA_VERSION, allocate_run, mark_status
 from src.pipeline.contracts import (
     EXTRACTION_FORMAT,
@@ -23,20 +24,15 @@ from src.pipeline.contracts import (
     write_array_manifest,
 )
 from src.proposal.contracts import AdapterConfig, ExtractionConfig
-from src.proposal.datastore import (
-    candidate_dates,
-    first_retrieval_window_date,
-    fitting_dates,
-    store_date_capacity,
-)
+from src.proposal.datastore import candidate_dates, fitting_dates
+from src.proposal.date_planning import build_date_plan
 from src.proposal.gates import _catboost_adaptor_parameter_count
 from src.pipeline.adaptation import evaluate_online_gate, evaluate_online_linear
 from src.pipeline.extraction import extract_online_features
-from src.proposal import DEFAULT_N_FIT, DEFAULT_N_STORE
+from src.proposal import DEFAULT_N_DATASTORE_DATES, DEFAULT_N_FIT, DEFAULT_TSRAG_K
 from src.results.efficiency import write_compute_timing
 from src.results.reporting import build_online_tables
 from src.pipeline.profiles import RANGE_SETTINGS, dataset_frequency, tasks_for_family
-from src.pipeline.tsrag import first_fitted_query_date
 from src.external_models.tsrag.retriever import TSRAGRetriever
 from src.model_loading.forecast import (
     FOUNDATION_MODEL_ALIASES,
@@ -44,7 +40,12 @@ from src.model_loading.forecast import (
 )
 
 
-def _fake_extraction(root: Path, *, neighbors: int = 2) -> types.SimpleNamespace:
+def _fake_extraction(
+    root: Path,
+    *,
+    neighbors: int = 2,
+    fixed_training_set: bool = False,
+) -> types.SimpleNamespace:
     rng = np.random.default_rng(7)
     dates, users, lookback, horizon = 30, 3, 4, 2
     feature_root = root / "features"
@@ -98,8 +99,10 @@ def _fake_extraction(root: Path, *, neighbors: int = 2) -> types.SimpleNamespace
         dataset="synthetic",
         lookback=lookback,
         horizon=horizon,
-        n_store=max(12, neighbors),
+        n_datastore_dates=9 if fixed_training_set else 1,
+        n_fit=5,
         max_k=neighbors,
+        fixed_training_set=fixed_training_set,
         store_stride=1,
         fit_stride=1,
         align_period=False,
@@ -134,48 +137,60 @@ def _fake_extraction(root: Path, *, neighbors: int = 2) -> types.SimpleNamespace
     )
 
 
-def test_balanced_datastore_capacity() -> None:
-    assert store_date_capacity(n_store=5, n_users=3, retrieval_scope="all") == 1
-    assert store_date_capacity(n_store=5, n_users=3, retrieval_scope="other_users") == 1
-    assert store_date_capacity(n_store=5, n_users=3, retrieval_scope="same_user") == 5
-    try:
-        store_date_capacity(n_store=2, n_users=3, retrieval_scope="all")
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("cross-user stores smaller than the user count must fail")
-
-    cross = ExtractionConfig(
+def test_precomputed_date_plan_and_datastore_capacity() -> None:
+    rolling = ExtractionConfig(
         dataset="synthetic",
         lookback=4,
         horizon=2,
-        n_store=5,
+        n_datastore_dates=5,
+        n_fit=3,
         retrieval_scope="all",
         store_stride=1,
+        fit_stride=1,
         align_period=False,
     )
-    same = ExtractionConfig(
-        dataset="synthetic",
-        lookback=4,
-        horizon=2,
-        n_store=5,
-        retrieval_scope="same_user",
-        store_stride=1,
-        align_period=False,
-    )
-    assert candidate_dates(10, config=cross, n_users=3).tolist() == [8]
-    assert candidate_dates(10, config=same, n_users=3).tolist() == [4, 5, 6, 7, 8]
+    rolling_plan = build_date_plan(n_dates=100, config=rolling)
+    assert rolling_plan.first_retrieval_date == 9
+    assert rolling_plan.evaluation_start_date == 13
+    assert candidate_dates(10, config=rolling, plan=rolling_plan).tolist() == [4, 5, 6, 7, 8]
+    assert fitting_dates(20, config=rolling, plan=rolling_plan).tolist() == [16, 17, 18]
+
+    evaluation_grids = set()
+    for fixed_datastore in (False, True):
+        for fixed_training_set in (False, True):
+            config = ExtractionConfig(
+                dataset="synthetic",
+                lookback=4,
+                horizon=2,
+                n_datastore_dates=5,
+                n_fit=3,
+                fixed_datastore=fixed_datastore,
+                fixed_training_set=fixed_training_set,
+                store_stride=1,
+                fit_stride=1,
+                align_period=False,
+                query_stride=7,
+            )
+            plan = build_date_plan(n_dates=100, config=config)
+            evaluation_grids.add(plan.evaluation_query_dates)
+            if fixed_training_set:
+                assert fitting_dates(50, config=config, plan=plan).tolist() == [9, 10, 11]
+    assert len(evaluation_grids) == 1
+
     aligned = ExtractionConfig(
         dataset="synthetic",
         lookback=4,
         horizon=2,
-        n_store=12,
+        n_datastore_dates=4,
+        n_fit=3,
         retrieval_scope="all",
         store_stride=4,
+        fit_stride=1,
         align_period=True,
         period=2,
     )
-    aligned_dates = candidate_dates(20, config=aligned, n_users=3)
+    aligned_plan = build_date_plan(n_dates=100, config=aligned)
+    aligned_dates = candidate_dates(20, config=aligned, plan=aligned_plan)
     assert np.all((20 - aligned_dates) % 2 == 0)
     assert np.all(np.diff(aligned_dates) == 4)
     try:
@@ -191,35 +206,22 @@ def test_balanced_datastore_capacity() -> None:
         pass
     else:
         raise AssertionError("period alignment must reject a non-multiple stride")
-    assert first_retrieval_window_date(
-        lookback=4,
-        horizon=2,
-        n_store=12,
-        n_users=3,
-        retrieval_scope="all",
-        neighbors=2,
-    ) == 5
-    assert first_retrieval_window_date(
-        lookback=4,
-        horizon=2,
-        n_store=12,
-        n_users=3,
-        retrieval_scope="same_user",
-        neighbors=2,
-    ) == 6
-    independent = ExtractionConfig(
+    assert aligned_dates.tolist() == [6, 10, 14, 18]
+
+    ratio_config = ExtractionConfig(
         dataset="synthetic",
         lookback=4,
         horizon=2,
-        n_store=12,
+        n_datastore_dates=0.5,
         n_fit=3,
         store_stride=4,
         fit_stride=1,
         align_period=True,
         period=2,
     )
-    assert fitting_dates(20, config=independent).tolist() == [16, 17, 18]
-    assert candidate_dates(20, config=independent, n_users=3).tolist() == [6, 10, 14, 18]
+    ratio_plan = build_date_plan(n_dates=100, config=ratio_config)
+    assert ratio_plan.n_datastore_dates == 11
+    assert ratio_plan.datastore_end_date == 46
 
 
 def test_tsrag_upstream_search_rule() -> None:
@@ -289,7 +291,7 @@ def test_compact_extraction_and_independent_fitting_grid() -> None:
                 dataset="synthetic",
                 lookback=4,
                 horizon=2,
-                n_store=12,
+                n_datastore_dates=4,
                 n_fit=3,
                 max_k=2,
                 store_stride=2,
@@ -415,19 +417,6 @@ def test_rolling_ridge_and_bayes_outputs() -> None:
         assert "user_id" not in next(
             csv.DictReader(all_users["selection"].open(encoding="utf-8"))
         )
-        fixed = evaluate_online_linear(
-            extraction_dir=extraction,
-            output_dir=root / "fixed",
-            config=AdapterConfig(
-                n_fit=5,
-                alpha=1e-2,
-                fit_mode="fixed",
-                tune_alpha=False,
-                used_k=2,
-            ),
-            dataset=dataset,
-        )
-        assert fixed["metrics"].is_file()
         for method in (
             "cov_ridge_shared",
             "avgy_ridge_shared",
@@ -478,15 +467,6 @@ def test_rolling_ridge_and_bayes_outputs() -> None:
             dataset=dataset,
         )
         assert all_user_bayes["metrics"].is_file()
-        assert first_fitted_query_date(
-            extraction,
-            5,
-            fitting_scope="same_user",
-        ) == first_fitted_query_date(
-            extraction,
-            5,
-            fitting_scope="all",
-        )
 
 
 def test_compute_timing_contract() -> None:
@@ -598,6 +578,47 @@ def test_per_query_ridge_hyperparameter_selection() -> None:
         assert {row["user_id"] for row in same_user_selected} == {"0", "1", "2"}
 
 
+def test_fixed_training_set_solves_one_ridge_per_user() -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        extraction = root / "extraction"
+        dataset = _fake_extraction(
+            extraction,
+            neighbors=2,
+            fixed_training_set=True,
+        )
+        original_solve = adaptation_pipeline.LinearStatistics.solve
+        solve_calls = 0
+
+        def counted_solve(
+            statistics: adaptation_pipeline.LinearStatistics,
+            alpha: float,
+        ) -> np.ndarray:
+            nonlocal solve_calls
+            solve_calls += 1
+            return original_solve(statistics, alpha)
+
+        adaptation_pipeline.LinearStatistics.solve = counted_solve
+        try:
+            outputs = evaluate_online_linear(
+                extraction_dir=extraction,
+                output_dir=root / "fixed_ridge",
+                config=AdapterConfig(
+                    method="y_ridge_shared",
+                    n_fit=5,
+                    alpha=1e-2,
+                    tune_alpha=False,
+                    used_k=2,
+                    fixed_training_set=True,
+                ),
+                dataset=dataset,
+            )
+        finally:
+            adaptation_pipeline.LinearStatistics.solve = original_solve
+        assert solve_calls == dataset.n_users
+        assert len(np.load(outputs["trajectory"])) > 1
+
+
 def test_adaptor_parameter_helpers() -> None:
     class Parameter:
         def __init__(self, size: int) -> None:
@@ -624,11 +645,11 @@ def test_adaptor_parameter_helpers() -> None:
     assert _catboost_adaptor_parameter_count(CatBoostStub()) == 7
 
 
-def test_report_intersects_dates() -> None:
+def test_report_requires_identical_dates() -> None:
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
         results = root / "results"
-        for index, dates in enumerate(((1, 2, 3), (2, 3, 4))):
+        for index, dates in enumerate(((1, 2, 3), (1, 2, 3))):
             allocation = allocate_run(
                 results / f"method_{index}",
                 project="online_adaptation",
@@ -681,7 +702,7 @@ def test_report_intersects_dates() -> None:
         outputs = build_online_tables(results_root=results, output_dir=root / "tables")
         assert all(path.is_file() for path in outputs.values())
         detailed = list(csv.DictReader(outputs["detailed_csv"].open(encoding="utf-8")))
-        assert {row["dates"] for row in detailed} == {"2"}
+        assert {row["dates"] for row in detailed} == {"3"}
         report_manifest = json.loads(outputs["manifest"].read_text(encoding="utf-8"))
         assert report_manifest["requested"]["config_policy"] == "distinct"
         assert report_manifest["requested"]["repeat_policy"] == "selected"
@@ -694,20 +715,20 @@ def test_profile_contract() -> None:
     config = (project_root / "src/conf/config.yaml").read_text(encoding="utf-8")
     slurm_root = project_root / "slurm"
     scope_front = slurm_root / "dgx/ablations/ablation_general_scope.slurm"
-    assert DEFAULT_N_STORE == 30_000
+    assert DEFAULT_N_DATASTORE_DATES == 100
     assert DEFAULT_N_FIT == 100
+    assert DEFAULT_TSRAG_K == 5
     assert ExtractionConfig(dataset="synthetic", lookback=4, horizon=2).n_fit == 100
     assert ExtractionConfig(
         dataset="daily", lookback=4, horizon=2, period=7, store_stride=7
     ).fit_stride == 7
     assert AdapterConfig().n_fit == 100
-    assert 'PROFILE_N_STORE="${N_STORE:-30000}"' in runner
     assert runner.count('PROFILE_N_FIT="${N_FIT:-100}"') == 2
     assert 'srun --ntasks=1 python -m "$module"' in runner
     assert "n_fit: 100" in config
-    assert "fit_stride: 0" in config
+    assert "fit_stride: null" in config
     assert "retrieval_covariate_mode: null" in config
-    assert '"fit_stride=${FIT_STRIDE:-0}"' in runner
+    assert '"fit_stride=${FIT_STRIDE:-null}"' in runner
     assert (
         '"retrieval_covariate_mode=${RETRIEVAL_COVARIATE_MODE:-null}"'
         in runner
@@ -732,8 +753,8 @@ def test_profile_contract() -> None:
         front_families.add(assignments[0].split("=", 1)[1])
     assert front_families == {
         "main",
-        "online_gates",
-        "n_store_ablation",
+        "tsrag_comparison",
+        "n_datastore_dates_ablation",
         "n_fit_ablation",
         "fit_stride_ablation",
         "alpha_ablation",
@@ -775,8 +796,7 @@ def test_profile_contract() -> None:
     assert {task["homogeneous_only"] for task in homogeneous_test} == {False, True}
     standard_test_families = (
         "main",
-        "online_gates",
-        "n_store_ablation",
+        "n_datastore_dates_ablation",
         "n_fit_ablation",
         "fit_stride_ablation",
         "alpha_ablation",
@@ -797,18 +817,27 @@ def test_profile_contract() -> None:
             for task in cadence_tasks
         )
     assert {
-        task["retrieval_covariate_mode"]
-        for task in tasks_for_family("online_gates", "test", project_root)
-    } == {"past_and_future"}
-    main_fixed = [
-        task
+        task["method"]
         for task in tasks_for_family("main", "test", project_root)
+    } == {
+        "full_ridge_shared",
+        "y_convex_shared",
+        "bayes_cov_shared_soft",
+        "covariate_prediction",
+    }
+    tsrag_fixed = [
+        task
+        for task in tasks_for_family("tsrag_comparison", "test", project_root)
         if task["method"] == "tsrag"
     ]
-    assert {(task["lookback"], task["horizon"]) for task in main_fixed} == {
+    assert {(task["lookback"], task["horizon"]) for task in tsrag_fixed} == {
         (512, 64)
     }
-    assert {(task["max_k"], task["used_k"]) for task in main_fixed} == {(5, 5)}
+    assert {(task["max_k"], task["used_k"]) for task in tsrag_fixed} == {(10, 10)}
+    assert {task["retrieval_scope"] for task in tsrag_fixed} == {"same_user"}
+    assert {task["fixed_datastore"] for task in tsrag_fixed} == {True}
+    assert {task["store_stride"] for task in tsrag_fixed} == {1}
+    assert {task["align_period"] for task in tsrag_fixed} == {False}
     k_tasks = tasks_for_family("k_ablation", "test", project_root)
     assert {task["max_k"] for task in k_tasks} == {20}
     assert {task["used_k"] for task in k_tasks} == {1, 3, 5, 10, 15, 20}
@@ -816,7 +845,7 @@ def test_profile_contract() -> None:
     assert {task["used_k"] for task in alpha_tasks} == {None}
     assert {task["tune_alpha"] for task in alpha_tasks} == {False}
     for family in (
-        "n_store_ablation",
+        "n_datastore_dates_ablation",
         "n_fit_ablation",
         "fit_stride_ablation",
         "alpha_ablation",
@@ -905,14 +934,14 @@ def test_profile_contract() -> None:
         (catalog_root / "catalog.json").write_text(
             json.dumps(catalog), encoding="utf-8"
         )
-        test_tasks = tasks_for_family("online_gates", "test", data_root)
+        test_tasks = tasks_for_family("main", "test", data_root)
         assert {
             (task["dataset"], task["lookback"], task["horizon"])
             for task in test_tasks
         } == {
             ("Electricity", *RANGE_SETTINGS["hourly"]["long"]),
         }
-        full_tasks = tasks_for_family("online_gates", "full", data_root)
+        full_tasks = tasks_for_family("main", "full", data_root)
         expected_settings = {
             "Electricity": set(RANGE_SETTINGS["hourly"].values()),
             "Solar": set(RANGE_SETTINGS["hourly"].values()),
@@ -931,18 +960,18 @@ def test_profile_contract() -> None:
                 for task in full_tasks
                 if task["dataset"] == dataset
             } == settings
-    assert "max_k: 20" in config
-    assert "candidate_k_grid: [1, 5, 10, 15]" in config
+    assert "max_k: null" in config
+    assert "candidate_k_grid: null" in config
     assert "used_k: null" in config
     assert "tune_alpha: true" in config
-    assert "tsrag_k: 5" in config
+    assert "tsrag_k: null" in config
     assert "query_stride: 127" in config
     assert "ridge_validation_ratio: 0.2" in config
     assert '"ridge_validation_ratio=${RIDGE_VALIDATION_RATIO:-0.2}"' in runner
-    assert '"max_k=${MAX_K:-20}"' in runner
-    assert '"candidate_k_grid=${CANDIDATE_K_GRID:-[1,5,10,15]}"' in runner
+    assert '"max_k=${MAX_K:-null}"' in runner
+    assert '"candidate_k_grid=${CANDIDATE_K_GRID:-null}"' in runner
     assert '"used_k=${USED_K:-null}"' in runner
-    assert '"tsrag_k=${TSRAG_K:-5}"' in runner
+    assert '"tsrag_k=${TSRAG_K:-null}"' in runner
     assert 'PROFILE_QUERY_STRIDE="${QUERY_STRIDE:-257}"' in runner
     assert 'PROFILE_QUERY_STRIDE="${QUERY_STRIDE:-127}"' in runner
     assert 'PROFILE_PURPOSE="${PURPOSE:-smoke}"' in runner
@@ -968,12 +997,13 @@ def test_profile_contract() -> None:
 
 
 if __name__ == "__main__":
-    test_balanced_datastore_capacity()
+    test_precomputed_date_plan_and_datastore_capacity()
     test_tsrag_upstream_search_rule()
     test_compact_extraction_and_independent_fitting_grid()
     test_rolling_ridge_and_bayes_outputs()
     test_compute_timing_contract()
     test_per_query_ridge_hyperparameter_selection()
+    test_fixed_training_set_solves_one_ridge_per_user()
     test_adaptor_parameter_helpers()
-    test_report_intersects_dates()
+    test_report_requires_identical_dates()
     test_profile_contract()

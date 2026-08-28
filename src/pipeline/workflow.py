@@ -25,11 +25,15 @@ from src.pipeline.contracts import (
     load_array_manifest,
 )
 from src.proposal.contracts import AdapterConfig, ExtractionConfig
-from src.pipeline.adaptation import evaluate_online_gate, evaluate_online_linear
+from src.pipeline.adaptation import (
+    evaluate_covariate_prediction,
+    evaluate_online_gate,
+    evaluate_online_linear,
+)
 from src.pipeline.extraction import extract_online_features
 from src.pipeline.profiles import tasks_for_family
 from src.results.reporting import build_online_tables, build_published_sota_table
-from src.pipeline.tsrag import evaluate_online_tsrag, first_fitted_query_date
+from src.pipeline.tsrag import evaluate_online_tsrag
 
 
 LOGGER = logging.getLogger(__name__)
@@ -40,10 +44,13 @@ EXTRACTION_ORDER = (
     "distance_metric",
     "max_k",
     "retrieval_scope",
-    "n_store",
+    "n_store_windows",
+    "n_datastore_dates",
     "n_fit",
     "fit_stride",
-    "store_mode",
+    "fixed_datastore",
+    "fixed_training_set",
+    "include_fitting_windows",
     "homogeneous",
 )
 ADAPTER_ORDER = (
@@ -56,7 +63,7 @@ ADAPTER_ORDER = (
     "alpha_grid",
     "candidate_k_grid",
     "used_k",
-    "fit_mode",
+    "fixed_training_set",
     "fit_loss",
     "candidate",
 )
@@ -176,10 +183,13 @@ def _extraction_identity(task: dict[str, Any]) -> dict[str, Any]:
         "distance_metric": task["distance_metric"],
         "max_k": task["max_k"],
         "retrieval_scope": task["retrieval_scope"],
-        "n_store": task["n_store"],
+        "n_store_windows": task.get("n_store_windows"),
+        "n_datastore_dates": task["n_datastore_dates"],
         "n_fit": task["n_fit"],
         "fit_stride": task["fit_stride"],
-        "store_mode": task["store_mode"],
+        "fixed_datastore": task["fixed_datastore"],
+        "fixed_training_set": task["fixed_training_set"],
+        "include_fitting_windows": task["include_fitting_windows"],
         "homogeneous": "homogeneous" if task["homogeneous_only"] else "all",
     }
 
@@ -195,7 +205,7 @@ def _adapter_identity(task: dict[str, Any]) -> dict[str, Any]:
         "alpha_grid": task["alpha_grid"],
         "candidate_k_grid": task["candidate_k_grid"],
         "used_k": task["used_k"],
-        "fit_mode": task["fit_mode"],
+        "fixed_training_set": task["fixed_training_set"],
         "fit_loss": task["fit_loss"],
         "candidate": task["candidate"],
     }
@@ -207,14 +217,30 @@ def _display_name(family: str, task: dict[str, Any]) -> str:
     if method == "tsrag":
         return "TS-RAG (chronos_bolt)"
     if family == "main":
-        return f"Online ridge ({backbone})"
+        return {
+            "full_ridge_shared": f"Online full ridge ({backbone})",
+            "y_convex_shared": f"Convex mixture ({backbone})",
+            "bayes_cov_shared_soft": f"Bayes covariate ({backbone})",
+            "covariate_prediction": f"Covariate prediction ({backbone})",
+        }[method]
+    if family in {"tsrag_comparison", "deadline_tsrag_comparison"}:
+        return f"Online full ridge ({backbone})"
     varying = {
-        "n_store_ablation": f"N_store={task['n_store']}",
+        "n_datastore_dates_ablation": (
+            f"N_datastore_dates={task['n_datastore_dates']}"
+        ),
         "n_fit_ablation": f"N_fit={task['n_fit']}",
         "fit_stride_ablation": f"fit_stride={task['fit_stride']}",
         "alpha_ablation": f"alpha={task['alpha']}",
         "k_ablation": f"K={task['used_k']}",
-        "fixed_protocol_ablation": f"store={task['store_mode']}, fit={task['fit_mode']}",
+        "fixed_protocol_ablation": (
+            f"fixed_datastore={task['fixed_datastore']}, "
+            f"fixed_training_set={task['fixed_training_set']}"
+        ),
+        "deadline_fixed_protocol": (
+            f"fixed_datastore={task['fixed_datastore']}, "
+            f"fixed_training_set={task['fixed_training_set']}"
+        ),
         "general_scope_ablation": (
             f"retrieval={task['retrieval_scope']}, fitting={task['fitting_scope']}"
         ),
@@ -239,16 +265,17 @@ def _allocate_extraction(
         EXTRACTION_ORDER,
         identity,
     )
-    store_stride = int(cfg.store_stride) or int(task["store_stride"])
-    period = int(cfg.period) or int(task["period"])
-    fit_stride = int(cfg.fit_stride) or int(task["fit_stride"])
     pipeline = {
         "artifact_schema": EXTRACTION_FORMAT,
         "query_stride": int(cfg.query_stride),
-        "store_stride": store_stride,
-        "fit_stride": fit_stride,
-        "align_period": bool(cfg.align_period),
-        "period": period,
+        "store_stride": int(task["store_stride"]),
+        "fit_stride": int(task["fit_stride"]),
+        "align_period": bool(task["align_period"]),
+        "period": int(task["period"]),
+        "eval_start_date": task["eval_start_date"],
+        "eval_end_date": task["eval_end_date"],
+        "split_ratios": task.get("split_ratios"),
+        "n_store_windows": task.get("n_store_windows"),
         "normalization": str(cfg.normalization),
     }
     return allocate_run(
@@ -311,18 +338,24 @@ def _run_extraction(
             lookback=int(task["lookback"]),
             horizon=int(task["horizon"]),
             backbone=task["backbone"],
-            n_store=int(task["n_store"]),
-            n_fit=int(task["n_fit"]),
+            n_datastore_dates=task["n_datastore_dates"],
+            n_store_windows=task.get("n_store_windows"),
+            n_fit=task["n_fit"],
             max_k=int(task["max_k"]),
             distance_space=task["distance_space"],
             distance_metric=task["distance_metric"],
             retrieval_scope=task["retrieval_scope"],
-            store_mode=task["store_mode"],
-            store_stride=int(cfg.store_stride) or int(task["store_stride"]),
-            fit_stride=int(cfg.fit_stride) or int(task["fit_stride"]),
-            align_period=bool(cfg.align_period),
-            period=int(cfg.period) or int(task["period"]),
+            fixed_datastore=bool(task["fixed_datastore"]),
+            fixed_training_set=bool(task["fixed_training_set"]),
+            include_fitting_windows=bool(task["include_fitting_windows"]),
+            store_stride=int(task["store_stride"]),
+            fit_stride=int(task["fit_stride"]),
+            align_period=bool(task["align_period"]),
+            period=int(task["period"]),
             query_stride=int(cfg.query_stride),
+            eval_start_date=task["eval_start_date"],
+            eval_end_date=task["eval_end_date"],
+            split_ratios=task.get("split_ratios"),
             normalization=str(cfg.normalization),
             retrieval_covariate_mode=task["retrieval_covariate_mode"],
             homogeneous_only=bool(task["homogeneous_only"]),
@@ -358,10 +391,15 @@ def _run_extraction(
         raise
 
 
-def _adapter_config(cfg: DictConfig, task: dict[str, Any]) -> AdapterConfig:
+def _adapter_config(
+    cfg: DictConfig,
+    task: dict[str, Any],
+    *,
+    resolved_n_fit: int | None = None,
+) -> AdapterConfig:
     return AdapterConfig(
         method=task["method"],
-        n_fit=int(task["n_fit"]),
+        n_fit=int(task["n_fit"] if resolved_n_fit is None else resolved_n_fit),
         fitting_scope=task["fitting_scope"],
         alpha=float(task["alpha"]),
         tune_alpha=bool(task["tune_alpha"]),
@@ -369,7 +407,7 @@ def _adapter_config(cfg: DictConfig, task: dict[str, Any]) -> AdapterConfig:
         alpha_grid=tuple(float(value) for value in task["alpha_grid"]),
         candidate_k_grid=tuple(int(value) for value in task["candidate_k_grid"]),
         used_k=None if task["used_k"] is None else int(task["used_k"]),
-        fit_mode=task["fit_mode"],
+        fixed_training_set=bool(task["fixed_training_set"]),
         fit_loss=task["fit_loss"],
         candidate=task["candidate"],
         catboost_iterations=int(cfg.catboost_iterations),
@@ -390,6 +428,8 @@ def _run_adaptation(
     data_root: Path,
     weights_root: Path,
 ) -> None:
+    extraction_manifest = load_array_manifest(extraction_dir)
+    resolved_n_fit = int(extraction_manifest["metadata"]["date_plan"]["n_fit"])
     identity = _adapter_identity(task)
     root = identity_path(
         output_root / "online_adaptation" / family,
@@ -401,7 +441,9 @@ def _run_adaptation(
         identity,
     )
     pipeline = pipeline_config_with_dependencies(
-        _adapter_config(cfg, task).scientific_dict(),
+        _adapter_config(
+            cfg, task, resolved_n_fit=resolved_n_fit
+        ).scientific_dict(),
         {"online_extraction": extraction_dir},
     )
     allocation = allocate_run(
@@ -427,7 +469,9 @@ def _run_adaptation(
         return
     mark_status(allocation.run_dir, "running")
     try:
-        adapter = _adapter_config(cfg, task)
+        adapter = _adapter_config(
+            cfg, task, resolved_n_fit=resolved_n_fit
+        )
         target_cols = (
             _homogeneous_targets(task["dataset"])
             if task["homogeneous_only"]
@@ -440,11 +484,6 @@ def _run_adaptation(
             drop_users=cfg.drop_users,
         )
         if task["method"] == "tsrag":
-            eval_start = first_fitted_query_date(
-                extraction_dir,
-                int(task["n_fit"]),
-                fitting_scope=task["fitting_scope"],
-            )
             outputs = evaluate_online_tsrag(
                 extraction_dir=extraction_dir,
                 output_dir=allocation.run_dir,
@@ -453,7 +492,22 @@ def _run_adaptation(
                 tsrag_weights=weights_root / "ts-rag",
                 device=str(cfg.device),
                 batch_size=int(cfg.tsrag_batch_size),
-                eval_start_date=eval_start,
+            )
+        elif task["method"] == "covariate_prediction":
+            device = resolve_device(str(cfg.device))
+            model = _load_backbone(
+                task,
+                weights_root=weights_root,
+                device=device,
+                normalization=str(cfg.normalization),
+            )
+            outputs = evaluate_covariate_prediction(
+                extraction_dir=extraction_dir,
+                output_dir=allocation.run_dir,
+                config=adapter,
+                dataset=dataset,
+                model=model,
+                device=device,
             )
         elif str(task["method"]).startswith(("bayes_", "catboost_")):
             device = resolve_device(str(cfg.device))
@@ -496,29 +550,76 @@ def _run_adaptation(
 
 def _configured_tasks(cfg: DictConfig, data_root: Path) -> list[dict[str, Any]]:
     family = str(cfg.family)
-    tasks = tasks_for_family(family, str(cfg.mode), data_root)
+    selected_datasets = (
+        None if cfg.datasets is None else [str(value) for value in cfg.datasets]
+    )
+    selected_ranges = (
+        None if cfg.ranges is None else [str(value) for value in cfg.ranges]
+    )
+    tasks = tasks_for_family(
+        family,
+        str(cfg.mode),
+        data_root,
+        selected_datasets=selected_datasets,
+        selected_ranges=selected_ranges,
+    )
+    deadline_family = family in {
+        "deadline_fixed_protocol",
+        "deadline_tsrag_comparison",
+    }
     for task in tasks:
-        if family != "n_store_ablation":
-            task["n_store"] = int(cfg.n_store)
-        if family != "n_fit_ablation":
+        if (
+            not deadline_family
+            and family != "n_datastore_dates_ablation"
+            and cfg.n_datastore_dates is not None
+        ):
+            value = cfg.n_datastore_dates
+            task["n_datastore_dates"] = int(value) if isinstance(value, int) else float(value)
+        if not deadline_family and family != "n_fit_ablation":
             task["n_fit"] = int(cfg.n_fit)
-        if family != "fit_stride_ablation" and int(cfg.fit_stride):
+        if (
+            not deadline_family
+            and family != "fit_stride_ablation"
+            and cfg.fit_stride is not None
+        ):
             task["fit_stride"] = int(cfg.fit_stride)
+        if not deadline_family and cfg.store_stride is not None:
+            task["store_stride"] = int(cfg.store_stride)
+        if not deadline_family and cfg.align_period is not None:
+            task["align_period"] = bool(cfg.align_period)
+        if not deadline_family and int(cfg.period):
+            task["period"] = int(cfg.period)
+        if not deadline_family and family != "fixed_protocol_ablation":
+            if cfg.fixed_datastore is not None:
+                task["fixed_datastore"] = bool(cfg.fixed_datastore)
+            if cfg.fixed_training_set is not None:
+                task["fixed_training_set"] = bool(cfg.fixed_training_set)
+        if not deadline_family and cfg.eval_start_date is not None:
+            task["eval_start_date"] = cfg.eval_start_date
+        if not deadline_family and cfg.eval_end_date is not None:
+            task["eval_end_date"] = cfg.eval_end_date
         if family != "general_scope_ablation":
             task["fitting_scope"] = str(cfg.fitting_scope)
         if family != "alpha_ablation":
             task["alpha"] = float(cfg.alpha)
-        if cfg.retrieval_covariate_mode is not None:
+        if not deadline_family and cfg.retrieval_covariate_mode is not None:
             task["retrieval_covariate_mode"] = str(cfg.retrieval_covariate_mode)
-        if task["method"] == "tsrag":
+        if family == "tsrag_comparison" and cfg.tsrag_k is not None:
             task["max_k"] = int(cfg.tsrag_k)
             task["used_k"] = int(cfg.tsrag_k)
+            task["candidate_k_grid"] = (int(cfg.tsrag_k),)
+        elif task["method"] == "tsrag":
             task["tune_alpha"] = False
         else:
-            task["max_k"] = int(cfg.max_k)
-            if family != "k_ablation":
+            if not deadline_family and cfg.max_k is not None:
+                task["max_k"] = int(cfg.max_k)
+            if (
+                not deadline_family
+                and family != "k_ablation"
+                and cfg.used_k is not None
+            ):
                 task["used_k"] = (
-                    None if cfg.used_k is None else int(cfg.used_k)
+                    int(cfg.used_k)
                 )
             if str(task["method"]).startswith(("bayes_", "catboost_")):
                 task["used_k"] = (
@@ -526,12 +627,20 @@ def _configured_tasks(cfg: DictConfig, data_root: Path) -> list[dict[str, Any]]:
                     if cfg.used_k is None
                     else int(cfg.used_k)
                 )
-        task["validation_ratio"] = float(cfg.ridge_validation_ratio)
-        task["alpha_grid"] = tuple(float(value) for value in cfg.ridge_alpha_grid)
-        task["candidate_k_grid"] = tuple(
-            int(value) for value in cfg.candidate_k_grid
+        task["validation_ratio"] = (
+            0.2 if deadline_family else float(cfg.ridge_validation_ratio)
         )
-        task["tune_alpha"] = bool(task["tune_alpha"] and bool(cfg.tune_alpha))
+        task["alpha_grid"] = (
+            (0.1, 0.01, 0.001)
+            if deadline_family
+            else tuple(float(value) for value in cfg.ridge_alpha_grid)
+        )
+        if not deadline_family and cfg.candidate_k_grid is not None:
+            task["candidate_k_grid"] = tuple(
+                int(value) for value in cfg.candidate_k_grid
+            )
+        if not deadline_family:
+            task["tune_alpha"] = bool(task["tune_alpha"] and bool(cfg.tune_alpha))
         required_k = (
             int(task["used_k"])
             if task["used_k"] is not None

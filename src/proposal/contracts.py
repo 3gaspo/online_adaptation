@@ -11,18 +11,24 @@ class ExtractionConfig:
     lookback: int
     horizon: int
     backbone: str = "chronos2"
-    n_store: int = 30_000
-    n_fit: int = 100
+    n_datastore_dates: int | float = 100
+    n_store_windows: int | None = None
+    n_fit: int | float = 100
     max_k: int = 20
     distance_space: str = "raw"
     distance_metric: str = "euclidean"
     retrieval_scope: str = "all"
-    store_mode: str = "rolling"
+    fixed_datastore: bool = False
+    fixed_training_set: bool = False
+    include_fitting_windows: bool = True
     store_stride: int = 24
     fit_stride: int = 0
     align_period: bool = True
     period: int = 24
     query_stride: int = 1
+    eval_start_date: int | float | None = None
+    eval_end_date: int | float | None = None
+    split_ratios: tuple[float, float, float] | None = None
     normalization: str = "none"
     retrieval_covariate_mode: str = "past_and_future"
     homogeneous_only: bool = False
@@ -36,20 +42,40 @@ class ExtractionConfig:
         for name in (
             "lookback",
             "horizon",
-            "n_store",
-            "n_fit",
             "query_stride",
             "store_stride",
             "fit_stride",
         ):
             if int(getattr(self, name)) <= 0:
                 raise ValueError(f"{name} must be positive")
-        if not 0 < int(self.max_k) <= int(self.n_store):
-            raise ValueError("max_k must lie in [1, n_store]")
+        if isinstance(self.n_fit, bool):
+            raise ValueError("n_fit must be an integer count or split ratio")
+        if isinstance(self.n_fit, int):
+            if self.n_fit <= 0:
+                raise ValueError("integer n_fit must be positive")
+        elif self.split_ratios is None or not 0.0 < float(self.n_fit) <= 1.0:
+            raise ValueError(
+                "fractional n_fit requires split_ratios and must lie in (0, 1]"
+            )
+        if isinstance(self.n_datastore_dates, bool):
+            raise ValueError("n_datastore_dates must be an integer count or a ratio")
+        if isinstance(self.n_datastore_dates, int):
+            if self.n_datastore_dates <= 0:
+                raise ValueError("integer n_datastore_dates must be positive")
+        elif not 0.0 < float(self.n_datastore_dates) <= 1.0:
+            raise ValueError("ratio n_datastore_dates must lie in (0, 1]")
+        if self.n_store_windows is not None and int(self.n_store_windows) <= 0:
+            raise ValueError("n_store_windows must be positive when specified")
+        if self.split_ratios is not None:
+            ratios = tuple(float(value) for value in self.split_ratios)
+            if len(ratios) != 3 or any(value <= 0.0 for value in ratios):
+                raise ValueError("split_ratios must contain three positive values")
+            if not abs(sum(ratios) - 1.0) < 1e-9:
+                raise ValueError("split_ratios must sum to one")
+        if int(self.max_k) <= 0:
+            raise ValueError("max_k must be positive")
         if self.retrieval_scope not in {"all", "same_user", "other_users"}:
             raise ValueError("retrieval_scope must be all, same_user, or other_users")
-        if self.store_mode not in {"rolling", "fixed"}:
-            raise ValueError("store_mode must be rolling or fixed")
         if self.distance_space not in {"raw", "instance", "minmax", "fourier", "encoder", "tsrag"}:
             raise ValueError(f"unsupported distance space {self.distance_space!r}")
         if self.distance_metric not in {"euclidean", "cosine", "pearson"}:
@@ -79,7 +105,7 @@ class AdapterConfig:
     alpha_grid: tuple[float, ...] = (1e-1, 1e-2, 1e-3)
     candidate_k_grid: tuple[int, ...] = (1, 5, 10, 15)
     used_k: int | None = None
-    fit_mode: str = "rolling"
+    fixed_training_set: bool = False
     fit_loss: str = "mse"
     candidate: str = "cov"
     catboost_iterations: int = 300
@@ -111,8 +137,6 @@ class AdapterConfig:
             raise ValueError("candidate_k_grid values must be unique")
         if (self.tune_alpha or self.used_k is None) and self.n_fit < 2:
             raise ValueError("hyperparameter selection requires at least two fitting rows")
-        if self.fit_mode not in {"rolling", "fixed"}:
-            raise ValueError("fit_mode must be rolling or fixed")
         if self.fit_loss not in {"mse", "nmse"}:
             raise ValueError("fit_loss must be mse or nmse")
         if self.candidate not in {"cov", "avgy"}:

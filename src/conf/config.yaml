@@ -1,18 +1,24 @@
 family: main
 mode: test
+datasets: null
+ranges: null
 stages: extract,adapt,tables
 seed: 1
-n_store: 30000
+n_datastore_dates: null
 n_fit: 100
+fixed_datastore: null
+fixed_training_set: null
+eval_start_date: null
+eval_end_date: null
 fitting_scope: same_user
 alpha: 0.01
-max_k: 20
-candidate_k_grid: [1, 5, 10, 15]
+max_k: null
+candidate_k_grid: null
 used_k: null
 tune_alpha: true
 ridge_validation_ratio: 0.2
 ridge_alpha_grid: [0.1, 0.01, 0.001]
-tsrag_k: 5
+tsrag_k: null
 purpose: publication
 conflict_policy: overwrite_exact
 skip_completed: true
@@ -24,9 +30,9 @@ weights_root: weights
 outputs_root: outputs
 device: cuda
 query_stride: 127
-store_stride: 0
-fit_stride: 0
-align_period: true
+store_stride: null
+fit_stride: null
+align_period: null
 period: 0
 normalization: none
 retrieval_covariate_mode: null

@@ -5,7 +5,6 @@
 \usepackage{algorithm,algpseudocode}
 \hypersetup{hidelinks}
 \setlength{\emergencystretch}{3em}
-\newcommand{\Nstore}{N_{\mathrm{store}}}
 \newcommand{\Nfit}{N_{\mathrm{fit}}}
 \newcommand{\Sstore}{S_{\mathrm{store}}}
 \newcommand{\Sfit}{S_{\mathrm{fit}}}
@@ -17,7 +16,7 @@
 \DeclareMathOperator{\MAE}{MAE}
 \title{Fully Online Retrieval Adaptation\\Experiment Guideline}
 \author{}
-\date{27 August 2026}
+\date{28 August 2026}
 
 \begin{document}
 \maketitle
@@ -33,8 +32,9 @@ date $q$, a lookback length $L$, and a forecast horizon $H$, define
  \qquad
  y_{q,u}=(z_{q+1,u},\ldots,z_{q+H,u})\in\mathbb R^H.
 \]
-The task is to predict every $y_{q,u}$. There is no train/validation/test
-split. At date $q$, a row dated $r$ may be retrieved or fitted only if
+The task is to predict every $y_{q,u}$. A precomputed date plan separates the
+T0 datastore interval, T1+T2 fitting interval, and T3 evaluation grid. At date
+$q$, a row dated $r$ may be retrieved or fitted only if
 \[
  r+H\le q,                                                     \tag{1}
 \]
@@ -67,18 +67,19 @@ Without alignment, $b_q=q-H$. The available datastore-date grid is
 where $\mathbb N_0=\{0,1,2,\ldots\}$. Aligned runs require $\Sstore$ to be a
 multiple of $P$.
 
-Let $\Nstore$ be the datastore-size setting and let $M$ be its maximum number
-of dates:
+Let $M$ be \code{N\_datastore\_dates}: a positive integer number of retained
+window origins, or the floor of a configured ratio times the number of complete
+origins on the datastore-stride grid. Scope does not change $M$: one same-user candidate, $U$ all-user
+candidates, or $U-1$ other-user candidates are available per retained date.
+The precomputed T0 interval is
 \[
- M=
- \begin{cases}
- \Nstore, & \text{same-user retrieval},\\
- \lfloor\Nstore/U\rfloor, & \text{all-user or other-user retrieval}.
- \end{cases}                                                   \tag{4}
+ [a_0,b_0]=[L-1,\ L-1+M\Sstore-1].                            \tag{4}
 \]
-Thus cross-user retrieval requires $\Nstore\ge U$ and never keeps a partial
-oldest date. A rolling store $\mathcal D_q$ contains the latest $M$ dates of
-$\mathcal D_q^\infty$; a fixed store contains its earliest $M$ dates.
+A rolling $\mathcal D_q$ contains the latest $M$ dates of
+$\mathcal D_q^\infty$. A fixed datastore uses the same immutable T0 interval
+for every query and subsets it by the query's periodic phase when alignment is
+enabled. The first retrieval window occurs only after the full T0 capacity and
+all its horizons are observable; partial early datastores are not evaluated.
 
 Fitting dates are selected independently of $\mathcal D_q$. Let
 \[
@@ -89,20 +90,24 @@ Fitting dates are selected independently of $\mathcal D_q$. Let
  q-H, & \text{otherwise},
  \end{cases}
 \]
-where $P\mid\Sfit$ means that $\Sfit$ is a multiple of $P$. The rolling
-fitting set is the latest $\Nfit$ dates in
+where $P\mid\Sfit$ means that $\Sfit$ is a multiple of $P$. Let $r_0$ be the
+first retrieval window after T0. The rolling fitting set is the latest
+$\Nfit$ dates in
 \[
  \mathcal F_q^\infty
- =\{c_q-j\Sfit:j\in\mathbb N_0,\ c_q-j\Sfit\ge L-1\}.        \tag{5}
+ =\{c_q-j\Sfit:j\in\mathbb N_0,\ c_q-j\Sfit\ge r_0\}.        \tag{5}
 \]
 Here $\Nfit$ always counts dates per user. Same-user fitting uses $\Nfit$
 rows for each user; all-user fitting uses $\Nfit U$ rows for one shared fit.
-A fixed fit freezes the first complete $\mathcal F_q$ for each phase modulo
-$\Sfit$.
+A fixed training set is the single precomputed T1+T2 grid
+$\{r_0+j\Sfit:j=0,\ldots,\Nfit-1\}$ and produces one ridge reused for all
+evaluation queries.
 
-The first evaluated date $q_0$ is the first date for which $q_0$ and every
-date in $\mathcal F_{q_0}$ have $\Kmax$ retrievable neighbors and
-$|\mathcal F_{q_0}|=\Nfit$. The evaluated dates are
+The natural first evaluated date $q_0$ follows the complete T0 interval and
+all $\Nfit$ T1+T2 origins after their horizons become observable. An explicit
+absolute or fractional evaluation start may move $q_0$ later, never earlier;
+an optional end boundary may shorten T3. The evaluated dates are fixed before
+extraction as
 \[
  \mathcal Q=\{q_0+j\Sq:j\in\mathbb N_0,\ q_0+j\Sq\le T-H-1\}.\tag{6}
 \]
@@ -277,18 +282,17 @@ Both methods predict
 \]
 where $\operatorname{sigmoid}(x)=(1+e^{-x})^{-1}$. When $\tau_{q,u}=0$, the
 weight is $1$, $0$, or $1/2$ for $s_{q,u}>0$, $s_{q,u}<0$, or $s_{q,u}=0$.
-The current gate
-front uses $A=C$, $K=20$, and backbones with (10); hence its predictions are
-exactly $V$ under the current code.
+The primary workflow uses $A=C$ and $K=20$ for its Bayes baseline.
 
 The TS-RAG comparison is source-adapted from
 \href{https://github.com/UConn-DSIS/TS-RAG/tree/73ac807789d2e61b8a3dfc8514e3fc947fe185cc}
 {UConn-DSIS/TS-RAG commit 73ac807}. It is fixed to $L=512$, $H=64$, $K=5$,
-Chronos-Bolt, and same-user retrieval. Its retriever uses the final Chronos-T5
+Chronos-Bolt, and the released \code{only\_self\_train} scope: each variable
+retrieves only from its own immutable training split. Retrieval origins are
+unstrided and are not periodically aligned. Its retriever uses the final Chronos-T5
 token $\phi(x)$, float32 \texttt{faiss.IndexFlatL2}, a $K+1$ search, and removal
 of the final returned column. Its ARM receives the original, unscaled retrieved
-lookback--future sequences. Only the set of dates allowed by (1)--(4) differs
-from the released retrieval procedure.
+lookback--future sequences.
 
 \section{Measures}
 
@@ -307,7 +311,7 @@ $s_{q,u}=\max\{\sigma(x_{q,u}),\eps\}$, define
  \mathrm{nMAE}_{q,u}=\frac{\MAE_{q,u}}{s_{q,u}}.             \tag{19}
 \]
 Every aggregate is an unweighted mean over the retained date--user rows.
-Methods are compared only on their common query dates. If $m$ denotes an
+Compared methods must have identical query dates; a mismatch is an error. If $m$ denotes an
 adapted method and $v$ its matching vanilla forecast, report
 \[
  I^{\MSE}_m=100\frac{\MSE_v-\MSE_m}{\MSE_v},\qquad
@@ -332,10 +336,31 @@ all-user query with empty in-memory caches.
 \section{Runs}
 
 The default ridge run uses raw Euclidean all-user retrieval, same-user fitting,
-rolling store and fit, $\Nstore=30{,}000$, $\Nfit=100$,
+non-fixed datastore and training set, $M=100$, $\Nfit=100$,
 $\Sstore=\Sfit=P$, seed $1$, and (14). Test runs use $\Sq=257$; small and full
-runs use $\Sq=127$. The frozen backbone is Chronos-2. The main family also adds
-the TS-RAG configuration defined above.
+runs use $\Sq=127$. The frozen backbone is Chronos-2. The main family compares
+full ridge, the vanilla-plus-retrieved-outcome convex mixture, the Bayes
+covariate gate, direct covariate prediction, and vanilla. The separate TS-RAG
+family uses only $512{:}64$ and the configuration defined above.
+
+For the deadline experiment, two temporary jobs narrow this grid.
+The fixed ablation uses Electricity and Solar at only the short and long
+settings. It first fixes T0/T1+T2/T3 to 30/50/20 percent of each source
+timeline, uses periodically aligned datastore origins, fit stride 24, and T3
+query stride 127, and crosses
+fixed versus rolling datastore with fixed versus online ridge. The four arms
+share the exact T3 query-date grid and the same global 20,000-window maximum;
+ridge selection uses the chronologically newest 20 percent of the available
+T1+T2 fitting dates for validation.
+
+The temporary TIME comparison fixes $(L,H)=(512,64)$ and hard-codes
+\path{ne_china_wind_h}, \path{coastal_t_s_h_part11}, and
+\path{sg_weather_d}. Both methods evaluate the same stride-127 T3 grid beginning
+at the 80-percent boundary. Full online ridge uses a rolling all-user datastore
+capped at 20,000 windows, $\Nfit=30$, $\Sfit=24$, and selects $K$ from
+$\{1,5,10,15\}$ together with alpha. TS-RAG uses the same global 20,000-window
+maximum, drawn from its fixed, unstrided, same-variable T0 datastore, and
+$K=5$.
 
 \begin{center}
 \small
@@ -372,8 +397,8 @@ values; their Selena counterparts are under \path{slurm/selena/ablations/}:
 \toprule
 Front & Values \\
 \midrule
-\path{ablation_n_store.slurm} & test: $\{1000,2000,5000\}$; publication:
-$\{10000,20000,30000,50000\}$ \\
+\path{ablation_n_datastore_dates.slurm} & test: $\{25,50,100\}$; publication:
+$\{50,100,200,500\}$ \\
 \path{ablation_n_fit.slurm} & test: $\{50,100,500\}$; publication adds $1000$ \\
 \path{ablation_fit_stride.slurm} & $\Sfit\in\{1,P\}$ \\
 \path{ablation_alpha.slurm} & fixed $\alpha\in\{0,10^{-4},10^{-3},10^{-2},10^{-1},1\}$; select $K$ \\
@@ -382,7 +407,7 @@ $\{10000,20000,30000,50000\}$ \\
 \path{ablation_h.slurm} & $L=504$, $H\in\{24,48,64,96,168,336,504\}$ \\
 \path{ablation_feature_design.slurm} & the seven designs in the signal table \\
 \path{ablation_formulation.slurm} & ridge, delta ridge, and convex; shared and horizon forms \\
-\path{ablation_fixed_protocol.slurm} & rolling/fixed store crossed with rolling/fixed fit \\
+\path{ablation_fixed_protocol.slurm} & fixed-datastore crossed with fixed-training-set on one T3 grid \\
 \path{ablation_general_scope.slurm} & all/same/other-user retrieval crossed with all/same-user fitting \\
 \path{ablation_homogeneous.slurm} & all channels versus declared same-quantity channels on ETT and Weather \\
 \path{ablation_backbones.slurm} & Chronos-2, Chronos-Bolt, Chronos-T5, and TS-ICL at $(512,64)$ \\
@@ -391,9 +416,8 @@ $\{10000,20000,30000,50000\}$ \\
 \end{tabularx}
 \end{center}
 
-The gate front evaluates \texttt{bayes\_cov\_shared\_soft} and
-\texttt{catboost\_cov\_shared\_soft}. CatBoost uses 300 trees in small/full
-and 2 trees in test, depth $4$, learning rate $0.03$, and refit stride $1$.
+The Bayes baseline is part of the main adaptive workflow. CatBoost remains an
+implemented supporting method but has no primary Slurm front.
 
 \section{Code}
 
@@ -455,15 +479,16 @@ and sparse forecast joins from these IDs.
 \caption{Extraction}
 \footnotesize
 \begin{algorithmic}[1]
-\Require panel $Z$; settings $L,H,\Nstore,\Nfit,\Sstore,\Sfit,\Sq,\Kmax$
+\Require panel $Z$; settings $L,H,M,\Nfit,\Sstore,\Sfit,\Sq,\Kmax$
 \State build sliding views $x_{r,u},y_{r,u}$ and store their IDs, means, and scales
+\State precompute T0, T1+T2, and every T3 query date
 \State build $\mathcal Q$ from (6)
 \ForAll{$q\in\mathcal Q$}
-  \State build $\mathcal F_q$ from (5)
+  \State build the fixed or rolling $\mathcal F_q$ from (5)
 \EndFor
 \State $\mathcal R\gets\mathcal Q\cup\bigcup_{q\in\mathcal Q}\mathcal F_q$
 \ForAll{$r\in\mathcal F_{q_0}\cup\{q_0\}$ first, then remaining $r\in\mathcal R$ by date}
-  \State build $\mathcal D_r$ from (3)--(4)
+  \State build the fixed-T0 or rolling $\mathcal D_r$ from (3)--(4)
   \For{$u=1$ to $U$}
     \State exact-search the allowed users and save ranks $1{:}\Kmax$
   \EndFor
@@ -488,6 +513,8 @@ and sparse forecast joins from these IDs.
   \ElsIf{method is a gate}
     \State fit the mean-advantage or CatBoost score from (15)
     \State predict with (17)
+  \ElsIf{method is direct covariate prediction}
+    \State use $C_{q,u,K}$ without fitted parameters
   \Else
     \State run TS-RAG ARM on its raw retrieved sequences
   \EndIf
@@ -506,7 +533,8 @@ The direct code path is
 \path{src/pipeline/adaptation.py} $\longrightarrow$
 \path{src/scripts/tables.py}.
 \end{center}
-Date selection is in \path{src/proposal/datastore.py}; ridge designs and solves
+Date-plan construction is in \path{src/proposal/date_planning.py} and datastore
+selection is in \path{src/proposal/datastore.py}; ridge designs and solves
 are in \path{src/proposal/ridge.py}; gates are in
 \path{src/proposal/gates.py}; TS-RAG is in
 \path{src/external_models/tsrag/} and \path{src/pipeline/tsrag.py}; run lists are

@@ -62,16 +62,16 @@ def _summarize(rows: list[dict[str, Any]], *, vanilla: bool = False) -> dict[str
 
 
 def _average_rows(row_sets: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
-    """Average selected runs at each date after a strict date intersection."""
+    """Average selected runs only when their evaluation dates are identical."""
     indexed = []
     for rows in row_sets:
         by_date = {int(row["query_date"]): row for row in rows}
         if len(by_date) != len(rows):
             raise ValueError("per-date metrics contain duplicate query dates")
         indexed.append(by_date)
-    common_dates = set.intersection(*(set(rows) for rows in indexed))
-    if not common_dates:
-        raise ValueError("selected runs have no common evaluation dates")
+    common_dates = set(indexed[0])
+    if any(set(rows) != common_dates for rows in indexed[1:]):
+        raise ValueError("selected runs do not use the same evaluation query dates")
     averaged: list[dict[str, Any]] = []
     for date in sorted(common_dates):
         rows = [values[date] for values in indexed]
@@ -272,9 +272,12 @@ def build_online_tables(
     detailed: list[dict[str, Any]] = []
     for (dataset, lookback, horizon), group in sorted(groups.items()):
         date_sets = [{int(row["query_date"]) for row in entry["rows"]} for entry in group]
-        common_dates = set.intersection(*date_sets)
-        if not common_dates:
-            raise ValueError(f"no common evaluation dates for {dataset} {lookback}:{horizon}")
+        common_dates = date_sets[0]
+        if any(dates != common_dates for dates in date_sets[1:]):
+            raise ValueError(
+                f"models do not use identical evaluation dates for "
+                f"{dataset} {lookback}:{horizon}"
+            )
         filtered = [
             [row for row in entry["rows"] if int(row["query_date"]) in common_dates]
             for entry in group
@@ -336,14 +339,31 @@ def build_online_tables(
     by_model: dict[str, list[dict[str, Any]]] = {}
     for row in detailed:
         by_model.setdefault(str(row["model"]), []).append(row)
+    common_configurations = set.intersection(
+        *(
+            {(str(row["dataset"]), str(row["setting"])) for row in rows}
+            for rows in by_model.values()
+        )
+    )
+    if not common_configurations:
+        raise ValueError("compared models have no common dataset and L:H settings")
     average = [
         {
             "model": model,
             **{
-                metric: float(np.mean([float(row[metric]) for row in rows]))
+                metric: float(
+                    np.mean(
+                        [
+                            float(row[metric])
+                            for row in rows
+                            if (str(row["dataset"]), str(row["setting"]))
+                            in common_configurations
+                        ]
+                    )
+                )
                 for metric in METRICS
             },
-            "configurations": len(rows),
+            "configurations": len(common_configurations),
         }
         for model, rows in sorted(by_model.items())
     ]
@@ -365,9 +385,11 @@ def build_online_tables(
             "purposes": list(purposes or []),
             "seeds": list(seeds or []),
             "expected": list(expected or []),
-            "common_date_policy": "intersection_within_dataset_setting",
-            "selected_run_average_policy": "equal_run_mean_by_common_date",
-            "configuration_average_policy": "equal_dataset_setting_mean",
+            "common_date_policy": "identical_dates_required_within_dataset_setting",
+            "selected_run_average_policy": "equal_run_mean_on_identical_dates",
+            "configuration_average_policy": (
+                "equal_mean_on_dataset_setting_intersection_across_all_models"
+            ),
             "files": {
                 "detailed_csv": detailed_path.name,
                 "detailed_tex": detailed_tex.name,

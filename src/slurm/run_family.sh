@@ -7,7 +7,7 @@ case "${EXPERIMENT_MODE:-test}" in
 esac
 
 case "${EXPERIMENT_FAMILY:?}" in
-  main|online_gates|n_store_ablation|n_fit_ablation|fit_stride_ablation|alpha_ablation|k_ablation|l_ablation|h_ablation|feature_design_ablation|formulation_ablation|fixed_protocol_ablation|sota_backbone_ablation|general_scope_ablation|homogeneous_ablation|backbone_ablation) ;;
+  main|tsrag_comparison|deadline_fixed_protocol|deadline_tsrag_comparison|n_datastore_dates_ablation|n_fit_ablation|fit_stride_ablation|alpha_ablation|k_ablation|l_ablation|h_ablation|feature_design_ablation|formulation_ablation|fixed_protocol_ablation|sota_backbone_ablation|general_scope_ablation|homogeneous_ablation|backbone_ablation) ;;
   *) echo "unknown EXPERIMENT_FAMILY=$EXPERIMENT_FAMILY" >&2; exit 2 ;;
 esac
 
@@ -46,13 +46,11 @@ DATA_ROOT="$(resolve_shared_root "${DATA_ROOT:-}" datasets)"
 WEIGHTS_ROOT="$(resolve_shared_root "${WEIGHTS_ROOT:-}" weights)"
 STAGES="${STAGES:-extract,adapt,tables}"
 if [ "${EXPERIMENT_MODE:-test}" = test ]; then
-  PROFILE_N_STORE="${N_STORE:-30000}"
   PROFILE_N_FIT="${N_FIT:-100}"
   PROFILE_PURPOSE="${PURPOSE:-smoke}"
   PROFILE_QUERY_STRIDE="${QUERY_STRIDE:-257}"
   PROFILE_CATBOOST_ITERATIONS="${CATBOOST_ITERATIONS:-2}"
 else
-  PROFILE_N_STORE="${N_STORE:-30000}"
   PROFILE_N_FIT="${N_FIT:-100}"
   PROFILE_PURPOSE="${PURPOSE:-publication}"
   PROFILE_QUERY_STRIDE="${QUERY_STRIDE:-127}"
@@ -68,6 +66,8 @@ export TRANSFORMERS_VERBOSITY=error
 COMMON_ARGS=(
   "family=$EXPERIMENT_FAMILY"
   "mode=${EXPERIMENT_MODE:-test}"
+  "datasets=${DATASETS_OVERRIDE:-null}"
+  "ranges=${RANGES_OVERRIDE:-null}"
   "data_root=$DATA_ROOT"
   "drop_users=${DROP_USERS_OVERRIDE:-null}"
   "weights_root=$WEIGHTS_ROOT"
@@ -75,21 +75,25 @@ COMMON_ARGS=(
   "device=${DEVICE:-cuda}"
   "seed=${SEED:-1}"
   "purpose=$PROFILE_PURPOSE"
-  "n_store=$PROFILE_N_STORE"
+  "n_datastore_dates=${N_DATASTORE_DATES:-null}"
   "n_fit=$PROFILE_N_FIT"
+  "fixed_datastore=${FIXED_DATASTORE:-null}"
+  "fixed_training_set=${FIXED_TRAINING_SET:-null}"
+  "eval_start_date=${EVAL_START_DATE:-null}"
+  "eval_end_date=${EVAL_END_DATE:-null}"
   "fitting_scope=${FITTING_SCOPE:-same_user}"
   "alpha=${ALPHA:-0.01}"
-  "max_k=${MAX_K:-20}"
-  "candidate_k_grid=${CANDIDATE_K_GRID:-[1,5,10,15]}"
+  "max_k=${MAX_K:-null}"
+  "candidate_k_grid=${CANDIDATE_K_GRID:-null}"
   "used_k=${USED_K:-null}"
   "tune_alpha=${TUNE_ALPHA:-true}"
   "ridge_validation_ratio=${RIDGE_VALIDATION_RATIO:-0.2}"
   "ridge_alpha_grid=${RIDGE_ALPHA_GRID:-[0.1,0.01,0.001]}"
-  "tsrag_k=${TSRAG_K:-5}"
+  "tsrag_k=${TSRAG_K:-null}"
   "query_stride=$PROFILE_QUERY_STRIDE"
-  "store_stride=${STORE_STRIDE:-0}"
-  "fit_stride=${FIT_STRIDE:-0}"
-  "align_period=${ALIGN_PERIOD:-true}"
+  "store_stride=${STORE_STRIDE:-null}"
+  "fit_stride=${FIT_STRIDE:-null}"
+  "align_period=${ALIGN_PERIOD:-null}"
   "period=${PERIOD:-0}"
   "retrieval_covariate_mode=${RETRIEVAL_COVARIATE_MODE:-null}"
   "catboost_iterations=$PROFILE_CATBOOST_ITERATIONS"

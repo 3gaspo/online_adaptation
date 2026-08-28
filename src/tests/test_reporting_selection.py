@@ -77,7 +77,7 @@ def test_distinct_average_and_nested_filter_selection() -> None:
         root = Path(temporary)
         identity = root / "results/ridge"
         _complete_run(identity, query_stride=1, dates=(1, 2, 3), mse=0.4)
-        _complete_run(identity, query_stride=2, dates=(2, 3, 4), mse=0.6)
+        _complete_run(identity, query_stride=2, dates=(1, 2, 3), mse=0.6)
         expected = [
             {
                 "dataset": "synthetic",
@@ -131,13 +131,13 @@ def test_distinct_average_and_nested_filter_selection() -> None:
         averaged_ridge = [row for row in averaged_rows if row["model"] == "ridge"]
         assert len(averaged_ridge) == 1
         assert float(averaged_ridge[0]["mse"]) == 0.5
-        assert averaged_ridge[0]["dates"] == "2"
+        assert averaged_ridge[0]["dates"] == "3"
 
 
 def test_profile_contract() -> None:
     project_root = Path(__file__).resolve().parents[2]
     runner = (project_root / "src/slurm/run_family.sh").read_text(encoding="utf-8")
-    assert 'PROFILE_N_STORE="${N_STORE:-30000}"' in runner
+    assert '"n_datastore_dates=${N_DATASTORE_DATES:-null}"' in runner
     assert 'PROFILE_PURPOSE="${PURPOSE:-smoke}"' in runner
     assert 'PROFILE_PURPOSE="${PURPOSE:-publication}"' in runner
 

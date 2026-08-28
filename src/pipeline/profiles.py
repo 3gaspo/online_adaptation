@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 from pathlib import Path
 from typing import Any
 
@@ -12,10 +11,12 @@ from src.proposal import (
     DEFAULT_ALPHA,
     DEFAULT_CANDIDATE_K_GRID,
     DEFAULT_MAX_K,
+    DEFAULT_N_DATASTORE_DATES,
     DEFAULT_N_FIT,
-    DEFAULT_N_STORE,
     DEFAULT_TSRAG_K,
 )
+from src.proposal.contracts import ExtractionConfig
+from src.proposal.date_planning import build_date_plan
 from src.proposal.ridge import BASELINE_VARIABLES
 
 
@@ -57,6 +58,12 @@ DATASET_FREQUENCIES = {
     "exchange_rate": "daily",
 }
 
+DEADLINE_TIME_DATASETS = (
+    "time/ne_china_wind_h",
+    "time/coastal_t_s_h_part11",
+    "time/sg_weather_d",
+)
+
 
 def _time_datasets(data_root: Path) -> list[str]:
     catalog_path = data_root / "time" / "catalog.json"
@@ -68,7 +75,13 @@ def _time_datasets(data_root: Path) -> list[str]:
     return [f"time/{item['name']}" for item in catalog["datasets"]]
 
 
-def datasets_for_mode(mode: str, data_root: str | Path) -> list[str]:
+def datasets_for_mode(
+    mode: str,
+    data_root: str | Path,
+    selected: list[str] | tuple[str, ...] | None = None,
+) -> list[str]:
+    if selected is not None:
+        return [str(dataset) for dataset in selected]
     if mode == "test":
         return ["Electricity"]
     if mode == "small":
@@ -125,7 +138,16 @@ def dataset_frequency(dataset: str, data_root: str | Path) -> str:
     return _normalize_frequency(str(frequency))
 
 
-def range_names_for_mode(mode: str) -> tuple[str, ...]:
+def range_names_for_mode(
+    mode: str,
+    selected: list[str] | tuple[str, ...] | None = None,
+) -> tuple[str, ...]:
+    if selected is not None:
+        values = tuple(str(value) for value in selected)
+        unknown = set(values) - set(RANGE_NAMES)
+        if unknown:
+            raise ValueError(f"unknown range names: {sorted(unknown)}")
+        return values
     if mode == "test":
         return ("long",)
     if mode in {"small", "full"}:
@@ -137,9 +159,13 @@ def settings_for_mode(
     mode: str,
     dataset: str,
     data_root: str | Path,
+    selected_ranges: list[str] | tuple[str, ...] | None = None,
 ) -> list[tuple[int, int]]:
     frequency = dataset_frequency(dataset, data_root)
-    return [RANGE_SETTINGS[frequency][name] for name in range_names_for_mode(mode)]
+    return [
+        RANGE_SETTINGS[frequency][name]
+        for name in range_names_for_mode(mode, selected_ranges)
+    ]
 
 
 def homogeneous_datasets_for_mode(mode: str) -> tuple[str, ...]:
@@ -159,7 +185,8 @@ def _base_task(dataset: str, setting: tuple[int, int]) -> dict[str, Any]:
         "backbone": "chronos2",
         "retrieval_covariate_mode": "past_and_future",
         "method": "full_ridge_shared",
-        "n_store": DEFAULT_N_STORE,
+        "n_datastore_dates": DEFAULT_N_DATASTORE_DATES,
+        "n_store_windows": None,
         "n_fit": DEFAULT_N_FIT,
         "fitting_scope": "same_user",
         "alpha": DEFAULT_ALPHA,
@@ -169,9 +196,15 @@ def _base_task(dataset: str, setting: tuple[int, int]) -> dict[str, Any]:
         "distance_space": "raw",
         "distance_metric": "euclidean",
         "retrieval_scope": "all",
-        "store_mode": "rolling",
+        "fixed_datastore": False,
+        "fixed_training_set": False,
+        "include_fitting_windows": True,
+        "eval_start_date": None,
+        "eval_end_date": None,
+        "split_ratios": None,
+        "align_period": True,
+        "store_stride": 0,
         "fit_stride": 0,
-        "fit_mode": "rolling",
         "homogeneous_only": False,
         "fit_loss": "mse",
         "candidate": "cov",
@@ -179,11 +212,19 @@ def _base_task(dataset: str, setting: tuple[int, int]) -> dict[str, Any]:
     }
 
 
-def _base_grid(mode: str, data_root: str | Path) -> list[dict[str, Any]]:
+def _base_grid(
+    mode: str,
+    data_root: str | Path,
+    *,
+    selected_datasets: list[str] | tuple[str, ...] | None = None,
+    selected_ranges: list[str] | tuple[str, ...] | None = None,
+) -> list[dict[str, Any]]:
     return [
         _base_task(dataset, setting)
-        for dataset in datasets_for_mode(mode, data_root)
-        for setting in settings_for_mode(mode, dataset, data_root)
+        for dataset in datasets_for_mode(mode, data_root, selected_datasets)
+        for setting in settings_for_mode(
+            mode, dataset, data_root, selected_ranges
+        )
     ]
 
 
@@ -191,6 +232,9 @@ def _unfiltered_tasks_for_family(
     family: str,
     mode: str,
     data_root: str | Path,
+    *,
+    selected_datasets: list[str] | tuple[str, ...] | None = None,
+    selected_ranges: list[str] | tuple[str, ...] | None = None,
 ) -> list[dict[str, Any]]:
     """Expand one family into explicit, independently manifested tasks."""
     if family == "homogeneous_ablation":
@@ -200,38 +244,136 @@ def _unfiltered_tasks_for_family(
             for setting in settings_for_mode(mode, dataset, data_root)
             for value in (False, True)
         ]
-    base = _base_grid(mode, data_root)
-    if family == "main":
-        tasks = list(base)
-        for dataset in datasets_for_mode(mode, data_root):
+    base = _base_grid(
+        mode,
+        data_root,
+        selected_datasets=selected_datasets,
+        selected_ranges=selected_ranges,
+    )
+    if family == "deadline_fixed_protocol":
+        return [
+            {
+                **task,
+                "n_store_windows": 20_000,
+                "n_fit": 0.5,
+                "split_ratios": (0.3, 0.5, 0.2),
+                "store_stride": 24,
+                "fit_stride": 24,
+                "align_period": True,
+                "fixed_datastore": fixed_datastore,
+                "fixed_training_set": fixed_training_set,
+            }
+            for task in base
+            for fixed_datastore in (False, True)
+            for fixed_training_set in (False, True)
+        ]
+    if family == "deadline_tsrag_comparison":
+        metadata = _time_metadata(Path(data_root).expanduser().resolve())
+        requested = datasets_for_mode(mode, data_root, selected_datasets)
+        tasks: list[dict[str, Any]] = []
+        for dataset in requested:
+            if dataset not in DEADLINE_TIME_DATASETS:
+                raise ValueError(
+                    f"deadline TS-RAG dataset {dataset!r} is not in the "
+                    f"verified subset {DEADLINE_TIME_DATASETS}"
+                )
+            values = metadata.get(dataset)
+            if values is None:
+                raise KeyError(f"prepared TIME catalog lacks {dataset!r}")
+            users = int(values["num_series"])
+            dates = int(values["num_timestamps"])
+            ridge_store_dates = 20_000 // users
+            ridge = {
+                **_base_task(dataset, (512, 64)),
+                "n_datastore_dates": ridge_store_dates,
+                "n_store_windows": 20_000,
+                "n_fit": 30,
+                "store_stride": 1,
+                "fit_stride": 24,
+                "align_period": False,
+                "eval_start_date": int(round(0.8 * dates)) - 1,
+                "max_k": DEFAULT_MAX_K,
+                "candidate_k_grid": DEFAULT_CANDIDATE_K_GRID,
+                "used_k": None,
+            }
+            tasks.append(ridge)
             tasks.append(
                 {
-                    **_base_task(dataset, (512, 64)),
+                    **ridge,
                     "backbone": "chronos_bolt",
                     "retrieval_covariate_mode": "none",
                     "method": "tsrag",
                     "distance_space": "tsrag",
                     "retrieval_scope": "same_user",
+                    "n_datastore_dates": ridge_store_dates,
+                    "n_store_windows": 20_000,
+                    "split_ratios": (0.3, 0.5, 0.2),
+                    "fixed_datastore": True,
+                    "include_fitting_windows": False,
                     "max_k": DEFAULT_TSRAG_K,
+                    "candidate_k_grid": (DEFAULT_TSRAG_K,),
                     "used_k": DEFAULT_TSRAG_K,
                     "tune_alpha": False,
                 }
             )
         return tasks
-    if family == "online_gates":
+    if family == "main":
         return [
             {
                 **task,
                 "method": method,
-                "used_k": DEFAULT_MAX_K,
-                "tune_alpha": False,
+                "used_k": (
+                    DEFAULT_MAX_K
+                    if method in {"bayes_cov_shared_soft", "covariate_prediction"}
+                    else None
+                ),
+                "tune_alpha": method not in {"bayes_cov_shared_soft", "covariate_prediction"},
             }
             for task in base
-            for method in ("bayes_cov_shared_soft", "catboost_cov_shared_soft")
+            for method in (
+                "full_ridge_shared",
+                "y_convex_shared",
+                "bayes_cov_shared_soft",
+                "covariate_prediction",
+            )
         ]
-    if family == "n_store_ablation":
-        values = (1_000, 2_000, 5_000) if mode == "test" else (10_000, 20_000, 30_000, 50_000)
-        return [{**task, "n_store": value} for task in base for value in values]
+    if family == "tsrag_comparison":
+        tasks: list[dict[str, Any]] = []
+        for dataset in datasets_for_mode(mode, data_root):
+            datastore_ratio = 0.6 if dataset.split("/")[-1].lower().startswith("ett") else 0.7
+            ridge = {
+                **_base_task(dataset, (512, 64)),
+                "retrieval_scope": "same_user",
+                "n_datastore_dates": datastore_ratio,
+                "store_stride": 1,
+                "fit_stride": 1,
+                "align_period": False,
+                "eval_start_date": 0.8,
+                "max_k": DEFAULT_TSRAG_K,
+                "candidate_k_grid": (DEFAULT_TSRAG_K,),
+                "used_k": DEFAULT_TSRAG_K,
+            }
+            tasks.append(ridge)
+            tasks.append(
+                {
+                    **ridge,
+                    "backbone": "chronos_bolt",
+                    "retrieval_covariate_mode": "none",
+                    "method": "tsrag",
+                    "distance_space": "tsrag",
+                    "fixed_datastore": True,
+                    "include_fitting_windows": False,
+                    "tune_alpha": False,
+                }
+            )
+        return tasks
+    if family == "n_datastore_dates_ablation":
+        values = (25, 50, 100) if mode == "test" else (50, 100, 200, 500)
+        return [
+            {**task, "n_datastore_dates": value}
+            for task in base
+            for value in values
+        ]
     if family == "n_fit_ablation":
         values = (50, 100, 500) if mode == "test" else (50, 100, 500, 1_000)
         return [{**task, "n_fit": value} for task in base for value in values]
@@ -285,10 +427,14 @@ def _unfiltered_tasks_for_family(
         return [{**task, "method": method} for task in base for method in methods]
     if family == "fixed_protocol_ablation":
         return [
-            {**task, "store_mode": store_mode, "fit_mode": fit_mode}
+            {
+                **task,
+                "fixed_datastore": fixed_datastore,
+                "fixed_training_set": fixed_training_set,
+            }
             for task in base
-            for store_mode in ("rolling", "fixed")
-            for fit_mode in ("rolling", "fixed")
+            for fixed_datastore in (False, True)
+            for fixed_training_set in (False, True)
         ]
     if family == "general_scope_ablation":
         return [
@@ -336,46 +482,67 @@ def tasks_for_family(
     family: str,
     mode: str,
     data_root: str | Path,
+    *,
+    selected_datasets: list[str] | tuple[str, ...] | None = None,
+    selected_ranges: list[str] | tuple[str, ...] | None = None,
 ) -> list[dict[str, Any]]:
-    tasks = _unfiltered_tasks_for_family(family, mode, data_root)
+    tasks = _unfiltered_tasks_for_family(
+        family,
+        mode,
+        data_root,
+        selected_datasets=selected_datasets,
+        selected_ranges=selected_ranges,
+    )
     metadata = _time_metadata(Path(data_root).expanduser().resolve())
     feasible: list[dict[str, Any]] = []
     for task in tasks:
         frequency = dataset_frequency(str(task["dataset"]), data_root)
         task["period"] = PERIOD_BY_FREQUENCY[frequency]
-        task["store_stride"] = PERIOD_BY_FREQUENCY[frequency]
+        if int(task["store_stride"]) == 0:
+            task["store_stride"] = PERIOD_BY_FREQUENCY[frequency]
         if int(task["fit_stride"]) == 0:
             task["fit_stride"] = PERIOD_BY_FREQUENCY[frequency]
         values = metadata.get(str(task["dataset"]))
         if values is None:
             feasible.append(task)
             continue
-        users = int(values["num_series"])
         dates = int(values["num_timestamps"])
-        fitting_dates = int(task["n_fit"])
-        if task["retrieval_scope"] == "same_user":
-            retrieval_dates = int(task["max_k"])
-        elif task["retrieval_scope"] == "all":
-            retrieval_dates = math.ceil(int(task["max_k"]) / users)
-        else:
-            retrieval_dates = math.ceil(int(task["max_k"]) / (users - 1))
-        required_dates = (
-            int(task["lookback"])
-            + 3 * int(task["horizon"])
-            + retrieval_dates * int(task["store_stride"])
-            + fitting_dates * int(task["fit_stride"])
-            - 2
+        extraction = ExtractionConfig(
+            dataset=str(task["dataset"]),
+            lookback=int(task["lookback"]),
+            horizon=int(task["horizon"]),
+            backbone=str(task["backbone"]),
+            n_datastore_dates=task["n_datastore_dates"],
+            n_store_windows=task.get("n_store_windows"),
+            n_fit=task["n_fit"],
+            max_k=int(task["max_k"]),
+            retrieval_scope=str(task["retrieval_scope"]),
+            fixed_datastore=bool(task["fixed_datastore"]),
+            fixed_training_set=bool(task["fixed_training_set"]),
+            include_fitting_windows=bool(task["include_fitting_windows"]),
+            store_stride=int(task["store_stride"]),
+            fit_stride=int(task["fit_stride"]),
+            align_period=bool(task["align_period"]),
+            period=int(task["period"]),
+            eval_start_date=task["eval_start_date"],
+            eval_end_date=task["eval_end_date"],
+            split_ratios=task.get("split_ratios"),
         )
-        if dates >= required_dates:
-            feasible.append(task)
-        else:
+        try:
+            build_date_plan(
+                n_dates=dates,
+                n_users=int(values["num_series"]),
+                config=extraction,
+            )
+        except ValueError as error:
             LOGGER.info(
-                "skip causally infeasible TIME task dataset=%s L=%s H=%s dates=%s required=%s users=%s",
+                "skip causally infeasible TIME task dataset=%s L=%s H=%s dates=%s reason=%s",
                 task["dataset"],
                 task["lookback"],
                 task["horizon"],
                 dates,
-                required_dates,
-                users,
+                error,
             )
+        else:
+            feasible.append(task)
     return feasible

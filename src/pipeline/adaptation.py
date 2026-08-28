@@ -20,6 +20,7 @@ from src.pipeline.contracts import (
 )
 from src.proposal.contracts import AdapterConfig, ExtractionConfig
 from src.proposal.datastore import fitting_dates
+from src.proposal.date_planning import build_date_plan
 from src.proposal.extraction import ContextForecastCache
 from src.proposal.gates import (
     GATE_FEATURE_NAMES,
@@ -123,10 +124,21 @@ def evaluate_online_linear(
         else (0,)
     )
     extraction_config = ExtractionConfig(**load_array_manifest(extraction_dir)["config"])
+    if config.fixed_training_set != extraction_config.fixed_training_set:
+        raise ValueError("adapter and extraction fixed_training_set settings differ")
+    date_plan = build_date_plan(
+        n_dates=dataset.n_dates,
+        n_users=dataset.n_users,
+        config=extraction_config,
+    )
     date_to_index = {
         int(date): index for index, date in enumerate(retrieval_window_dates)
     }
     trackers: dict[int, dict[str, Any]] = {}
+    fixed_fits: dict[
+        int,
+        tuple[np.ndarray, list[int], list[dict[str, float | int]]],
+    ] = {}
     active_date_counts: dict[int, int] = {}
     cached_designs: dict[tuple[int, int], tuple[np.ndarray, np.ndarray]] = {}
     metric_rows: list[dict[str, Any]] = []
@@ -182,8 +194,6 @@ def evaluate_online_linear(
         tracker: dict[str, Any],
         desired: tuple[int, ...],
     ) -> None:
-        if config.fit_mode == "fixed" and tracker["frozen"]:
-            return
         validation_date_count = validation_dates if selection_enabled else 0
         desired_full = set(desired)
         desired_train = set(desired[:-validation_date_count] if validation_date_count else desired)
@@ -206,7 +216,6 @@ def evaluate_online_linear(
         tracker["full_dates"] = desired_full
         tracker["train_dates"] = desired_train
         tracker["validation_dates"] = desired_validation
-        tracker["frozen"] = config.fit_mode == "fixed" and len(desired) == config.n_fit
         for index in tuple(active_date_counts):
             if active_date_counts[index] == 0:
                 active_date_counts.pop(index)
@@ -224,7 +233,10 @@ def evaluate_online_linear(
             continue
         adaptation_started = perf_counter()
         fitting_date_values = fitting_dates(
-            current_date, config=extraction_config, n_fit=config.n_fit
+            current_date,
+            config=extraction_config,
+            plan=date_plan,
+            n_fit=config.n_fit,
         )
         desired = tuple(
             date_to_index[int(date)]
@@ -243,67 +255,82 @@ def evaluate_online_linear(
                 "full_dates": set(),
                 "train_dates": set(),
                 "validation_dates": set(),
-                "frozen": False,
             },
         )
         reconcile(tracker, desired)
         full_statistics = tracker["full"]
         selection_train = tracker["train"]
         selection_validation = tracker["validation"]
-        padded_coefficients: list[np.ndarray] = []
-        selected_ks: list[int] = []
-        for scope in scope_keys:
-            if selection_enabled:
-                choices: list[tuple[float, int, float]] = []
-                for k in candidate_ks:
-                    for alpha in candidate_alphas:
-                        candidate_coefficients = selection_train[scope][k].solve(
-                            float(alpha)
-                        )
-                        loss = selection_validation[scope][k].mean_squared_error(
-                            candidate_coefficients
-                        )
-                        choices.append((loss, k, float(alpha)))
-                validation_loss, selected_k, selected_alpha = min(
-                    choices,
-                    key=lambda item: (item[0], item[1], -item[2]),
+        fixed_fit = fixed_fits.get(grid_key) if config.fixed_training_set else None
+        if fixed_fit is None:
+            padded_coefficients: list[np.ndarray] = []
+            selected_ks = []
+            selection_metadata: list[dict[str, float | int]] = []
+            for scope in scope_keys:
+                if selection_enabled:
+                    choices: list[tuple[float, int, float]] = []
+                    for k in candidate_ks:
+                        for alpha in candidate_alphas:
+                            candidate_coefficients = selection_train[scope][k].solve(
+                                float(alpha)
+                            )
+                            loss = selection_validation[scope][k].mean_squared_error(
+                                candidate_coefficients
+                            )
+                            choices.append((loss, k, float(alpha)))
+                    validation_loss, selected_k, selected_alpha = min(
+                        choices,
+                        key=lambda item: (item[0], item[1], -item[2]),
+                    )
+                else:
+                    selected_k = candidate_ks[0]
+                    selected_alpha = candidate_alphas[0]
+                    validation_loss = float("nan")
+                fitted_coefficients = full_statistics[scope][selected_k].solve(
+                    selected_alpha
                 )
-            else:
-                selected_k = candidate_ks[0]
-                selected_alpha = candidate_alphas[0]
-                validation_loss = float("nan")
-            coefficients = full_statistics[scope][selected_k].solve(selected_alpha)
-            selected_names = design_feature_names(
-                design_name, formulation, selected_k
+                selected_names = design_feature_names(
+                    design_name, formulation, selected_k
+                )
+                padded = (
+                    np.zeros(len(feature_names), dtype=np.float64)
+                    if mode == "shared"
+                    else np.zeros((horizon, len(feature_names)), dtype=np.float64)
+                )
+                selected_columns = [feature_names.index(name) for name in selected_names]
+                if mode == "shared":
+                    padded[selected_columns] = fitted_coefficients
+                else:
+                    padded[:, selected_columns] = fitted_coefficients
+                padded_coefficients.append(padded)
+                selected_ks.append(selected_k)
+                selection_metadata.append(
+                    {
+                        "selected_alpha": selected_alpha,
+                        "selected_k": selected_k,
+                        "validation_loss": validation_loss,
+                        "adaptor_parameters": len(selected_names)
+                        * (horizon if mode == "horizon" else 1),
+                    }
+                )
+            coefficients = (
+                np.stack(padded_coefficients)
+                if config.fitting_scope == "same_user"
+                else padded_coefficients[0]
             )
-            padded = (
-                np.zeros(len(feature_names), dtype=np.float64)
-                if mode == "shared"
-                else np.zeros((horizon, len(feature_names)), dtype=np.float64)
-            )
-            selected_columns = [feature_names.index(name) for name in selected_names]
-            if mode == "shared":
-                padded[selected_columns] = coefficients
-            else:
-                padded[:, selected_columns] = coefficients
-            padded_coefficients.append(padded)
-            selected_ks.append(selected_k)
-            selection_row = {
-                    "query_date": current_date,
-                    "selected_alpha": selected_alpha,
-                    "selected_k": selected_k,
-                    "validation_loss": validation_loss,
-                    "adaptor_parameters": len(selected_names)
-                    * (horizon if mode == "horizon" else 1),
-                }
+            if config.fixed_training_set:
+                fixed_fits[grid_key] = (
+                    coefficients,
+                    selected_ks,
+                    selection_metadata,
+                )
+        else:
+            coefficients, selected_ks, selection_metadata = fixed_fit
+        for scope, metadata in zip(scope_keys, selection_metadata, strict=True):
+            selection_row = {"query_date": current_date, **metadata}
             if config.fitting_scope == "same_user":
                 selection_row["user_id"] = int(scope)
             selection_rows.append(selection_row)
-        coefficients = (
-            np.stack(padded_coefficients)
-            if config.fitting_scope == "same_user"
-            else padded_coefficients[0]
-        )
         vanilla = np.asarray(arrays["vanilla"][current_index], dtype=np.float64)
         target = np.asarray(arrays["y"][current_index], dtype=np.float64)
         prediction = np.empty_like(vanilla)
@@ -473,6 +500,139 @@ def evaluate_online_linear(
         "manifest": result_path,
     }
 
+
+def evaluate_covariate_prediction(
+    *,
+    extraction_dir: str | Path,
+    output_dir: str | Path,
+    config: AdapterConfig,
+    dataset: Any,
+    model: torch.nn.Module,
+    device: torch.device,
+) -> dict[str, Path]:
+    """Evaluate the frozen TSFM's direct retrieved-covariate prediction."""
+    if config.method != "covariate_prediction":
+        raise ValueError("direct covariate evaluation requires covariate_prediction")
+    config.validate()
+    if config.used_k is None:
+        raise ValueError("covariate_prediction requires one explicit used_k")
+    if device.type == "cuda":
+        torch.cuda.synchronize(device)
+    started = perf_counter()
+    arrays = open_extraction_arrays(extraction_dir, dataset=dataset)
+    if int(config.used_k) > int(arrays["neighbor_y"].shape[2]):
+        raise ValueError("covariate_prediction used_k exceeds extracted neighbors")
+    output = Path(output_dir).expanduser().resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    context_cache = ContextForecastCache(
+        arrays=arrays,
+        output_dir=output,
+        model=model,
+        device=device,
+    )
+    dates = np.asarray(arrays["retrieval_window_dates"], dtype=np.int64)
+    rows: list[dict[str, Any]] = []
+    user_rows: list[dict[str, Any]] = []
+    cold_seconds: float | None = None
+    for date_index in np.flatnonzero(
+        np.asarray(arrays["is_evaluation_query"], dtype=bool)
+    ):
+        batch_started = perf_counter()
+        prediction = np.asarray(
+            context_cache.get(int(date_index), int(config.used_k)), dtype=np.float64
+        )
+        vanilla = np.asarray(arrays["vanilla"][date_index], dtype=np.float64)
+        target = np.asarray(arrays["y"][date_index], dtype=np.float64)
+        scale = np.maximum(
+            np.asarray(arrays["query_std"][date_index], dtype=np.float64)[:, None],
+            1e-8,
+        )
+        query_date = int(dates[date_index])
+        rows.append(
+            _date_metrics(
+                query_date,
+                config.method,
+                prediction,
+                target,
+                vanilla,
+                scale,
+            )
+        )
+        user_rows.extend(
+            _user_date_metrics(
+                query_date,
+                config.method,
+                prediction,
+                target,
+                vanilla,
+                scale,
+            )
+        )
+        if cold_seconds is None:
+            cold_seconds = perf_counter() - batch_started
+    metrics_path = output / "metrics.json"
+    metrics_path.write_text(
+        json.dumps(_aggregate_user_metrics(user_rows), indent=2), encoding="utf-8"
+    )
+    per_date_path = output / "per_date_metrics.csv"
+    with per_date_path.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    per_user_path = output / "per_user_date_metrics.csv"
+    with per_user_path.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(user_rows[0]))
+        writer.writeheader()
+        writer.writerows(user_rows)
+    context_timing = context_cache.write_timing()
+    assert cold_seconds is not None
+    timing = write_compute_timing(
+        output,
+        extraction_timing=Path(extraction_dir) / "extraction_timing.json",
+        adaptation_seconds=perf_counter() - started,
+        evaluation_samples=len(user_rows),
+        cold_adaptation_seconds=cold_seconds,
+        method=config.method,
+    )
+    manifest = output / "result_manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "format": RESULT_FORMAT,
+                "method": config.method,
+                "adapter_config": config.scientific_dict(),
+                "parameters": adaptor_parameter_metadata(
+                    0, "parameter-free direct retrieved-covariate prediction"
+                ),
+                "evaluation": {
+                    "first_query_date": int(rows[0]["query_date"]),
+                    "last_query_date": int(rows[-1]["query_date"]),
+                    "dates": len(rows),
+                },
+                "files": {
+                    "metrics": metrics_path.name,
+                    "per_date_metrics": per_date_path.name,
+                    "per_user_date_metrics": per_user_path.name,
+                    "compute_timing": timing.name,
+                    "context_forecast_timing": str(
+                        context_timing.relative_to(output)
+                    ),
+                },
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    return {
+        "metrics": metrics_path,
+        "per_date": per_date_path,
+        "per_user_date": per_user_path,
+        "compute_timing": timing,
+        "context_timing": context_timing,
+        "manifest": manifest,
+    }
+
+
 def evaluate_online_gate(
     *,
     extraction_dir: str | Path,
@@ -525,6 +685,13 @@ def evaluate_online_gate(
         arrays["retrieval_window_dates"], dtype=np.int64
     )
     extraction_config = ExtractionConfig(**load_array_manifest(extraction_dir)["config"])
+    if config.fixed_training_set != extraction_config.fixed_training_set:
+        raise ValueError("adapter and extraction fixed_training_set settings differ")
+    date_plan = build_date_plan(
+        n_dates=dataset.n_dates,
+        n_users=dataset.n_users,
+        config=extraction_config,
+    )
     date_to_index = {
         int(date): index for index, date in enumerate(retrieval_window_dates)
     }
@@ -579,7 +746,10 @@ def evaluate_online_gate(
 
         batch_started = perf_counter()
         selected_dates = fitting_dates(
-            current_date, config=extraction_config, n_fit=config.n_fit
+            current_date,
+            config=extraction_config,
+            plan=date_plan,
+            n_fit=config.n_fit,
         )
         selected_indices = [
             date_to_index[int(date)] for date in selected_dates if int(date) in date_to_index
@@ -587,7 +757,7 @@ def evaluate_online_gate(
         if len(selected_indices) < config.n_fit:
             continue
         grid_key = int(selected_dates[-1] % extraction_config.fit_stride)
-        if config.fit_mode == "fixed":
+        if config.fixed_training_set:
             selected_indices = fixed_indices_by_grid.setdefault(grid_key, selected_indices)
         models = models_by_grid.setdefault(
             grid_key, {scope: None for scope in scope_keys}
@@ -607,7 +777,7 @@ def evaluate_online_gate(
                 active[scope].append((fitting_index, user, features[user], advantage))
                 advantage_sum[scope] += advantage
                 advantage_square_sum[scope] += advantage * advantage
-        frozen = config.fit_mode == "fixed"
+        frozen = config.fixed_training_set
 
         advantage_means = {
             scope: advantage_sum[scope] / len(active[scope])

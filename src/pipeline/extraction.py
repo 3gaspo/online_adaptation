@@ -14,12 +14,8 @@ import torch
 from src.data.neighbors import build_window_batch
 from src.pipeline.contracts import write_array_manifest
 from src.proposal.contracts import ExtractionConfig
-from src.proposal.datastore import (
-    candidate_dates,
-    first_evaluation_query_date,
-    first_retrieval_window_date,
-    fitting_dates,
-)
+from src.proposal.datastore import candidate_dates, fitting_dates
+from src.proposal.date_planning import build_date_plan
 from src.proposal.extraction import _memmap, _predict, _scoped_neighbors, _window_metadata
 from src.results.diagnostics import (
     neighbor_lookback_distances,
@@ -81,46 +77,39 @@ def extract_online_features(
     )
     window_lookback = windows[:, :, : config.lookback]
 
-    first_retrieval = first_retrieval_window_date(
-        lookback=config.lookback,
-        horizon=config.horizon,
-        n_store=config.n_store,
+    date_plan = build_date_plan(
+        n_dates=dataset.n_dates,
         n_users=dataset.n_users,
-        retrieval_scope=config.retrieval_scope,
-        neighbors=config.max_k,
-        store_stride=config.store_stride,
-        align_period=config.align_period,
-        period=config.period,
-        store_mode=config.store_mode,
+        config=config,
     )
-    first_query = first_evaluation_query_date(
-        first_retrieval_date=first_retrieval,
-        horizon=config.horizon,
-        n_fit=config.n_fit,
-        fit_stride=config.fit_stride,
-        align_period=config.align_period,
-        period=config.period,
+    candidates_per_query = int(date_plan.n_datastore_dates) * (
+        1
+        if config.retrieval_scope == "same_user"
+        else dataset.n_users - 1
+        if config.retrieval_scope == "other_users"
+        else dataset.n_users
     )
-    last_query = dataset.n_dates - config.horizon - 1
-    evaluation_query_dates = np.arange(
-        first_query,
-        last_query + 1,
-        config.query_stride,
-        dtype=np.int64,
+    if candidates_per_query < int(config.max_k):
+        raise ValueError(
+            f"datastore supplies {candidates_per_query} candidates per query, "
+            f"fewer than max_k={config.max_k}"
+        )
+    first_retrieval = int(date_plan.first_retrieval_date)
+    evaluation_query_dates = np.asarray(
+        date_plan.evaluation_query_dates, dtype=np.int64
     )
-    if not len(evaluation_query_dates):
-        raise ValueError("configuration contains no causally evaluable query dates")
 
     required = np.zeros(len(window_dates), dtype=np.bool_)
     fitting_by_query: dict[int, np.ndarray] = {}
     for query_date_raw in evaluation_query_dates:
         query_date = int(query_date_raw)
-        selected = fitting_dates(query_date, config=config)
-        if len(selected) != config.n_fit or int(selected[0]) < first_retrieval:
-            raise ValueError(f"query {query_date} lacks its complete fitting grid")
-        fitting_by_query[query_date] = selected
         required[date_to_position[query_date]] = True
-        required[[date_to_position[int(date)] for date in selected]] = True
+        if config.include_fitting_windows:
+            selected = fitting_dates(query_date, config=config, plan=date_plan)
+            if len(selected) != date_plan.n_fit or int(selected[0]) < first_retrieval:
+                raise ValueError(f"query {query_date} lacks its complete fitting grid")
+            fitting_by_query[query_date] = selected
+            required[[date_to_position[int(date)] for date in selected]] = True
     retrieval_window_dates = window_dates[np.flatnonzero(required)]
     retrieval_index = {
         int(date): index for index, date in enumerate(retrieval_window_dates)
@@ -183,7 +172,7 @@ def extract_online_features(
         representation_required = np.zeros(len(window_dates), dtype=np.bool_)
         for retrieval_date_raw in retrieval_window_dates:
             retrieval_date = int(retrieval_date_raw)
-            dates = candidate_dates(retrieval_date, config=config, n_users=u_count)
+            dates = candidate_dates(retrieval_date, config=config, plan=date_plan)
             representation_required[date_to_position[retrieval_date]] = True
             representation_required[
                 [date_to_position[int(date)] for date in dates]
@@ -265,7 +254,7 @@ def extract_online_features(
 
     def process(retrieval_date: int) -> None:
         row = retrieval_index[retrieval_date]
-        store_dates = candidate_dates(retrieval_date, config=config, n_users=u_count)
+        store_dates = candidate_dates(retrieval_date, config=config, plan=date_plan)
         if not len(store_dates):
             raise ValueError(f"retrieval window {retrieval_date} has an empty datastore")
         all_features = features(
@@ -339,7 +328,7 @@ def extract_online_features(
     cold_dates = np.unique(
         np.concatenate(
             (
-                fitting_by_query[cold_query],
+                fitting_by_query.get(cold_query, np.empty(0, dtype=np.int64)),
                 np.asarray([cold_query], dtype=np.int64),
             )
         )
@@ -473,6 +462,7 @@ def extract_online_features(
         "window_id": "window_date_position * users + user_position",
         "retrieval_window_rows": int(r_count * u_count),
         "evaluation_query_batches": int(len(evaluation_query_dates)),
+        "date_plan": date_plan.scientific_dict(),
         "computed_forecasts": int(len(forecast_order)),
         "total_extraction_seconds": total_extraction_seconds,
         "cold_batch": {

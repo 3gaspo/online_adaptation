@@ -1,7 +1,11 @@
 .venv
 .secrets/
 AGENTS.md
-archive/
+archive/*
+!archive/stale_runs/
+!archive/stale_runs/**
+!archive/retired_external_models/
+!archive/retired_external_models/**
 __pycache__/
 *.py[cod]
 outputs/*
@@ -24,9 +28,5 @@ weights/*
 !weights/.gitkeep
 old_outputs
 old_logs
-/archive/*
-!/archive/stale_runs/
-!/archive/stale_runs/**
-
 # Thesis project local artifacts
 .venv/
