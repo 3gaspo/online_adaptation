@@ -13,7 +13,7 @@ class ExtractionConfig:
     backbone: str = "chronos2"
     n_datastore_dates: int | float = 100
     n_store_windows: int | None = None
-    n_fit: int | float = 100
+    n_fit: int = 100
     max_k: int = 20
     distance_space: str = "raw"
     distance_metric: str = "euclidean"
@@ -48,15 +48,10 @@ class ExtractionConfig:
         ):
             if int(getattr(self, name)) <= 0:
                 raise ValueError(f"{name} must be positive")
-        if isinstance(self.n_fit, bool):
-            raise ValueError("n_fit must be an integer count or split ratio")
-        if isinstance(self.n_fit, int):
-            if self.n_fit <= 0:
-                raise ValueError("integer n_fit must be positive")
-        elif self.split_ratios is None or not 0.0 < float(self.n_fit) <= 1.0:
-            raise ValueError(
-                "fractional n_fit requires split_ratios and must lie in (0, 1]"
-            )
+        if isinstance(self.n_fit, bool) or not isinstance(self.n_fit, int):
+            raise ValueError("n_fit must be an integer date count")
+        if self.n_fit <= 0:
+            raise ValueError("n_fit must be positive")
         if isinstance(self.n_datastore_dates, bool):
             raise ValueError("n_datastore_dates must be an integer count or a ratio")
         if isinstance(self.n_datastore_dates, int):

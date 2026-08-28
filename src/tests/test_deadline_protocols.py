@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from src.pipeline.profiles import DEADLINE_TIME_DATASETS, tasks_for_family
+from src.pipeline.profiles import tasks_for_family
 from src.proposal.contracts import ExtractionConfig
 from src.proposal.date_planning import build_date_plan
 
@@ -17,6 +17,7 @@ TIME_METADATA = {
     "time/ne_china_wind_h": (8_765, 4, "H"),
     "time/coastal_t_s_h_part11": (8_784, 6, "H"),
     "time/sg_weather_d": (2_953, 24, "D"),
+    "time/other_h": (8_760, 8, "H"),
 }
 
 
@@ -54,7 +55,7 @@ class DeadlineProtocolTest(unittest.TestCase):
             selected_datasets=["Electricity", "Solar"],
             selected_ranges=["short", "long"],
         )
-        self.assertEqual(len(tasks), 16)
+        self.assertEqual(len(tasks), 32)
         sizes = {"Electricity": (26_304, 312), "Solar": (8_760, 137)}
         grouped: dict[tuple[str, int, int], list[tuple[int, ...]]] = {}
         arms = set()
@@ -67,17 +68,81 @@ class DeadlineProtocolTest(unittest.TestCase):
             grouped.setdefault(
                 (task["dataset"], task["lookback"], task["horizon"]), []
             ).append(plan.evaluation_query_dates)
-            arms.add((task["fixed_datastore"], task["fixed_training_set"]))
+            arms.add(
+                (
+                    task["fixed_datastore"],
+                    task["fixed_training_set"],
+                    task["fitting_scope"],
+                )
+            )
+            self.assertIsInstance(task["n_fit"], int)
             self.assertEqual(plan.split_boundaries[-1], sizes[task["dataset"]][0])
             self.assertLessEqual(
                 plan.n_datastore_dates * sizes[task["dataset"]][1], 20_000
             )
             self.assertEqual(task["n_store_windows"], 20_000)
             self.assertEqual(task["split_ratios"], (0.3, 0.5, 0.2))
-        self.assertEqual(arms, {(False, False), (False, True), (True, False), (True, True)})
+        self.assertEqual(
+            arms,
+            {
+                (fixed_datastore, fixed_training_set, fitting_scope)
+                for fixed_datastore in (False, True)
+                for fixed_training_set in (False, True)
+                for fitting_scope in ("same_user", "all")
+            },
+        )
         self.assertEqual(len(grouped), 4)
         for grids in grouped.values():
+            self.assertEqual(len(grids), 8)
             self.assertEqual(len(set(grids)), 1)
+
+        priority = tasks_for_family(
+            "deadline_fixed_protocol",
+            "small",
+            ROOT / "datasets",
+            selected_datasets=["Electricity", "Solar"],
+            selected_ranges=["short", "long"],
+            deadline_part="priority",
+        )
+        remainder = tasks_for_family(
+            "deadline_fixed_protocol",
+            "small",
+            ROOT / "datasets",
+            selected_datasets=["Electricity", "Solar"],
+            selected_ranges=["short", "long"],
+            deadline_part="remainder",
+        )
+        online_per_user = tasks_for_family(
+            "deadline_fixed_protocol",
+            "small",
+            ROOT / "datasets",
+            selected_datasets=["Electricity", "Solar"],
+            selected_ranges=["short", "long"],
+            deadline_part="online_per_user",
+        )
+        fixed_shared = tasks_for_family(
+            "deadline_fixed_protocol",
+            "small",
+            ROOT / "datasets",
+            selected_datasets=["Electricity", "Solar"],
+            selected_ranges=["short", "long"],
+            deadline_part="fixed_shared",
+        )
+        self.assertEqual(len(priority), 8)
+        self.assertEqual(len(remainder), 24)
+        self.assertEqual(len(online_per_user), 4)
+        self.assertEqual(len(fixed_shared), 4)
+        self.assertEqual(
+            {
+                (
+                    task["fixed_datastore"],
+                    task["fixed_training_set"],
+                    task["fitting_scope"],
+                )
+                for task in priority
+            },
+            {(False, False, "same_user"), (True, True, "all")},
+        )
 
     def test_time_ridge_and_tsrag_share_exact_t3_dates(self) -> None:
         with tempfile.TemporaryDirectory(dir=ROOT / "outputs") as directory:
@@ -101,10 +166,27 @@ class DeadlineProtocolTest(unittest.TestCase):
                 "deadline_tsrag_comparison",
                 "full",
                 data_root,
-                selected_datasets=list(DEADLINE_TIME_DATASETS),
+                selected_datasets=list(TIME_METADATA),
             )
 
-        self.assertEqual(len(tasks), 6)
+            priority = tasks_for_family(
+                "deadline_tsrag_comparison",
+                "full",
+                data_root,
+                selected_datasets=list(TIME_METADATA),
+                deadline_part="priority",
+            )
+            remainder = tasks_for_family(
+                "deadline_tsrag_comparison",
+                "full",
+                data_root,
+                selected_datasets=list(TIME_METADATA),
+                deadline_part="remainder",
+            )
+
+        self.assertEqual(len(tasks), 8)
+        self.assertEqual(len(priority), 6)
+        self.assertEqual(len(remainder), 2)
         for dataset, (dates, users, _) in TIME_METADATA.items():
             ridge, tsrag = [task for task in tasks if task["dataset"] == dataset]
             ridge_plan = build_date_plan(
@@ -118,9 +200,21 @@ class DeadlineProtocolTest(unittest.TestCase):
                 tsrag_plan.evaluation_query_dates,
             )
             self.assertEqual(ridge["n_store_windows"], 20_000)
-            self.assertEqual(ridge["n_datastore_dates"], 20_000 // users)
+            self.assertLessEqual(ridge_plan.n_datastore_dates * users, 20_000)
             self.assertEqual(ridge["n_fit"], 30)
             self.assertEqual(ridge["fit_stride"], 24)
+            self.assertTrue(ridge["align_period"])
+            self.assertEqual(ridge["store_stride"], ridge["period"])
+            fit_gap = (
+                ((ridge["horizon"] + ridge["period"] - 1) // ridge["period"])
+                * ridge["period"]
+                if ridge["fit_stride"] % ridge["period"] == 0
+                else ridge["horizon"]
+            )
+            self.assertEqual(
+                ridge_plan.fitting_dates[-1] + fit_gap,
+                ridge_plan.evaluation_start_date,
+            )
             self.assertIsNone(ridge["used_k"])
             self.assertEqual(ridge["candidate_k_grid"], (1, 5, 10, 15))
             self.assertTrue(tsrag["fixed_datastore"])
@@ -128,6 +222,8 @@ class DeadlineProtocolTest(unittest.TestCase):
             self.assertEqual(tsrag["retrieval_scope"], "same_user")
             self.assertEqual(tsrag["split_ratios"], (0.3, 0.5, 0.2))
             self.assertEqual(tsrag["used_k"], 5)
+            self.assertFalse(tsrag["align_period"])
+            self.assertEqual(tsrag["store_stride"], 1)
 
 
 if __name__ == "__main__":

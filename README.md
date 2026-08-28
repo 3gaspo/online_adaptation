@@ -53,13 +53,20 @@ the same science, for example:
 EXPERIMENT_MODE=test sbatch slurm/selena/main/01_main_online_ridge_selena.slurm
 ```
 
-Two fixed deadline comparisons are intentionally separate from the standard
+Four short-range deadline fronts are intentionally separate from the standard
 cadence-aware profiles:
 
 ```bash
-sbatch slurm/dgx/deadline/fixed_ablation_30_50_20.slurm
-sbatch slurm/dgx/deadline/tsrag_time_t3.slurm
+sbatch slurm/dgx/deadline/fixed_online_per_user.slurm
+sbatch slurm/dgx/deadline/fixed_fixed_shared.slurm
+sbatch slurm/dgx/deadline/fixed_ablation_remainder.slurm
+sbatch slurm/dgx/deadline/tsrag_priority_t3.slurm
 ```
+
+The fixed remainder should use an `afterok` dependency on both fixed anchor
+jobs. The priority TS-RAG front covers Electricity, Solar, all four ETT panels,
+and three preselected TIME panels; broader TIME coverage remains in the main
+full profile.
 
 The [experiment catalog](docs/experiment_catalog.md) states what each main,
 deadline, and ablation front varies. Exact causal sets, feature definitions,

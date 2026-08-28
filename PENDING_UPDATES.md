@@ -11,23 +11,26 @@
   Deferred integration: preview code sync on DGX, inspect every `*deleting`
   line, then perform the real sync.
 
-- 2026-08-28: Added exactly two deadline-only DGX jobs for the four-arm
-  Electricity/Solar short/long fixed ablation and the three-panel TIME ridge
-  versus TS-RAG comparison. The fixed ablation precomputes a shared
-  T0/T1+T2/T3 30/50/20 split and stride-127 query grid. The TIME comparison
-  hard-codes `ne_china_wind_h`, `coastal_t_s_h_part11`, and `sg_weather_d` at
-  512:64; ridge uses a rolling 20,000-window cap, 30 fitting dates at stride
-  24, and fitting-set K/alpha selection, while TS-RAG uses a fixed same-user
-  T0 datastore and K=5. Every fixed or rolling datastore enforces the same
-  global 20,000-window maximum. Each job runs extraction, adaptation, and
-  tables sequentially. Affected contracts: temporary
-  profiles, date planning, workflow filtering, Slurm fronts, focused tests,
-  README, and experiment documentation. Exact synthetic date-grid checks,
-  static Slurm contracts, Bash syntax, and Python compilation passed; both
-  LaTeX PDFs rebuilt successfully. Deferred integration: submit both jobs,
-  verify the first artifacts, and use
-  measured timing to replace the current log-scaled estimates. These temporary
-  result families require new runs; no earlier result is reusable for them.
+- 2026-08-28: Checkpointed the current deadline protocol and execution fronts.
+  `n_fit` is now strictly an integer fitting-date count; the fixed 30/50/20
+  protocol retains every complete stride-24 T1+T2 fitting date and crosses
+  datastore, training-set, and same-user/all-user fitting scopes. Its
+  Electricity/Solar short-range run is partitioned into fully online per-user,
+  fully fixed shared, and dependent remainder fronts. The priority `512:64`
+  ridge-versus-TS-RAG front covers Electricity, Solar, four ETT panels, and
+  three selected TIME panels. Ridge anchors T3 and its 30 fitting dates before
+  applying the 20,000-window maximum and uses cadence-aligned datastore
+  strides; TS-RAG retains its fixed unstrided same-user T0 datastore. Affected
+  contracts: extraction configuration, date planning, profiles, workflow
+  filtering/finalization, Hydra and Slurm plumbing, deadline fronts, focused
+  tests, README, experiment catalog, and experiment guideline. Focused check:
+  `python -m unittest src.tests.test_deadline_protocols` passed both tests in
+  the shared thesis runtime. Deferred integration: preview and perform
+  DGX-to-Selena code sync,
+  submit the three priority fronts and dependent fixed remainder, inspect the
+  first real timing artifacts, and rerun every affected deadline result; no
+  earlier result is reusable. The updated guideline PDF remains to be rendered
+  during maintenance.
 
 - 2026-08-28: Made result transfer tiered: sync now defaults to aggregate
   lightweight analysis artifacts, `detailed` adds row-level/per-run

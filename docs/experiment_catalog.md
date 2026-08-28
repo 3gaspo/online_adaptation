@@ -22,8 +22,10 @@ map.
 |---|---|
 | `slurm/dgx/main/01_main_online_ridge.slurm` | Does rolling full ridge or a causal gate improve on vanilla Chronos-2? |
 | `slurm/dgx/main/02_tsrag_comparison.slurm` | How does online full ridge compare with released TS-RAG on identical dates at `512:64`? |
-| `slurm/dgx/deadline/fixed_ablation_30_50_20.slurm` | What is the effect of fixed versus rolling datastore and fitting sets on one fixed T3 grid? |
-| `slurm/dgx/deadline/tsrag_time_t3.slurm` | How do ridge and TS-RAG compare on the selected TIME panels and common T3 dates? |
+| `slurm/dgx/deadline/fixed_online_per_user.slurm` | How does fully online per-user ridge perform on the short Electricity/Solar deadline grid? |
+| `slurm/dgx/deadline/fixed_fixed_shared.slurm` | How does a fully fixed shared ridge perform on the same short deadline grid? |
+| `slurm/dgx/deadline/fixed_ablation_remainder.slurm` | What do the six remaining datastore/training/scope arms add after both fixed-protocol anchors succeed? |
+| `slurm/dgx/deadline/tsrag_priority_t3.slurm` | How do cadence-aligned ridge and native TS-RAG compare at `512:64` on Electricity, Solar, four ETT panels, and three priority TIME panels? |
 
 ## Ablation fronts
 

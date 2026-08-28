@@ -2,6 +2,8 @@ family: main
 mode: test
 datasets: null
 ranges: null
+deadline_part: all
+deadline_finalize: false
 stages: extract,adapt,tables
 seed: 1
 n_datastore_dates: null

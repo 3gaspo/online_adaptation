@@ -1,46 +1,37 @@
 Updated: 2026-08-28
 
-Scope: this handoff records only retained Slurm artifacts plus the current
-user-reported submissions against scratch-routing commit 54712b6. Jobs and
-outputs deleted before commit 34d3417 are not retained as history here.
+CURRENT SCHEDULER STATE
+- The user confirmed that no online-adaptation job is currently running or
+  queued.
+- The earlier unverified main/gate submission entries are no longer treated as
+  active because no job IDs or terminal outcomes were supplied.
+- No completed current-protocol scientific result is synchronized locally.
 
-Synchronized job:
-- s_online_main, job 2913487: 01_main_online_ridge, test profile, Selena.
-  The extraction processed all 9,090 compact windows, then failed with disk
-  quota exceeded while creating the final table directory. The same quota
-  failure prevented the exception handler from writing manifest.json.tmp, so
-  its online_extraction manifest was incomplete. That obsolete payload was
-  removed from the DGX/Git mirror during lightweight-artifact cleanup; its
-  exact stdout/stderr pair remains retained locally and the Selena source was
-  not modified.
+RETAINED DIAGNOSTIC HISTORY
+- s_online_main, job 2913487, test profile on Selena, failed under the obsolete
+  home-quota routing while writing final artifacts. Its result payload is not
+  reusable; retained logs are diagnostic evidence only.
 
-Current artifact state: no synchronized online result payload and zero
-completed scientific runs. No main adaptation, table, gate, or report
-completed. All online scientific configurations require the current-protocol
-reruns already recorded in PENDING_UPDATES.md.
+JOBS AWAITING MANUAL REVIEW AND SUBMISSION
+The user is reviewing four deadline DGX fronts before submission. No job ID or
+scheduler state exists yet.
 
-Submitted jobs (not yet synchronized or published):
-- s_online_main: 01_main_online_ridge, test profile, Selena. Submitted on
-  2026-08-28; job ID and current scheduler state are not yet recorded.
-- s_online_gates: 02_online_gates, test profile, Selena. Submitted on
-  2026-08-28 with an afterok dependency on the new s_online_main job; job ID
-  and current scheduler state are not yet recorded. It can start only after
-  the main job exits successfully.
+1. Fully online per-user fixed-protocol anchor:
+   `sbatch slurm/dgx/deadline/fixed_online_per_user.slurm`
+2. Fully fixed shared fixed-protocol anchor:
+   `sbatch slurm/dgx/deadline/fixed_fixed_shared.slurm`
+3. Remaining fixed-protocol arms, after both anchors succeed:
+   `sbatch slurm/dgx/deadline/fixed_ablation_remainder.slurm`
+4. Priority ridge-versus-TS-RAG comparison:
+   `sbatch slurm/dgx/deadline/tsrag_priority_t3.slurm`
 
-Next actions:
-1. Do not reuse or republish the obsolete 2913487 output; its retained logs are
-   diagnostic evidence only.
-2. Monitor the new main job. If it fails, the afterok gate job will not run;
-   inspect and publish the main job before resubmitting the chain.
-3. After both new jobs are terminal, pull their scratch results to DGX, publish
-   their exact job logs and lightweight artifacts, and replace the unverified
-   submission entries above with job IDs and terminal outcomes.
-4. Analyze the completed main and gate test reports before scheduling larger
-   profiles.
+Record each returned job ID immediately after submission. After termination,
+pull its logs and lightweight report artifacts to DGX, publish them, and
+replace this planned state with the verified outcome before analysis.
 
-Runtime roots: DGX uses project-local outputs/ and logs/. Selena uses the
-project-specific outputs_selena/ and logs_selena/ trees under
-/scratch/users/<lowercase-nni>/codes/online_adaptation/. Result
-synchronization remains a DGX-initiated inbound pull.
-Lightweight sync is now the default; detailed or full sync is explicit when
-row-level diagnostics or binary recovery payloads are required.
+RUNTIME ROOTS
+- DGX: project-local outputs/ and logs/.
+- Selena: /scratch/users/<lowercase-nni>/codes/online_adaptation/outputs_selena
+  and logs_selena.
+- Result synchronization is a DGX-initiated inbound pull. Lightweight sync is
+  the default; detailed and full are explicit diagnostic/recovery tiers.

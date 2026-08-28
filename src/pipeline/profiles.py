@@ -58,10 +58,17 @@ DATASET_FREQUENCIES = {
     "exchange_rate": "daily",
 }
 
-DEADLINE_TIME_DATASETS = (
+DEADLINE_FIXED_DATES = {"Electricity": 26_304, "Solar": 8_760}
+DEADLINE_PRIORITY_TIME_DATASETS = (
     "time/ne_china_wind_h",
     "time/coastal_t_s_h_part11",
     "time/sg_weather_d",
+)
+DEADLINE_PRIORITY_TSRAG_DATASETS = (
+    "Electricity",
+    "Solar",
+    *RAW_ETT_DATASETS,
+    *DEADLINE_PRIORITY_TIME_DATASETS,
 )
 
 
@@ -228,6 +235,15 @@ def _base_grid(
     ]
 
 
+def _deadline_split_n_fit(task: dict[str, Any]) -> int:
+    n_dates = DEADLINE_FIXED_DATES[str(task["dataset"])]
+    t0_end = int(round(0.3 * n_dates))
+    t12_end = int(round(0.8 * n_dates))
+    first_fitting = max(int(task["lookback"]) - 1, t0_end - 1)
+    fitting_stop = t12_end - int(task["horizon"])
+    return len(range(first_fitting, fitting_stop, 24))
+
+
 def _unfiltered_tasks_for_family(
     family: str,
     mode: str,
@@ -255,43 +271,48 @@ def _unfiltered_tasks_for_family(
             {
                 **task,
                 "n_store_windows": 20_000,
-                "n_fit": 0.5,
+                "n_fit": _deadline_split_n_fit(task),
                 "split_ratios": (0.3, 0.5, 0.2),
                 "store_stride": 24,
                 "fit_stride": 24,
                 "align_period": True,
                 "fixed_datastore": fixed_datastore,
                 "fixed_training_set": fixed_training_set,
+                "fitting_scope": fitting_scope,
             }
             for task in base
             for fixed_datastore in (False, True)
             for fixed_training_set in (False, True)
+            for fitting_scope in ("same_user", "all")
         ]
     if family == "deadline_tsrag_comparison":
         metadata = _time_metadata(Path(data_root).expanduser().resolve())
-        requested = datasets_for_mode(mode, data_root, selected_datasets)
+        requested = (
+            [
+                *SMALL_DATASETS,
+                *RAW_ETT_DATASETS,
+                *_time_datasets(Path(data_root).expanduser().resolve()),
+            ]
+            if selected_datasets is None
+            else [str(dataset) for dataset in selected_datasets]
+        )
         tasks: list[dict[str, Any]] = []
         for dataset in requested:
-            if dataset not in DEADLINE_TIME_DATASETS:
-                raise ValueError(
-                    f"deadline TS-RAG dataset {dataset!r} is not in the "
-                    f"verified subset {DEADLINE_TIME_DATASETS}"
-                )
             values = metadata.get(dataset)
-            if values is None:
+            if values is None and str(dataset).startswith("time/"):
                 raise KeyError(f"prepared TIME catalog lacks {dataset!r}")
-            users = int(values["num_series"])
-            dates = int(values["num_timestamps"])
-            ridge_store_dates = 20_000 // users
+            ridge_store_stride = PERIOD_BY_FREQUENCY[
+                dataset_frequency(dataset, data_root)
+            ]
             ridge = {
                 **_base_task(dataset, (512, 64)),
-                "n_datastore_dates": ridge_store_dates,
+                "n_datastore_dates": DEFAULT_N_DATASTORE_DATES,
                 "n_store_windows": 20_000,
                 "n_fit": 30,
-                "store_stride": 1,
+                "store_stride": ridge_store_stride,
                 "fit_stride": 24,
-                "align_period": False,
-                "eval_start_date": int(round(0.8 * dates)) - 1,
+                "align_period": True,
+                "eval_start_date": 0.8,
                 "max_k": DEFAULT_MAX_K,
                 "candidate_k_grid": DEFAULT_CANDIDATE_K_GRID,
                 "used_k": None,
@@ -305,11 +326,13 @@ def _unfiltered_tasks_for_family(
                     "method": "tsrag",
                     "distance_space": "tsrag",
                     "retrieval_scope": "same_user",
-                    "n_datastore_dates": ridge_store_dates,
+                    "n_datastore_dates": DEFAULT_N_DATASTORE_DATES,
                     "n_store_windows": 20_000,
                     "split_ratios": (0.3, 0.5, 0.2),
                     "fixed_datastore": True,
                     "include_fitting_windows": False,
+                    "store_stride": 1,
+                    "align_period": False,
                     "max_k": DEFAULT_TSRAG_K,
                     "candidate_k_grid": (DEFAULT_TSRAG_K,),
                     "used_k": DEFAULT_TSRAG_K,
@@ -478,6 +501,58 @@ def _unfiltered_tasks_for_family(
     raise ValueError(f"unknown experiment family {family!r}")
 
 
+def _deadline_partition(
+    tasks: list[dict[str, Any]],
+    *,
+    family: str,
+    part: str,
+) -> list[dict[str, Any]]:
+    if part == "all":
+        return tasks
+    if family == "deadline_fixed_protocol":
+        arms_by_part = {
+            "online_per_user": {(False, False, "same_user")},
+            "fixed_shared": {(True, True, "all")},
+            "priority": {
+                (False, False, "same_user"),
+                (True, True, "all"),
+            },
+        }
+        if part not in {*arms_by_part, "remainder"}:
+            raise ValueError(
+                "fixed deadline_part must be all, online_per_user, "
+                "fixed_shared, priority, or remainder"
+            )
+        selected_arms = (
+            arms_by_part["priority"] if part == "remainder" else arms_by_part[part]
+        )
+        return [
+            task
+            for task in tasks
+            if (
+                (
+                    bool(task["fixed_datastore"]),
+                    bool(task["fixed_training_set"]),
+                    str(task["fitting_scope"]),
+                )
+                in selected_arms
+            )
+            != (part == "remainder")
+        ]
+    if family == "deadline_tsrag_comparison":
+        if part not in {"priority", "remainder"}:
+            raise ValueError(
+                "TS-RAG deadline_part must be all, priority, or remainder"
+            )
+        priority = set(DEADLINE_PRIORITY_TSRAG_DATASETS)
+        return [
+            task
+            for task in tasks
+            if (str(task["dataset"]) in priority) == (part == "priority")
+        ]
+    raise ValueError(f"deadline_part is not supported for family {family!r}")
+
+
 def tasks_for_family(
     family: str,
     mode: str,
@@ -485,6 +560,7 @@ def tasks_for_family(
     *,
     selected_datasets: list[str] | tuple[str, ...] | None = None,
     selected_ranges: list[str] | tuple[str, ...] | None = None,
+    deadline_part: str = "all",
 ) -> list[dict[str, Any]]:
     tasks = _unfiltered_tasks_for_family(
         family,
@@ -493,6 +569,7 @@ def tasks_for_family(
         selected_datasets=selected_datasets,
         selected_ranges=selected_ranges,
     )
+    tasks = _deadline_partition(tasks, family=family, part=str(deadline_part))
     metadata = _time_metadata(Path(data_root).expanduser().resolve())
     feasible: list[dict[str, Any]] = []
     for task in tasks:

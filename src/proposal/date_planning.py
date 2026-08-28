@@ -101,7 +101,16 @@ def _split_date_plan(
     first_window = int(config.lookback) - 1
     last_window = int(n_dates) - int(config.horizon) - 1
 
-    evaluation_start = max(first_window, t12_end - 1)
+    requested_evaluation_start = resolve_relative_date(
+        config.eval_start_date,
+        n_dates=n_dates,
+    )
+    evaluation_start = max(
+        first_window,
+        t12_end - 1
+        if requested_evaluation_start is None
+        else int(requested_evaluation_start),
+    )
     evaluation_end = last_window
     evaluation = tuple(
         map(
@@ -142,7 +151,7 @@ def _split_date_plan(
     first_retrieval = max(first_window, t0_end - 1)
     fitting = ()
     if config.include_fitting_windows:
-        fitting = tuple(
+        available_fitting = tuple(
             map(
                 int,
                 np.arange(
@@ -153,12 +162,15 @@ def _split_date_plan(
                 ),
             )
         )
-        if not fitting:
-            raise ValueError("T1+T2 contains no complete fitting query dates")
-    resolved_n_fit = len(fitting) if fitting else int(config.n_fit)
+        if len(available_fitting) < int(config.n_fit):
+            raise ValueError(
+                f"T1+T2 contains {len(available_fitting)} complete fitting dates, "
+                f"fewer than n_fit={config.n_fit}"
+            )
+        fitting = available_fitting[-int(config.n_fit) :]
     return DatePlan(
         n_datastore_dates=int(datastore_dates),
-        n_fit=int(resolved_n_fit),
+        n_fit=int(config.n_fit),
         datastore_start_date=int(datastore_start),
         datastore_end_date=int(datastore_end),
         first_retrieval_date=int(first_retrieval),
@@ -185,54 +197,98 @@ def build_date_plan(
     available = last_window - first_window + 1
     if available <= 0:
         raise ValueError("dataset has no complete lookback-horizon windows")
-    available_datastore_dates = available // int(config.store_stride)
-    datastore_dates = _store_date_limit(
-        config,
-        n_users=n_users,
-        available_dates=available_datastore_dates,
-    )
-    if datastore_dates <= 0:
-        raise ValueError("N_store cannot retain one complete date across all users")
-    datastore_end = first_window + datastore_dates * int(config.store_stride) - 1
-    if datastore_end > last_window:
-        raise ValueError(
-            f"n_datastore_dates={datastore_dates} with store_stride={config.store_stride} "
-            "does not fit in the dataset"
-        )
+    requested_start = resolve_relative_date(config.eval_start_date, n_dates=n_dates)
     store_gap = _causal_gap(
         config.horizon,
         align_period=config.align_period,
         period=config.period,
     )
-    first_retrieval = datastore_end + store_gap
-    if first_retrieval > last_window:
-        raise ValueError("dataset ends before the complete datastore becomes observable")
 
     fitting: tuple[int, ...] = ()
-    natural_evaluation_start = first_retrieval
-    if config.include_fitting_windows:
-        fitting = tuple(
-            int(value)
-            for value in first_retrieval
-            + np.arange(int(config.n_fit), dtype=np.int64) * int(config.fit_stride)
+    if requested_start is None:
+        available_datastore_dates = available // int(config.store_stride)
+        datastore_dates = _store_date_limit(
+            config,
+            n_users=n_users,
+            available_dates=available_datastore_dates,
         )
-        fit_gap = _causal_gap(
-            config.horizon,
-            align_period=(
-                config.align_period
-                and int(config.fit_stride) % int(config.period) == 0
-            ),
-            period=config.period,
-        )
-        natural_evaluation_start = int(fitting[-1]) + fit_gap
+        if datastore_dates <= 0:
+            raise ValueError("N_store cannot retain one complete date across all users")
+        datastore_start = first_window
+        datastore_end = first_window + datastore_dates * int(config.store_stride) - 1
+        if datastore_end > last_window:
+            raise ValueError(
+                f"n_datastore_dates={datastore_dates} with "
+                f"store_stride={config.store_stride} does not fit in the dataset"
+            )
+        first_retrieval = datastore_end + store_gap
+        if first_retrieval > last_window:
+            raise ValueError(
+                "dataset ends before the complete datastore becomes observable"
+            )
+        natural_evaluation_start = first_retrieval
+        if config.include_fitting_windows:
+            fitting = tuple(
+                int(value)
+                for value in first_retrieval
+                + np.arange(int(config.n_fit), dtype=np.int64)
+                * int(config.fit_stride)
+            )
+            fit_gap = _causal_gap(
+                config.horizon,
+                align_period=(
+                    config.align_period
+                    and int(config.fit_stride) % int(config.period) == 0
+                ),
+                period=config.period,
+            )
+            natural_evaluation_start = int(fitting[-1]) + fit_gap
+        start = natural_evaluation_start
+    else:
+        start = int(requested_start)
+        if start > last_window:
+            raise ValueError("evaluation interval contains no complete query window")
+        first_retrieval = start
+        if config.include_fitting_windows:
+            fit_gap = _causal_gap(
+                config.horizon,
+                align_period=(
+                    config.align_period
+                    and int(config.fit_stride) % int(config.period) == 0
+                ),
+                period=config.period,
+            )
+            last_fitting = start - fit_gap
+            first_retrieval = (
+                last_fitting - (int(config.n_fit) - 1) * int(config.fit_stride)
+            )
+            fitting = tuple(
+                int(value)
+                for value in first_retrieval
+                + np.arange(int(config.n_fit), dtype=np.int64)
+                * int(config.fit_stride)
+            )
 
-    requested_start = resolve_relative_date(config.eval_start_date, n_dates=n_dates)
-    start = natural_evaluation_start if requested_start is None else requested_start
-    if start < natural_evaluation_start:
-        raise ValueError(
-            f"eval_start_date={start} precedes the first fair causal date "
-            f"{natural_evaluation_start}"
+        datastore_start = first_window
+        if config.align_period:
+            datastore_start += (
+                int(first_retrieval) - int(datastore_start)
+            ) % int(config.period)
+        datastore_end = int(first_retrieval) - store_gap
+        available_datastore_dates = 1 + (
+            datastore_end - datastore_start
+        ) // int(config.store_stride)
+        if available_datastore_dates <= 0:
+            raise ValueError(
+                "evaluation start leaves no room for a causal datastore and fitting grid"
+            )
+        datastore_dates = _store_date_limit(
+            config,
+            n_users=n_users,
+            available_dates=available_datastore_dates,
         )
+        if datastore_dates <= 0:
+            raise ValueError("N_store cannot retain one complete date across all users")
     requested_end = resolve_relative_date(config.eval_end_date, n_dates=n_dates)
     end = last_window if requested_end is None else min(requested_end, last_window)
     if end < start:

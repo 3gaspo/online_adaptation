@@ -58,11 +58,11 @@ class SlurmWorkflowTest(unittest.TestCase):
         compute_fronts = [front for front in fronts if "_tables" not in front.stem]
         table_fronts = [front for front in fronts if "_tables" in front.stem]
         self.assertFalse(list(ROOT.glob("*.slurm")))
-        self.assertEqual(len(dgx_fronts), 18)
+        self.assertEqual(len(dgx_fronts), 20)
         self.assertEqual(len(selena_fronts), 16)
         self.assertEqual(len(list((slurm_root / "dgx/main").glob("*.slurm"))), 2)
         self.assertEqual(len(list((slurm_root / "dgx/ablations").glob("*.slurm"))), 14)
-        self.assertEqual(len(list((slurm_root / "dgx/deadline").glob("*.slurm"))), 2)
+        self.assertEqual(len(list((slurm_root / "dgx/deadline").glob("*.slurm"))), 4)
         self.assertEqual(len(list((slurm_root / "selena/main").glob("*.slurm"))), 2)
         self.assertEqual(
             len(list((slurm_root / "selena/ablations").glob("*.slurm"))), 14
@@ -163,22 +163,45 @@ class SlurmWorkflowTest(unittest.TestCase):
             )
             self.assertIn('EXPERIMENT_LAUNCH_ID="selena_${SLURM_', text)
 
-        fixed_deadline = (slurm_root / "dgx/deadline/fixed_ablation_30_50_20.slurm").read_text(encoding="utf-8")
-        tsrag_deadline = (slurm_root / "dgx/deadline/tsrag_time_t3.slurm").read_text(encoding="utf-8")
-        self.assertNotIn("#SBATCH --array=", fixed_deadline)
-        self.assertIn("DATASETS_OVERRIDE='[Electricity,Solar]'", fixed_deadline)
-        self.assertIn("RANGES_OVERRIDE='[short,long]'", fixed_deadline)
-        self.assertIn("EXPERIMENT_FAMILY=deadline_fixed_protocol", fixed_deadline)
-        self.assertIn('QUERY_STRIDE="${QUERY_STRIDE:-127}"', fixed_deadline)
-        self.assertIn('STAGES="${STAGES:-extract,adapt,tables}"', fixed_deadline)
-        self.assertNotIn("#SBATCH --array=", tsrag_deadline)
-        self.assertIn(
-            "DATASETS_OVERRIDE='[time/ne_china_wind_h,time/coastal_t_s_h_part11,time/sg_weather_d]'",
-            tsrag_deadline,
+        deadline_fronts = {
+            path.name: path.read_text(encoding="utf-8")
+            for path in (slurm_root / "dgx/deadline").glob("*.slurm")
+        }
+        self.assertEqual(
+            set(deadline_fronts),
+            {
+                "fixed_online_per_user.slurm",
+                "fixed_fixed_shared.slurm",
+                "fixed_ablation_remainder.slurm",
+                "tsrag_priority_t3.slurm",
+            },
         )
-        self.assertIn("EXPERIMENT_FAMILY=deadline_tsrag_comparison", tsrag_deadline)
-        self.assertIn('QUERY_STRIDE="${QUERY_STRIDE:-127}"', tsrag_deadline)
-        self.assertIn('STAGES="${STAGES:-extract,adapt,tables}"', tsrag_deadline)
+        for name, text in deadline_fronts.items():
+            self.assertNotIn("#SBATCH --array=", text)
+            self.assertIn('QUERY_STRIDE="${QUERY_STRIDE:-127}"', text)
+            if name.startswith("fixed_"):
+                self.assertIn("DATASETS_OVERRIDE='[Electricity,Solar]'", text)
+                self.assertIn("RANGES_OVERRIDE='[short]'", text)
+                self.assertIn("EXPERIMENT_FAMILY=deadline_fixed_protocol", text)
+            else:
+                self.assertIn("DATASETS_OVERRIDE=null", text)
+                self.assertIn("EXPERIMENT_FAMILY=deadline_tsrag_comparison", text)
+            if name == "fixed_online_per_user.slurm":
+                self.assertIn("DEADLINE_PART=online_per_user", text)
+                self.assertIn("DEADLINE_FINALIZE=false", text)
+                self.assertIn('STAGES="${STAGES:-extract,adapt}"', text)
+            elif name == "fixed_fixed_shared.slurm":
+                self.assertIn("DEADLINE_PART=fixed_shared", text)
+                self.assertIn("DEADLINE_FINALIZE=false", text)
+                self.assertIn('STAGES="${STAGES:-extract,adapt}"', text)
+            elif "priority" in name:
+                self.assertIn("DEADLINE_PART=priority", text)
+                self.assertIn("DEADLINE_FINALIZE=false", text)
+                self.assertIn('STAGES="${STAGES:-extract,adapt,tables}"', text)
+            else:
+                self.assertIn("DEADLINE_PART=remainder", text)
+                self.assertIn("DEADLINE_FINALIZE=true", text)
+                self.assertIn('STAGES="${STAGES:-extract,adapt,tables}"', text)
 
         selena_runtime = (ROOT / "src/slurm/selena_runtime.sh").read_text(
             encoding="utf-8"

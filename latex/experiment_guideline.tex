@@ -343,24 +343,31 @@ full ridge, the vanilla-plus-retrieved-outcome convex mixture, the Bayes
 covariate gate, direct covariate prediction, and vanilla. The separate TS-RAG
 family uses only $512{:}64$ and the configuration defined above.
 
-For the deadline experiment, two temporary jobs narrow this grid.
-The fixed ablation uses Electricity and Solar at only the short and long
-settings. It first fixes T0/T1+T2/T3 to 30/50/20 percent of each source
+For the deadline experiment, four DGX fronts narrow this grid. The fixed
+protocol uses Electricity and Solar only at the hourly short setting
+$(L,H)=(168,24)$. It fixes T0/T1+T2/T3 to 30/50/20 percent of each source
 timeline, uses periodically aligned datastore origins, fit stride 24, and T3
-query stride 127, and crosses
-fixed versus rolling datastore with fixed versus online ridge. The four arms
-share the exact T3 query-date grid and the same global 20,000-window maximum;
-ridge selection uses the chronologically newest 20 percent of the available
-T1+T2 fitting dates for validation.
+query stride 127. Here $\Nfit$ is an integer count: it retains every complete
+stride-24 fitting date in T1+T2, namely 548 dates for Electricity and 182 for
+Solar. The full $2\times2\times2$ comparison crosses fixed versus rolling
+datastore, fixed versus online fitting set, and same-user versus all-user
+fitting. The first two fronts isolate the fully online same-user arm and the
+fully fixed all-user arm; a dependent front runs the other six arms. Every arm
+shares the exact T3 query-date grid and a global maximum of 20,000 datastore
+windows. Ridge selection uses the chronologically newest 20 percent of its
+integer fitting-date set for validation.
 
-The temporary TIME comparison fixes $(L,H)=(512,64)$ and hard-codes
-\path{ne_china_wind_h}, \path{coastal_t_s_h_part11}, and
-\path{sg_weather_d}. Both methods evaluate the same stride-127 T3 grid beginning
-at the 80-percent boundary. Full online ridge uses a rolling all-user datastore
-capped at 20,000 windows, $\Nfit=30$, $\Sfit=24$, and selects $K$ from
-$\{1,5,10,15\}$ together with alpha. TS-RAG uses the same global 20,000-window
-maximum, drawn from its fixed, unstrided, same-variable T0 datastore, and
-$K=5$.
+The priority TS-RAG comparison fixes $(L,H)=(512,64)$ for Electricity, Solar,
+ETTh1, ETTh2, ETTm1, ETTm2, \path{ne_china_wind_h},
+\path{coastal_t_s_h_part11}, and \path{sg_weather_d}; Traffic and all remaining
+TIME panels stay in the main full comparison. Both methods evaluate the same
+stride-127 T3 grid beginning at the 80-percent boundary. Full online ridge
+first anchors T3 and 30 fitting dates at stride 24, then fills the preceding
+datastore up to 20,000 windows. Its datastore is periodically aligned with
+stride 24 for hourly data, 96 for 15-minute data, and 7 for daily data, and it
+selects $K$ from $\{1,5,10,15\}$ together with alpha. TS-RAG instead uses its
+fixed, unstrided, same-variable T0 datastore, the same global 20,000-window
+maximum, and $K=5$.
 
 \begin{center}
 \small

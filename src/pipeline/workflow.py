@@ -239,7 +239,8 @@ def _display_name(family: str, task: dict[str, Any]) -> str:
         ),
         "deadline_fixed_protocol": (
             f"fixed_datastore={task['fixed_datastore']}, "
-            f"fixed_training_set={task['fixed_training_set']}"
+            f"fixed_training_set={task['fixed_training_set']}, "
+            f"fitting_scope={task['fitting_scope']}"
         ),
         "general_scope_ablation": (
             f"retrieval={task['retrieval_scope']}, fitting={task['fitting_scope']}"
@@ -548,7 +549,12 @@ def _run_adaptation(
         raise
 
 
-def _configured_tasks(cfg: DictConfig, data_root: Path) -> list[dict[str, Any]]:
+def _configured_tasks(
+    cfg: DictConfig,
+    data_root: Path,
+    *,
+    deadline_part: str | None = None,
+) -> list[dict[str, Any]]:
     family = str(cfg.family)
     selected_datasets = (
         None if cfg.datasets is None else [str(value) for value in cfg.datasets]
@@ -562,6 +568,9 @@ def _configured_tasks(cfg: DictConfig, data_root: Path) -> list[dict[str, Any]]:
         data_root,
         selected_datasets=selected_datasets,
         selected_ranges=selected_ranges,
+        deadline_part=(
+            str(cfg.deadline_part) if deadline_part is None else str(deadline_part)
+        ),
     )
     deadline_family = family in {
         "deadline_fixed_protocol",
@@ -598,7 +607,7 @@ def _configured_tasks(cfg: DictConfig, data_root: Path) -> list[dict[str, Any]]:
             task["eval_start_date"] = cfg.eval_start_date
         if not deadline_family and cfg.eval_end_date is not None:
             task["eval_end_date"] = cfg.eval_end_date
-        if family != "general_scope_ablation":
+        if family not in {"general_scope_ablation", "deadline_fixed_protocol"}:
             task["fitting_scope"] = str(cfg.fitting_scope)
         if family != "alpha_ablation":
             task["alpha"] = float(cfg.alpha)
@@ -697,6 +706,11 @@ def run_workflow(
                 weights_root=weights_root,
             )
     if "tables" in stages:
+        report_tasks = (
+            _configured_tasks(cfg, data_root, deadline_part="all")
+            if bool(cfg.deadline_finalize)
+            else tasks
+        )
         report = build_online_tables(
             results_root=output_root / "online_adaptation" / family,
             output_dir=output_root / "reports" / family / str(cfg.mode),
@@ -708,7 +722,7 @@ def run_workflow(
                     "backbone": task["backbone"],
                     "model": _display_name(family, task),
                 }
-                for task in tasks
+                for task in report_tasks
             ],
             pipeline_config=_table_pipeline_filters(),
             config_policy=os.environ.get(
