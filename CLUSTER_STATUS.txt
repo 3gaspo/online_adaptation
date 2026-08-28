@@ -1,8 +1,34 @@
-Updated: 2026-08-27
-Latest completed workflow: none (new project)
-Artifacts analyzed: synchronized Selena logs for jobs 2897236, 2910601, 2910733, and 2910734, plus the job-2910733 extraction manifest
-Current/next workflow: query Selena job 2910733. Its manifest has remained running since 2026-08-26T22:23:54Z with no completed artifacts. If the scheduler says it is terminal, use the supported lifecycle recovery to reconcile the stale manifest; otherwise wait for completion. Then rerun the main test front and its gates under the replacement-exclusion contract.
-Known job IDs/dependencies: 2897236 failed before launch because .venv was missing; 2910601 was cancelled; 2910733 launched main extraction; 2910734 stopped because the matching extraction manifest was already running
-Notes: all 16 DGX fronts under slurm/dgx/ have scientific-equivalent Selena counterparts under slurm/selena/. No completed scientific result exists. The current code records replacement drop_users precedence and allows Selena requeue, but the synchronized 2910733 run must be resolved before the first end-to-end contract can be accepted. Selena uses QoS an_preemptable.
-Runtime roots are always overridable: DGX defaults to outputs/ and logs/, while Selena explicitly selects outputs_selena/ and logs_selena/.
-Result synchronization runs on DGX as an inbound Selena pull. An unscoped publisher run includes the paired Selena artifact trees under the standard lightweight exclusions.
+Updated: 2026-08-28
+
+Scope: this handoff records only Slurm artifacts published by current commit
+34d3417. Jobs and outputs deleted before that commit are not retained as
+history here.
+
+Synchronized job:
+- s_online_main, job 2913487: 01_main_online_ridge, test profile, Selena.
+  The extraction processed all 9,090 compact windows, then failed with disk
+  quota exceeded while creating the final table directory. The same quota
+  failure prevented the exception handler from writing manifest.json.tmp, so
+  the sole online_extraction manifest remains marked running without a
+  ready_at_utc timestamp.
+
+Current artifact state: one running extraction manifest and zero completed
+scientific runs. No main adaptation, table, gate, or report completed.
+
+Next actions:
+1. Put the one-line NNI file at $HOME/codes/.secrets/nni on DGX and Selena.
+2. Move the current Selena payload to
+   /scratch/users/<lowercase-nni>/codes/online_adaptation/outputs_selena and
+   logs_selena, then run sync_code_to_selena.sh to deploy the scratch-aware
+   fronts and ensure both scratch directories exist.
+3. Reconcile terminal launch 2913487 with the supported interrupt-launch
+   lifecycle command; because the manifest is not ready, it should become
+   interrupted rather than completed. Do not edit the manifest directly.
+4. Rerun slurm/selena/main/01_main_online_ridge_selena.slurm in test mode.
+5. After the main test completes, run
+   slurm/selena/main/02_online_gates_selena.slurm in test mode.
+
+Runtime roots: DGX uses project-local outputs/ and logs/. Selena uses the
+project-specific outputs_selena/ and logs_selena/ trees under
+/scratch/users/<lowercase-nni>/codes/online_adaptation/. Result
+synchronization remains a DGX-initiated inbound pull.

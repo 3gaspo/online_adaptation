@@ -1,5 +1,31 @@
 # Pending updates
 
+- 2026-08-28: Redirected every Selena Slurm stream and default runtime output
+  from the quota-limited home checkout to
+  `/scratch/users/<lowercase-nni>/codes/online_adaptation/{logs_selena,outputs_selena}`.
+  Added a shared Selena runtime helper, made both synchronization scripts read
+  and lowercase the one-line `$HOME/codes/.secrets/nni`, made code sync create
+  the scratch trees, and made result sync pull from scratch. Affected
+  contracts: all 16 Selena fronts, synchronization, focused workflow checks,
+  README, and cluster handoff. Bash syntax passed for both sync scripts, the
+  helper, and all Selena fronts; both direct Slurm workflow tests passed; Git
+  diff checking passed. Deferred integration: create the NNI file on both
+  hosts, move the current Selena payload, run code sync, inspect one scratch
+  stream, and pull one result tree to DGX. No scientific identity or LaTeX
+  contract changed. Required reruns remain the reconciled main test followed
+  by the gate test.
+
+- 2026-08-28: Replaced the stale cluster handoff with the sole job and artifact
+  inventory published by current commit 34d3417. `CLUSTER_STATUS.txt` now
+  names `s_online_main` job 2913487 as the test-profile main online-ridge run,
+  records its terminal disk-quota failure and unreconciled running manifest,
+  and excludes every previously deleted job. Direct HEAD-path inspection,
+  stdout/stderr inspection, and manifest parsing confirmed one job, one
+  running non-ready manifest, and zero completions. This is a handoff-only
+  correction with no code, scientific contract, README, or LaTeX impact and
+  requires no new rerun beyond the already-required quota recovery, lifecycle
+  reconciliation, main test, and gate test.
+
 - 2026-08-27: Replaced the backbone-ablation set with `chronos2`,
   `chronos_bolt`, `chronos_t5`, and `ts_icl`; removed TiREx-2 and TabPFN from
   dependencies, locks, registries, weight routing, and profiles; retained the

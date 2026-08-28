@@ -14,6 +14,7 @@ class SlurmWorkflowTest(unittest.TestCase):
         for script in (code, results):
             self.assertIn('PROJECT_NAME="$(basename "$PROJECT_ROOT")"', script)
             self.assertIn("sed -n '1p'", script)
+            self.assertIn('NNI_FILE="$HOME/codes/.secrets/nni"', script)
         for excluded in (
             ".git/",
             ".venv/",
@@ -30,9 +31,14 @@ class SlurmWorkflowTest(unittest.TestCase):
         self.assertIn("--delete", code)
         self.assertNotIn("dgx-front.retd.edf.fr", results)
         self.assertIn(
-            'SOURCE_ROOT="$nni@selena.hpc.edf.fr:~/codes/$PROJECT_NAME"',
+            'SOURCE_ROOT="$nni@selena.hpc.edf.fr:/scratch/users/$nni/codes/$PROJECT_NAME"',
             results,
         )
+        self.assertIn(
+            'SCRATCH_PROJECT_ROOT="/scratch/users/$nni/codes/$PROJECT_NAME"',
+            code,
+        )
+        self.assertIn('"mkdir -p \'$SCRATCH_PROJECT_ROOT/outputs_selena\'', code)
         self.assertIn('DESTINATION_ROOT="$PROJECT_ROOT"', results)
         self.assertIn('mkdir -p "$DESTINATION_ROOT/outputs_selena"', results)
         self.assertIn("--include='outputs_selena/.gitkeep'", code)
@@ -109,16 +115,42 @@ class SlurmWorkflowTest(unittest.TestCase):
 
         for front in selena_fronts:
             text = front.read_text(encoding="utf-8")
-            self.assertIn("#SBATCH --output=logs_selena/%x_%j.out", text, front.name)
-            self.assertIn("#SBATCH --error=logs_selena/%x_%j.err", text, front.name)
+            self.assertIn(
+                "#SBATCH --output=/scratch/users/%u/codes/online_adaptation/logs_selena/%x_%j.out",
+                text,
+                front.name,
+            )
+            self.assertIn(
+                "#SBATCH --error=/scratch/users/%u/codes/online_adaptation/logs_selena/%x_%j.err",
+                text,
+                front.name,
+            )
             self.assertIn("#SBATCH --partition=an", text, front.name)
             self.assertIn("#SBATCH --qos=an_preemptable", text, front.name)
             self.assertIn("#SBATCH --exclusive", text, front.name)
             self.assertNotIn("#SBATCH --no-requeue", text, front.name)
             self.assertIn("#SBATCH --wckey=P12CU:DATASCIENCE", text, front.name)
-            self.assertIn('OUTPUTS_ROOT="$PROJECT_ROOT/outputs_selena"', text)
-            self.assertIn('LOGS_ROOT="$PROJECT_ROOT/logs_selena"', text)
+            self.assertIn(
+                'source "$PROJECT_ROOT/src/slurm/selena_runtime.sh"', text
+            )
             self.assertIn('EXPERIMENT_LAUNCH_ID="selena_${SLURM_JOB_ID', text)
+
+        selena_runtime = (ROOT / "src/slurm/selena_runtime.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('${NNI_FILE:-$HOME/codes/.secrets/nni}', selena_runtime)
+        self.assertIn(
+            'SELENA_SCRATCH_PROJECT_ROOT="/scratch/users/$selena_nni/codes/$PROJECT_NAME"',
+            selena_runtime,
+        )
+        self.assertIn(
+            'OUTPUTS_ROOT="${OUTPUTS_ROOT:-$SELENA_SCRATCH_PROJECT_ROOT/outputs_selena}"',
+            selena_runtime,
+        )
+        self.assertIn(
+            'LOGS_ROOT="${LOGS_ROOT:-$SELENA_SCRATCH_PROJECT_ROOT/logs_selena}"',
+            selena_runtime,
+        )
 
         runner = (ROOT / "src/slurm/run_family.sh").read_text(encoding="utf-8")
         self.assertIn('STAGES="${STAGES:-extract,adapt,tables}"', runner)
