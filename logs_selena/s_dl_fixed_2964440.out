@@ -1,0 +1,45 @@
+2026-08-28 23:01:17,772 INFO [src.pipeline.workflow] family=deadline_fixed_protocol mode=small tasks=2 stages=['extract']
+2026-08-28 23:01:17,966 INFO [src.pipeline.workflow] task=1/2 config={'dataset': 'Electricity', 'lookback': 168, 'horizon': 24, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 20000, 'n_fit': 548, 'fitting_scope': 'all', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': True, 'fixed_training_set': True, 'include_fitting_windows': True, 'eval_start_date': None, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-28 23:01:17,985 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/electricity/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-28 23:07:48,160 INFO [src.pipeline.extraction] compact extraction windows=1/590 date=7890
+2026-08-28 23:07:50,486 INFO [src.pipeline.extraction] compact extraction windows=25/590 date=8466
+2026-08-28 23:07:52,916 INFO [src.pipeline.extraction] compact extraction windows=50/590 date=9066
+2026-08-28 23:07:55,293 INFO [src.pipeline.extraction] compact extraction windows=75/590 date=9666
+2026-08-28 23:07:57,674 INFO [src.pipeline.extraction] compact extraction windows=100/590 date=10266
+2026-08-28 23:08:00,062 INFO [src.pipeline.extraction] compact extraction windows=125/590 date=10866
+2026-08-28 23:08:02,457 INFO [src.pipeline.extraction] compact extraction windows=150/590 date=11466
+2026-08-28 23:08:04,846 INFO [src.pipeline.extraction] compact extraction windows=175/590 date=12066
+2026-08-28 23:08:07,236 INFO [src.pipeline.extraction] compact extraction windows=200/590 date=12666
+2026-08-28 23:08:09,612 INFO [src.pipeline.extraction] compact extraction windows=225/590 date=13266
+2026-08-28 23:08:11,979 INFO [src.pipeline.extraction] compact extraction windows=250/590 date=13866
+2026-08-28 23:08:14,347 INFO [src.pipeline.extraction] compact extraction windows=275/590 date=14466
+2026-08-28 23:08:16,739 INFO [src.pipeline.extraction] compact extraction windows=300/590 date=15066
+2026-08-28 23:08:19,119 INFO [src.pipeline.extraction] compact extraction windows=325/590 date=15666
+2026-08-28 23:08:21,573 INFO [src.pipeline.extraction] compact extraction windows=350/590 date=16266
+2026-08-28 23:08:23,968 INFO [src.pipeline.extraction] compact extraction windows=375/590 date=16866
+2026-08-28 23:08:26,360 INFO [src.pipeline.extraction] compact extraction windows=400/590 date=17466
+2026-08-28 23:08:28,754 INFO [src.pipeline.extraction] compact extraction windows=425/590 date=18066
+2026-08-28 23:08:31,151 INFO [src.pipeline.extraction] compact extraction windows=450/590 date=18666
+2026-08-28 23:08:33,543 INFO [src.pipeline.extraction] compact extraction windows=475/590 date=19266
+2026-08-28 23:08:35,938 INFO [src.pipeline.extraction] compact extraction windows=500/590 date=19866
+2026-08-28 23:08:38,330 INFO [src.pipeline.extraction] compact extraction windows=525/590 date=20466
+2026-08-28 23:08:40,717 INFO [src.pipeline.extraction] compact extraction windows=550/590 date=21169
+2026-08-28 23:08:43,085 INFO [src.pipeline.extraction] compact extraction windows=575/590 date=24344
+2026-08-28 23:08:44,518 INFO [src.pipeline.extraction] compact extraction windows=590/590 date=26249
+2026-08-28 23:10:04,645 INFO [src.pipeline.workflow] task=2/2 config={'dataset': 'Solar', 'lookback': 168, 'horizon': 24, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 20000, 'n_fit': 182, 'fitting_scope': 'all', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': True, 'fixed_training_set': True, 'include_fitting_windows': True, 'eval_start_date': None, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-28 23:10:04,667 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/solar/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-28 23:10:40,474 INFO [src.pipeline.extraction] compact extraction windows=1/196 date=2627
+2026-08-28 23:10:41,284 INFO [src.pipeline.extraction] compact extraction windows=25/196 date=3203
+2026-08-28 23:10:42,140 INFO [src.pipeline.extraction] compact extraction windows=50/196 date=3803
+2026-08-28 23:10:42,984 INFO [src.pipeline.extraction] compact extraction windows=75/196 date=4403
+2026-08-28 23:10:43,826 INFO [src.pipeline.extraction] compact extraction windows=100/196 date=5003
+2026-08-28 23:10:44,656 INFO [src.pipeline.extraction] compact extraction windows=125/196 date=5603
+2026-08-28 23:10:45,476 INFO [src.pipeline.extraction] compact extraction windows=150/196 date=6203
+2026-08-28 23:10:46,315 INFO [src.pipeline.extraction] compact extraction windows=175/196 date=6803
+2026-08-28 23:10:46,998 INFO [src.pipeline.extraction] compact extraction windows=196/196 date=8658
+2026-08-28 23:11:10,033 INFO [src.pipeline.workflow] family=deadline_fixed_protocol mode=small tasks=2 stages=['adapt']
+2026-08-28 23:11:10,218 INFO [src.pipeline.workflow] task=1/2 config={'dataset': 'Electricity', 'lookback': 168, 'horizon': 24, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 20000, 'n_fit': 548, 'fitting_scope': 'all', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': True, 'fixed_training_set': True, 'include_fitting_windows': True, 'eval_start_date': None, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-28 23:11:10,241 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/electricity/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-28 23:11:22,995 WARNING [py.warnings] /fssmall/home/h61084/codes/online_adaptation/src/proposal/extraction.py:69: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:206.)
+  x = torch.as_tensor(
+

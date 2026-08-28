@@ -1,0 +1,40 @@
+Error executing job with overrides: ['family=deadline_tsrag_comparison', 'mode=full', 'datasets=null', 'ranges=null', 'deadline_part=priority', 'deadline_finalize=false', 'data_root=/fssmall/home/h61084/codes/datasets', 'drop_users=null', 'weights_root=/fssmall/home/h61084/codes/weights', 'outputs_root=/scratch/users/h61084/codes/tsfm/outputs_selena', 'device=cuda', 'seed=1', 'purpose=publication', 'n_datastore_dates=null', 'n_fit=100', 'fixed_datastore=null', 'fixed_training_set=null', 'eval_start_date=null', 'eval_end_date=null', 'fitting_scope=same_user', 'alpha=0.01', 'max_k=null', 'candidate_k_grid=null', 'used_k=null', 'tune_alpha=true', 'ridge_validation_ratio=0.2', 'ridge_alpha_grid=[0.1,0.01,0.001]', 'tsrag_k=null', 'query_stride=127', 'store_stride=null', 'fit_stride=null', 'align_period=null', 'period=0', 'retrieval_covariate_mode=null', 'catboost_iterations=300', 'conflict_policy=overwrite_exact', 'skip_completed=true']
+Traceback (most recent call last):
+  File "/fssmall/home/h61084/codes/online_adaptation/src/scripts/extract.py", line 11, in main
+    run_stage(cfg, "extract")
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 747, in run_stage
+    run_workflow(cfg, stages_override={stage})
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 687, in run_workflow
+    _run_extraction(
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 365, in _run_extraction
+    extract_online_features(
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/extraction.py", line 182, in extract_online_features
+    sample = _batch_features(
+             ^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/extraction.py", line 40, in _batch_features
+    batch = build_window_batch(
+            ^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/data/neighbors.py", line 275, in build_window_batch
+    reps = encoder.representation(x, pool=pool_representation)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/external_models/tsrag/retriever.py", line 53, in representation
+    embeddings, _ = self.pipeline.embed(x.squeeze(1))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/chronos/chronos.py", line 423, in embed
+    token_ids, attention_mask, tokenizer_state = self.tokenizer.context_input_transform(context_tensor)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/chronos/chronos.py", line 215, in context_input_transform
+    token_ids, attention_mask, scale = self._input_transform(context=context)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/chronos/chronos.py", line 182, in _input_transform
+    torch.bucketize(
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument boundaries in method wrapper_CUDA_Tensor_bucketize)
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+srun: error: sean0012: task 0: Exited with exit code 1

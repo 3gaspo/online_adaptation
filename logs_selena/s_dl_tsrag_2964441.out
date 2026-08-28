@@ -1,0 +1,57 @@
+2026-08-28 23:01:17,857 INFO [src.pipeline.workflow] family=deadline_tsrag_comparison mode=full tasks=16 stages=['extract']
+2026-08-28 23:01:18,037 INFO [src.pipeline.workflow] task=1/16 config={'dataset': 'Electricity', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 20000, 'n_fit': 30, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-28 23:01:18,056 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/electricity/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-28 23:07:38,615 INFO [src.pipeline.extraction] compact extraction windows=1/1271 date=20275
+2026-08-28 23:07:42,052 INFO [src.pipeline.extraction] compact extraction windows=25/1271 date=20851
+2026-08-28 23:07:45,617 INFO [src.pipeline.extraction] compact extraction windows=50/1271 date=20666
+2026-08-28 23:07:49,111 INFO [src.pipeline.extraction] compact extraction windows=75/1271 date=20841
+2026-08-28 23:07:52,605 INFO [src.pipeline.extraction] compact extraction windows=100/1271 date=20975
+2026-08-28 23:07:56,158 INFO [src.pipeline.extraction] compact extraction windows=125/1271 date=21081
+2026-08-28 23:07:59,665 INFO [src.pipeline.extraction] compact extraction windows=150/1271 date=21184
+2026-08-28 23:08:03,190 INFO [src.pipeline.extraction] compact extraction windows=175/1271 date=21291
+2026-08-28 23:08:06,738 INFO [src.pipeline.extraction] compact extraction windows=200/1271 date=21390
+2026-08-28 23:08:10,231 INFO [src.pipeline.extraction] compact extraction windows=225/1271 date=21490
+2026-08-28 23:08:13,755 INFO [src.pipeline.extraction] compact extraction windows=250/1271 date=21593
+2026-08-28 23:08:17,256 INFO [src.pipeline.extraction] compact extraction windows=275/1271 date=21696
+2026-08-28 23:08:20,763 INFO [src.pipeline.extraction] compact extraction windows=300/1271 date=21802
+2026-08-28 23:08:24,278 INFO [src.pipeline.extraction] compact extraction windows=325/1271 date=21905
+2026-08-28 23:08:27,807 INFO [src.pipeline.extraction] compact extraction windows=350/1271 date=22001
+2026-08-28 23:08:31,334 INFO [src.pipeline.extraction] compact extraction windows=375/1271 date=22104
+2026-08-28 23:08:34,848 INFO [src.pipeline.extraction] compact extraction windows=400/1271 date=22207
+2026-08-28 23:08:38,367 INFO [src.pipeline.extraction] compact extraction windows=425/1271 date=22313
+2026-08-28 23:08:41,886 INFO [src.pipeline.extraction] compact extraction windows=450/1271 date=22420
+2026-08-28 23:08:45,393 INFO [src.pipeline.extraction] compact extraction windows=475/1271 date=22516
+2026-08-28 23:08:48,901 INFO [src.pipeline.extraction] compact extraction windows=500/1271 date=22619
+2026-08-28 23:08:52,401 INFO [src.pipeline.extraction] compact extraction windows=525/1271 date=22722
+2026-08-28 23:08:55,892 INFO [src.pipeline.extraction] compact extraction windows=550/1271 date=22825
+2026-08-28 23:08:59,390 INFO [src.pipeline.extraction] compact extraction windows=575/1271 date=22931
+2026-08-28 23:09:02,899 INFO [src.pipeline.extraction] compact extraction windows=600/1271 date=23031
+2026-08-28 23:09:06,414 INFO [src.pipeline.extraction] compact extraction windows=625/1271 date=23130
+2026-08-28 23:09:09,912 INFO [src.pipeline.extraction] compact extraction windows=650/1271 date=23233
+2026-08-28 23:09:13,442 INFO [src.pipeline.extraction] compact extraction windows=675/1271 date=23336
+2026-08-28 23:09:16,958 INFO [src.pipeline.extraction] compact extraction windows=700/1271 date=23443
+2026-08-28 23:09:20,459 INFO [src.pipeline.extraction] compact extraction windows=725/1271 date=23542
+2026-08-28 23:09:23,962 INFO [src.pipeline.extraction] compact extraction windows=750/1271 date=23642
+2026-08-28 23:09:27,446 INFO [src.pipeline.extraction] compact extraction windows=775/1271 date=23745
+2026-08-28 23:09:30,936 INFO [src.pipeline.extraction] compact extraction windows=800/1271 date=23848
+2026-08-28 23:09:34,443 INFO [src.pipeline.extraction] compact extraction windows=825/1271 date=23954
+2026-08-28 23:09:37,943 INFO [src.pipeline.extraction] compact extraction windows=850/1271 date=24054
+2026-08-28 23:09:41,463 INFO [src.pipeline.extraction] compact extraction windows=875/1271 date=24153
+2026-08-28 23:09:44,958 INFO [src.pipeline.extraction] compact extraction windows=900/1271 date=24256
+2026-08-28 23:09:48,435 INFO [src.pipeline.extraction] compact extraction windows=925/1271 date=24359
+2026-08-28 23:09:51,924 INFO [src.pipeline.extraction] compact extraction windows=950/1271 date=24466
+2026-08-28 23:09:55,415 INFO [src.pipeline.extraction] compact extraction windows=975/1271 date=24565
+2026-08-28 23:09:58,903 INFO [src.pipeline.extraction] compact extraction windows=1000/1271 date=24665
+2026-08-28 23:10:02,389 INFO [src.pipeline.extraction] compact extraction windows=1025/1271 date=24768
+2026-08-28 23:10:05,906 INFO [src.pipeline.extraction] compact extraction windows=1050/1271 date=24871
+2026-08-28 23:10:09,430 INFO [src.pipeline.extraction] compact extraction windows=1075/1271 date=24977
+2026-08-28 23:10:12,960 INFO [src.pipeline.extraction] compact extraction windows=1100/1271 date=25080
+2026-08-28 23:10:16,495 INFO [src.pipeline.extraction] compact extraction windows=1125/1271 date=25176
+2026-08-28 23:10:20,032 INFO [src.pipeline.extraction] compact extraction windows=1150/1271 date=25279
+2026-08-28 23:10:23,544 INFO [src.pipeline.extraction] compact extraction windows=1175/1271 date=25382
+2026-08-28 23:10:27,026 INFO [src.pipeline.extraction] compact extraction windows=1200/1271 date=25492
+2026-08-28 23:10:30,514 INFO [src.pipeline.extraction] compact extraction windows=1225/1271 date=25619
+2026-08-28 23:10:34,004 INFO [src.pipeline.extraction] compact extraction windows=1250/1271 date=25787
+2026-08-28 23:10:36,946 INFO [src.pipeline.extraction] compact extraction windows=1271/1271 date=26123
+2026-08-28 23:16:41,610 INFO [src.pipeline.workflow] task=2/16 config={'dataset': 'Electricity', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 20000, 'n_fit': 30, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-28 23:16:41,632 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/electricity/config.json keys=['aggr', 'date_col', 'drop_users']

@@ -1,0 +1,53 @@
+Error executing job with overrides: ['family=deadline_fixed_protocol', 'mode=small', 'datasets=[Electricity,Solar]', 'ranges=[short]', 'deadline_part=fixed_shared', 'deadline_finalize=false', 'data_root=/fssmall/home/h61084/codes/datasets', 'drop_users=null', 'weights_root=/fssmall/home/h61084/codes/weights', 'outputs_root=/scratch/users/h61084/codes/tsfm/outputs_selena', 'device=cuda', 'seed=1', 'purpose=publication', 'n_datastore_dates=null', 'n_fit=100', 'fixed_datastore=null', 'fixed_training_set=null', 'eval_start_date=null', 'eval_end_date=null', 'fitting_scope=same_user', 'alpha=0.01', 'max_k=null', 'candidate_k_grid=null', 'used_k=null', 'tune_alpha=true', 'ridge_validation_ratio=0.2', 'ridge_alpha_grid=[0.1,0.01,0.001]', 'tsrag_k=null', 'query_stride=127', 'store_stride=null', 'fit_stride=null', 'align_period=null', 'period=0', 'retrieval_covariate_mode=null', 'catboost_iterations=300', 'conflict_policy=overwrite_exact', 'skip_completed=true']
+Traceback (most recent call last):
+  File "/fssmall/home/h61084/codes/online_adaptation/src/scripts/adapt.py", line 11, in main
+    run_stage(cfg, "adapt")
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 747, in run_stage
+    run_workflow(cfg, stages_override={stage})
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 699, in run_workflow
+    _run_adaptation(
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 537, in _run_adaptation
+    outputs = evaluate_online_linear(
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/adaptation.py", line 260, in evaluate_online_linear
+    reconcile(tracker, desired)
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/adaptation.py", line 205, in reconcile
+    update_date(tracker["full"], index, +1)
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/adaptation.py", line 191, in update_date
+    update(bundle[scope], date_index, user, sign)
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/adaptation.py", line 175, in update
+    x_value, y_value = values(date_index, k)
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/adaptation.py", line 154, in values
+    x_value, y_value, _ = design_tensor(
+                          ^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/proposal/ridge.py", line 113, in design_tensor
+    context_cache.get(date_index, neighbors), dtype=np.float64
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/proposal/extraction.py", line 76, in get
+    output = self.model(x, context=context_tensor)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/model_loading/forecast.py", line 114, in forward
+    pred = self.base_model(
+           ^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/model_loading/forecast.py", line 235, in forward
+    structured = self._covariates(
+                 ^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/model_loading/forecast.py", line 208, in _covariates
+    raise ValueError(f"retrieval context length must be at least {self.lags}")
+ValueError: retrieval context length must be at least 168
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+srun: error: sean0011: task 0: Exited with exit code 1
