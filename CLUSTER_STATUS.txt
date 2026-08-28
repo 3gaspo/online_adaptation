@@ -1,8 +1,10 @@
 Updated: 2026-08-28
 
 CURRENT SCHEDULER STATE
-- The user confirmed that no online-adaptation job is currently running or
-  queued.
+- The user reported submitting all four deadline Selena jobs on 2026-08-28.
+  Job IDs and current scheduler states were not supplied.
+- The fixed-protocol remainder was submitted with `afterok` dependencies on
+  the fully online per-user and fully fixed shared anchors.
 - The earlier unverified main/gate submission entries are no longer treated as
   active because no job IDs or terminal outcomes were supplied.
 - No completed current-protocol scientific result is synchronized locally.
@@ -12,9 +14,10 @@ RETAINED DIAGNOSTIC HISTORY
   home-quota routing while writing final artifacts. Its result payload is not
   reusable; retained logs are diagnostic evidence only.
 
-JOBS AWAITING MANUAL REVIEW AND SUBMISSION
-The user is reviewing four deadline Selena fronts before submission. No job ID or
-scheduler state exists yet.
+SUBMITTED DEADLINE JOBS
+The following Selena jobs were user-reported as submitted. Their job IDs and
+scheduler states remain unknown until the submission output or an `squeue`
+snapshot is supplied.
 
 1. Fully online per-user fixed-protocol anchor:
    `sbatch slurm/selena/deadline/fixed_online_per_user_selena.slurm`
@@ -25,9 +28,10 @@ scheduler state exists yet.
 4. Priority ridge-versus-TS-RAG comparison:
    `sbatch slurm/selena/deadline/tsrag_priority_t3_selena.slurm`
 
-Record each returned job ID immediately after submission. After termination,
-pull its logs and lightweight report artifacts to DGX, publish them, and
-replace this planned state with the verified outcome before analysis.
+Next, record each job ID and current scheduler state. After termination, pull
+the corresponding logs and lightweight report artifacts to DGX, publish them,
+and replace the user-reported state with verified terminal outcomes before
+analysis.
 
 RUNTIME ROOTS
 - DGX: project-local outputs/ and logs/.
