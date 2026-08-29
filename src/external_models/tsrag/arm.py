@@ -4,8 +4,9 @@ The inference architecture is adapted, not copied verbatim, from
 https://github.com/UConn-DSIS/TS-RAG
 at commit 73ac807789d2e61b8a3dfc8514e3fc947fe185cc. Training, dataset,
 retrieval-database, and pipeline code are omitted. The released ``moe`` head
-and forward computation are retained, with the shared local Chronos-Bolt source
-providing the backbone implementation. Only the released MoE ARM path is kept.
+ and forward computation are retained, with the TS-RAG-local pinned
+ Chronos-Bolt source providing the subclassed backbone implementation. Only the
+ released MoE ARM path is kept.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from transformers.models.t5.modeling_t5 import T5Config
 
-from src.external_models.chronos_bolt import (
+from .chronos_bolt import (
     ChronosBoltModelForForecasting,
     ChronosBoltOutput,
 )

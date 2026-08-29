@@ -879,3 +879,25 @@ lifecycle, artifact, and publisher checks remain pending.
   default; re-render the guideline during maintenance. All online-adaptation
   results are already scheduled for rerun, so no legacy output migration is
   required.
+
+## 2026-08-29 — TS-RAG import, readable labels, and terminal workflow states
+
+- Behavior and affected contracts: TS-RAG now subclasses its isolated pinned
+  Chronos-Bolt forecasting core instead of importing unavailable internals from
+  the thin official adapter. Report selection keeps important model parameters
+  in identity paths, keeps pipeline variants in manifests/selection, collapses
+  equivalent vanilla sources to `Vanilla (<backbone>)`, records their source
+  signatures in the report manifest, and fails explicitly if those sources
+  disagree. Slurm stages, Python tasks, and the workflow exit now always emit
+  terminal states.
+- Focused check completed: `src/tests/test_reporting_selection.py` passed in
+  the shared thesis runtime, covering distinct selection, two-dataset vanilla
+  aggregation, label provenance, the TS-RAG import boundary, and terminal log
+  markers.
+- Deferred integration: rerun the failed Chronos-Bolt TS-RAG comparison and
+  regenerate the final comparison tables on Selena; observe terminal markers
+  in the synchronized logs. No experiment was launched locally.
+- README/LaTeX and reruns: usage and the scientific protocol are unchanged, so
+  no documentation claim changed. The affected TS-RAG job and downstream final
+  table must be rerun; old failed artifacts are not reusable.
+

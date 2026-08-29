@@ -688,29 +688,44 @@ def run_workflow(
     set_seed(int(cfg.seed))
     for index, task in enumerate(tasks, start=1):
         LOGGER.info("task=%s/%s config=%s", index, len(tasks), task)
-        extraction_allocation = _allocate_extraction(cfg, task, output_root)
-        if "extract" in stages:
-            _run_extraction(
-                cfg,
+        try:
+            extraction_allocation = _allocate_extraction(cfg, task, output_root)
+            if "extract" in stages:
+                _run_extraction(
+                    cfg,
+                    task,
+                    extraction_allocation,
+                    data_root=data_root,
+                    weights_root=weights_root,
+                )
+            elif extraction_allocation.action != "skip":
+                raise FileNotFoundError(
+                    f"adapt stage requires a completed extraction: {extraction_allocation.run_dir}"
+                )
+            if "adapt" in stages:
+                _run_adaptation(
+                    cfg,
+                    family,
+                    task,
+                    extraction_allocation.run_dir,
+                    output_root=output_root,
+                    data_root=data_root,
+                    weights_root=weights_root,
+                )
+        except Exception:
+            LOGGER.exception(
+                "task=%s/%s completed status=failed config=%s",
+                index,
+                len(tasks),
                 task,
-                extraction_allocation,
-                data_root=data_root,
-                weights_root=weights_root,
             )
-        elif extraction_allocation.action != "skip":
-            raise FileNotFoundError(
-                f"adapt stage requires a completed extraction: {extraction_allocation.run_dir}"
-            )
-        if "adapt" in stages:
-            _run_adaptation(
-                cfg,
-                family,
-                task,
-                extraction_allocation.run_dir,
-                output_root=output_root,
-                data_root=data_root,
-                weights_root=weights_root,
-            )
+            raise
+        LOGGER.info(
+            "task=%s/%s completed status=success config=%s",
+            index,
+            len(tasks),
+            task,
+        )
     if "tables" in stages:
         report_tasks = (
             _configured_tasks(cfg, data_root, deadline_part="all")

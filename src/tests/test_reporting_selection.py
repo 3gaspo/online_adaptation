@@ -14,6 +14,7 @@ from src.results.reporting import build_online_tables
 def _complete_run(
     identity: Path,
     *,
+    dataset: str = "synthetic",
     query_stride: int,
     dates: tuple[int, ...],
     mse: float,
@@ -22,7 +23,7 @@ def _complete_run(
         identity,
         project="online_adaptation",
         workflow="report_test",
-        dataset="synthetic",
+        dataset=dataset,
         lookback=4,
         horizon=2,
         backbone="chronos2",
@@ -134,14 +135,71 @@ def test_distinct_average_and_nested_filter_selection() -> None:
         assert averaged_ridge[0]["dates"] == "3"
 
 
+def test_vanilla_labels_collapse_equivalent_dataset_specific_sources() -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        expected = []
+        for dataset, query_stride in (("electricity", 1), ("solar", 2)):
+            _complete_run(
+                root / "results" / dataset / "ridge",
+                dataset=dataset,
+                query_stride=query_stride,
+                dates=(1, 2, 3),
+                mse=0.5,
+            )
+            expected.append(
+                {
+                    "dataset": dataset,
+                    "lookback": 4,
+                    "horizon": 2,
+                    "backbone": "chronos2",
+                    "model": "ridge",
+                }
+            )
+
+        report = build_online_tables(
+            results_root=root / "results",
+            output_dir=root / "report",
+            expected=expected,
+            purposes=["publication"],
+            seeds=[1],
+        )
+        detailed = list(csv.DictReader(report["detailed_csv"].open(encoding="utf-8")))
+        vanilla = [row for row in detailed if row["model"].startswith("Vanilla")]
+        assert len(vanilla) == 2
+        assert {row["model"] for row in vanilla} == {"Vanilla (chronos2)"}
+        average = list(csv.DictReader(report["average_csv"].open(encoding="utf-8")))
+        assert {row["model"] for row in average} == {"Vanilla (chronos2)", "ridge"}
+        manifest = json.loads(report["manifest"].read_text(encoding="utf-8"))
+        sources = manifest["requested"]["filters"]["vanilla_source_groups"]
+        assert len(sources) == 2
+        assert all(item["dependency_signatures"] for item in sources)
+
+
 def test_profile_contract() -> None:
     project_root = Path(__file__).resolve().parents[2]
     runner = (project_root / "src/slurm/run_family.sh").read_text(encoding="utf-8")
     assert '"n_datastore_dates=${N_DATASTORE_DATES:-null}"' in runner
     assert 'PROFILE_PURPOSE="${PURPOSE:-smoke}"' in runner
     assert 'PROFILE_PURPOSE="${PURPOSE:-publication}"' in runner
+    assert "workflow completed status=success" in runner
+    assert "workflow completed status=failed" in runner
+    assert "stage %s completed status=success" in runner
+
+    workflow = (project_root / "src/pipeline/workflow.py").read_text(encoding="utf-8")
+    assert 'completed status=success config=%s' in workflow
+    assert 'completed status=failed config=%s' in workflow
+
+    arm = (project_root / "src/external_models/tsrag/arm.py").read_text(encoding="utf-8")
+    assert "from .chronos_bolt import" in arm
+    source = project_root / "src/external_models/tsrag/chronos_bolt.py"
+    assert source.is_file()
+    source_text = source.read_text(encoding="utf-8")
+    assert "class ChronosBoltModelForForecasting" in source_text
+    assert "class ChronosBoltOutput" in source_text
 
 
 if __name__ == "__main__":
     test_distinct_average_and_nested_filter_selection()
+    test_vanilla_labels_collapse_equivalent_dataset_specific_sources()
     test_profile_contract()

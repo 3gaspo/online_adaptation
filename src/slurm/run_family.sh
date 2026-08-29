@@ -1,6 +1,24 @@
 #!/bin/bash
 set -euo pipefail
 
+ACTIVE_STAGE=""
+
+workflow_on_exit() {
+  local status=$?
+  trap - EXIT
+  if [ -n "$ACTIVE_STAGE" ]; then
+    printf '%s stage %s completed status=failed exit_code=%s\n' "$(date -Is)" "$ACTIVE_STAGE" "$status" >&2
+  fi
+  if [ "$status" -eq 0 ]; then
+    printf '%s workflow completed status=success exit_code=0\n' "$(date -Is)"
+  else
+    printf '%s workflow completed status=failed exit_code=%s\n' "$(date -Is)" "$status" >&2
+  fi
+  exit "$status"
+}
+
+trap workflow_on_exit EXIT
+
 case "${EXPERIMENT_MODE:-test}" in
   test|small|full) ;;
   *) echo "EXPERIMENT_MODE must be test, small, or full" >&2; exit 2 ;;
@@ -111,5 +129,9 @@ for stage in "${REQUESTED_STAGES[@]}"; do
     tables) module=src.scripts.tables ;;
     *) echo "STAGES contains unknown stage: $stage" >&2; exit 2 ;;
   esac
+  ACTIVE_STAGE="$stage"
+  printf '%s stage %s started\n' "$(date -Is)" "$stage"
   srun --ntasks=1 python -m "$module" "${COMMON_ARGS[@]}"
+  printf '%s stage %s completed status=success\n' "$(date -Is)" "$stage"
+  ACTIVE_STAGE=""
 done

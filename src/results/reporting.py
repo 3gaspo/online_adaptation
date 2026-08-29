@@ -87,6 +87,41 @@ def _average_rows(row_sets: list[list[dict[str, Any]]]) -> list[dict[str, Any]]:
     return averaged
 
 
+def _require_equivalent_vanilla(
+    row_sets: list[list[dict[str, Any]]],
+    *,
+    context: str,
+) -> None:
+    """Fail when runs advertised as one vanilla model contain different results."""
+    fields = (
+        "vanilla_mse",
+        "vanilla_nmse",
+        "vanilla_mae",
+        "vanilla_nmae",
+        "windows",
+        "values",
+    )
+    reference = {int(row["query_date"]): row for row in row_sets[0]}
+    for rows in row_sets[1:]:
+        candidate = {int(row["query_date"]): row for row in rows}
+        if set(candidate) != set(reference):
+            raise ValueError(f"vanilla sources use different evaluation dates for {context}")
+        for date, expected in reference.items():
+            observed = candidate[date]
+            if any(
+                not np.isclose(
+                    float(observed[field]),
+                    float(expected[field]),
+                    rtol=1e-10,
+                    atol=1e-12,
+                )
+                for field in fields
+            ):
+                raise ValueError(
+                    f"vanilla sources disagree for {context} at query_date={date}"
+                )
+
+
 def _dependency_key(manifest: dict[str, Any]) -> str:
     pipeline = manifest.get("config", {}).get("pipeline", {})
     dependency = pipeline.get("dependency.online_extraction", {})
@@ -270,6 +305,7 @@ def build_online_tables(
             (entry["dataset"], entry["lookback"], entry["horizon"]), []
         ).append(entry)
     detailed: list[dict[str, Any]] = []
+    vanilla_source_groups: list[dict[str, Any]] = []
     for (dataset, lookback, horizon), group in sorted(groups.items()):
         date_sets = [{int(row["query_date"]) for row in entry["rows"]} for entry in group]
         common_dates = date_sets[0]
@@ -282,29 +318,20 @@ def build_online_tables(
             [row for row in entry["rows"] if int(row["query_date"]) in common_dates]
             for entry in group
         ]
-        dependency_counts: dict[str, int] = {}
-        for entry in group:
-            backbone = str(entry["backbone"])
-            dependency_counts[backbone] = len(
-                {
-                    dependency
-                    for item in group
-                    if str(item["backbone"]) == backbone
-                    for dependency, _ in item["dependency_rows"]
-                }
-            )
-        vanilla_groups: dict[tuple[str, str], list[list[dict[str, Any]]]] = {}
+        vanilla_groups: dict[str, list[tuple[str, list[dict[str, Any]]]]] = {}
         for entry in group:
             for dependency, rows in entry["dependency_rows"]:
-                vanilla_groups.setdefault(
-                    (str(entry["backbone"]), dependency), []
-                ).append(
-                    [row for row in rows if int(row["query_date"]) in common_dates]
+                vanilla_groups.setdefault(str(entry["backbone"]), []).append(
+                    (
+                        dependency,
+                        [row for row in rows if int(row["query_date"]) in common_dates],
+                    )
                 )
-        for (backbone, dependency), row_sets in sorted(vanilla_groups.items()):
+        for backbone, sources in sorted(vanilla_groups.items()):
+            row_sets = [rows for _, rows in sources]
+            context = f"{dataset} {lookback}:{horizon} backbone={backbone}"
+            _require_equivalent_vanilla(row_sets, context=context)
             label = f"Vanilla ({backbone})"
-            if dependency_counts[backbone] > 1:
-                label = f"{label}__source-{dependency[:8]}"
             detailed.append(
                 {
                     "dataset": dataset,
@@ -312,6 +339,17 @@ def build_online_tables(
                     "model": label,
                     **_summarize(_average_rows(row_sets), vanilla=True),
                     "dates": len(common_dates),
+                }
+            )
+            vanilla_source_groups.append(
+                {
+                    "dataset": dataset,
+                    "setting": f"{lookback}:{horizon}",
+                    "backbone": backbone,
+                    "model": label,
+                    "dependency_signatures": sorted(
+                        {dependency for dependency, _ in sources}
+                    ),
                 }
             )
         for entry, rows in zip(group, filtered, strict=True):
@@ -390,6 +428,7 @@ def build_online_tables(
             "configuration_average_policy": (
                 "equal_mean_on_dataset_setting_intersection_across_all_models"
             ),
+            "vanilla_source_groups": vanilla_source_groups,
             "files": {
                 "detailed_csv": detailed_path.name,
                 "detailed_tex": detailed_tex.name,
