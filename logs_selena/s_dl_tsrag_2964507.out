@@ -1,0 +1,248 @@
+2026-08-28 23:58:59,445 INFO [src.pipeline.workflow] family=deadline_tsrag_comparison mode=full tasks=16 stages=['extract']
+2026-08-28 23:58:59,636 INFO [src.pipeline.workflow] task=1/16 config={'dataset': 'Electricity', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-28 23:58:59,655 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/electricity/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 00:05:09,458 INFO [src.pipeline.extraction] compact extraction windows=1/451 date=20755
+2026-08-29 00:05:11,269 INFO [src.pipeline.extraction] compact extraction windows=25/451 date=21098
+2026-08-29 00:05:13,155 INFO [src.pipeline.extraction] compact extraction windows=50/451 date=21390
+2026-08-29 00:05:15,037 INFO [src.pipeline.extraction] compact extraction windows=75/451 date=21678
+2026-08-29 00:05:16,905 INFO [src.pipeline.extraction] compact extraction windows=100/451 date=21963
+2026-08-29 00:05:18,783 INFO [src.pipeline.extraction] compact extraction windows=125/451 date=22248
+2026-08-29 00:05:20,654 INFO [src.pipeline.extraction] compact extraction windows=150/451 date=22550
+2026-08-29 00:05:22,499 INFO [src.pipeline.extraction] compact extraction windows=175/451 date=22828
+2026-08-29 00:05:24,342 INFO [src.pipeline.extraction] compact extraction windows=200/451 date=23113
+2026-08-29 00:05:26,198 INFO [src.pipeline.extraction] compact extraction windows=225/451 date=23415
+2026-08-29 00:05:28,061 INFO [src.pipeline.extraction] compact extraction windows=250/451 date=23700
+2026-08-29 00:05:29,929 INFO [src.pipeline.extraction] compact extraction windows=275/451 date=23978
+2026-08-29 00:05:31,805 INFO [src.pipeline.extraction] compact extraction windows=300/451 date=24273
+2026-08-29 00:05:33,678 INFO [src.pipeline.extraction] compact extraction windows=325/451 date=24565
+2026-08-29 00:05:35,568 INFO [src.pipeline.extraction] compact extraction windows=350/451 date=24853
+2026-08-29 00:05:37,428 INFO [src.pipeline.extraction] compact extraction windows=375/451 date=25138
+2026-08-29 00:05:39,305 INFO [src.pipeline.extraction] compact extraction windows=400/451 date=25423
+2026-08-29 00:05:41,225 INFO [src.pipeline.extraction] compact extraction windows=425/451 date=25725
+2026-08-29 00:05:43,119 INFO [src.pipeline.extraction] compact extraction windows=450/451 date=26051
+2026-08-29 00:05:43,195 INFO [src.pipeline.extraction] compact extraction windows=451/451 date=26123
+2026-08-29 00:08:46,046 INFO [src.pipeline.workflow] task=2/16 config={'dataset': 'Electricity', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 00:08:46,069 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/electricity/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 00:14:34,762 WARNING [py.warnings] /fssmall/home/h61084/venvs/online_adaptation/lib/python3.12/site-packages/chronos/chronos.py:182: UserWarning: torch.searchsorted(): input value tensor is non-contiguous, this will lower the performance due to extra data copy when converting non-contiguous tensor to contiguous, please use contiguous input value tensor if possible. This message will only appear once per program. (Triggered internally at ../aten/src/ATen/native/BucketizationUtils.h:32.)
+  torch.bucketize(
+
+2026-08-29 00:14:56,105 INFO [faiss.loader] Loading faiss with AVX512 support.
+2026-08-29 00:14:56,106 INFO [faiss.loader] Could not load library with AVX512 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx512'")
+2026-08-29 00:14:56,106 INFO [faiss.loader] Loading faiss with AVX2 support.
+2026-08-29 00:14:56,106 INFO [faiss.loader] Could not load library with AVX2 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx2'")
+2026-08-29 00:14:56,106 INFO [faiss.loader] Loading faiss.
+2026-08-29 00:14:57,306 INFO [faiss.loader] Successfully loaded faiss.
+2026-08-29 00:14:57,349 INFO [src.pipeline.extraction] compact extraction windows=1/41 date=21043
+2026-08-29 00:15:11,866 INFO [src.pipeline.extraction] compact extraction windows=25/41 date=24091
+2026-08-29 00:15:21,529 INFO [src.pipeline.extraction] compact extraction windows=41/41 date=26123
+2026-08-29 00:15:28,453 INFO [src.pipeline.workflow] task=3/16 config={'dataset': 'Solar', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 00:15:28,478 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/solar/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 00:16:03,608 INFO [src.pipeline.extraction] compact extraction windows=1/154 date=6720
+2026-08-29 00:16:04,625 INFO [src.pipeline.extraction] compact extraction windows=25/154 date=7063
+2026-08-29 00:16:05,646 INFO [src.pipeline.extraction] compact extraction windows=50/154 date=7355
+2026-08-29 00:16:06,668 INFO [src.pipeline.extraction] compact extraction windows=75/154 date=7643
+2026-08-29 00:16:07,739 INFO [src.pipeline.extraction] compact extraction windows=100/154 date=7928
+2026-08-29 00:16:08,802 INFO [src.pipeline.extraction] compact extraction windows=125/154 date=8213
+2026-08-29 00:16:09,885 INFO [src.pipeline.extraction] compact extraction windows=150/154 date=8532
+2026-08-29 00:16:10,057 INFO [src.pipeline.extraction] compact extraction windows=154/154 date=8659
+2026-08-29 00:16:33,114 INFO [src.pipeline.workflow] task=4/16 config={'dataset': 'Solar', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 00:16:33,129 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/solar/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 00:17:29,635 INFO [src.pipeline.extraction] compact extraction windows=1/14 date=7008
+2026-08-29 00:17:33,058 INFO [src.pipeline.extraction] compact extraction windows=14/14 date=8659
+2026-08-29 00:17:36,244 INFO [src.pipeline.workflow] task=5/16 config={'dataset': 'ETTh1', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 00:17:36,261 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/ETTh1/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 00:19:58,234 INFO [src.pipeline.extraction] compact extraction windows=1/297 date=13648
+2026-08-29 00:19:58,321 INFO [src.pipeline.extraction] compact extraction windows=25/297 date=13991
+2026-08-29 00:19:58,408 INFO [src.pipeline.extraction] compact extraction windows=50/297 date=14283
+2026-08-29 00:19:58,495 INFO [src.pipeline.extraction] compact extraction windows=75/297 date=14571
+2026-08-29 00:19:58,583 INFO [src.pipeline.extraction] compact extraction windows=100/297 date=14856
+2026-08-29 00:19:58,671 INFO [src.pipeline.extraction] compact extraction windows=125/297 date=15141
+2026-08-29 00:19:58,758 INFO [src.pipeline.extraction] compact extraction windows=150/297 date=15443
+2026-08-29 00:19:58,846 INFO [src.pipeline.extraction] compact extraction windows=175/297 date=15721
+2026-08-29 00:19:58,934 INFO [src.pipeline.extraction] compact extraction windows=200/297 date=16006
+2026-08-29 00:19:59,021 INFO [src.pipeline.extraction] compact extraction windows=225/297 date=16308
+2026-08-29 00:19:59,108 INFO [src.pipeline.extraction] compact extraction windows=250/297 date=16593
+2026-08-29 00:19:59,196 INFO [src.pipeline.extraction] compact extraction windows=275/297 date=16871
+2026-08-29 00:19:59,272 INFO [src.pipeline.extraction] compact extraction windows=297/297 date=17238
+2026-08-29 00:20:04,167 INFO [src.pipeline.workflow] task=6/16 config={'dataset': 'ETTh1', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 00:20:04,182 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/ETTh1/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 00:22:30,300 INFO [src.pipeline.extraction] compact extraction windows=1/27 date=13936
+2026-08-29 00:22:30,664 INFO [src.pipeline.extraction] compact extraction windows=25/27 date=16984
+2026-08-29 00:22:30,695 INFO [src.pipeline.extraction] compact extraction windows=27/27 date=17238
+2026-08-29 00:22:32,016 INFO [src.pipeline.workflow] task=7/16 config={'dataset': 'ETTh2', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 00:22:32,039 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/ETTh2/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 00:24:54,281 INFO [src.pipeline.extraction] compact extraction windows=1/297 date=13648
+2026-08-29 00:24:54,369 INFO [src.pipeline.extraction] compact extraction windows=25/297 date=13991
+2026-08-29 00:24:54,455 INFO [src.pipeline.extraction] compact extraction windows=50/297 date=14283
+2026-08-29 00:24:54,543 INFO [src.pipeline.extraction] compact extraction windows=75/297 date=14571
+2026-08-29 00:24:54,630 INFO [src.pipeline.extraction] compact extraction windows=100/297 date=14856
+2026-08-29 00:24:54,719 INFO [src.pipeline.extraction] compact extraction windows=125/297 date=15141
+2026-08-29 00:24:54,806 INFO [src.pipeline.extraction] compact extraction windows=150/297 date=15443
+2026-08-29 00:24:54,893 INFO [src.pipeline.extraction] compact extraction windows=175/297 date=15721
+2026-08-29 00:24:54,982 INFO [src.pipeline.extraction] compact extraction windows=200/297 date=16006
+2026-08-29 00:24:55,069 INFO [src.pipeline.extraction] compact extraction windows=225/297 date=16308
+2026-08-29 00:24:55,156 INFO [src.pipeline.extraction] compact extraction windows=250/297 date=16593
+2026-08-29 00:24:55,245 INFO [src.pipeline.extraction] compact extraction windows=275/297 date=16871
+2026-08-29 00:24:55,322 INFO [src.pipeline.extraction] compact extraction windows=297/297 date=17238
+2026-08-29 00:24:59,554 INFO [src.pipeline.workflow] task=8/16 config={'dataset': 'ETTh2', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 00:24:59,569 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/ETTh2/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 00:27:26,243 INFO [src.pipeline.extraction] compact extraction windows=1/27 date=13936
+2026-08-29 00:27:26,614 INFO [src.pipeline.extraction] compact extraction windows=25/27 date=16984
+2026-08-29 00:27:26,645 INFO [src.pipeline.extraction] compact extraction windows=27/27 date=17238
+2026-08-29 00:27:27,781 INFO [src.pipeline.workflow] task=9/16 config={'dataset': 'ETTm1', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 96, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 96, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 00:27:27,803 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/ETTm1/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 01:08:53,531 INFO [src.pipeline.extraction] compact extraction windows=1/1210 date=55464
+2026-08-29 01:08:53,618 INFO [src.pipeline.extraction] compact extraction windows=25/1210 date=55807
+2026-08-29 01:08:53,705 INFO [src.pipeline.extraction] compact extraction windows=50/1210 date=56099
+2026-08-29 01:08:53,793 INFO [src.pipeline.extraction] compact extraction windows=75/1210 date=56379
+2026-08-29 01:08:53,881 INFO [src.pipeline.extraction] compact extraction windows=100/1210 date=56672
+2026-08-29 01:08:53,969 INFO [src.pipeline.extraction] compact extraction windows=125/1210 date=56957
+2026-08-29 01:08:54,056 INFO [src.pipeline.extraction] compact extraction windows=150/1210 date=57259
+2026-08-29 01:08:54,143 INFO [src.pipeline.extraction] compact extraction windows=175/1210 date=57537
+2026-08-29 01:08:54,231 INFO [src.pipeline.extraction] compact extraction windows=200/1210 date=57822
+2026-08-29 01:08:54,318 INFO [src.pipeline.extraction] compact extraction windows=225/1210 date=58124
+2026-08-29 01:08:54,405 INFO [src.pipeline.extraction] compact extraction windows=250/1210 date=58409
+2026-08-29 01:08:54,493 INFO [src.pipeline.extraction] compact extraction windows=275/1210 date=58687
+2026-08-29 01:08:54,581 INFO [src.pipeline.extraction] compact extraction windows=300/1210 date=58982
+2026-08-29 01:08:54,669 INFO [src.pipeline.extraction] compact extraction windows=325/1210 date=59274
+2026-08-29 01:08:54,756 INFO [src.pipeline.extraction] compact extraction windows=350/1210 date=59554
+2026-08-29 01:08:54,843 INFO [src.pipeline.extraction] compact extraction windows=375/1210 date=59847
+2026-08-29 01:08:54,931 INFO [src.pipeline.extraction] compact extraction windows=400/1210 date=60132
+2026-08-29 01:08:55,018 INFO [src.pipeline.extraction] compact extraction windows=425/1210 date=60434
+2026-08-29 01:08:55,105 INFO [src.pipeline.extraction] compact extraction windows=450/1210 date=60712
+2026-08-29 01:08:55,193 INFO [src.pipeline.extraction] compact extraction windows=475/1210 date=60997
+2026-08-29 01:08:55,280 INFO [src.pipeline.extraction] compact extraction windows=500/1210 date=61299
+2026-08-29 01:08:55,368 INFO [src.pipeline.extraction] compact extraction windows=525/1210 date=61584
+2026-08-29 01:08:55,456 INFO [src.pipeline.extraction] compact extraction windows=550/1210 date=61862
+2026-08-29 01:08:55,544 INFO [src.pipeline.extraction] compact extraction windows=575/1210 date=62157
+2026-08-29 01:08:55,632 INFO [src.pipeline.extraction] compact extraction windows=600/1210 date=62449
+2026-08-29 01:08:55,720 INFO [src.pipeline.extraction] compact extraction windows=625/1210 date=62729
+2026-08-29 01:08:55,807 INFO [src.pipeline.extraction] compact extraction windows=650/1210 date=63022
+2026-08-29 01:08:55,895 INFO [src.pipeline.extraction] compact extraction windows=675/1210 date=63307
+2026-08-29 01:08:55,982 INFO [src.pipeline.extraction] compact extraction windows=700/1210 date=63609
+2026-08-29 01:08:56,071 INFO [src.pipeline.extraction] compact extraction windows=725/1210 date=63887
+2026-08-29 01:08:56,157 INFO [src.pipeline.extraction] compact extraction windows=750/1210 date=64172
+2026-08-29 01:08:56,245 INFO [src.pipeline.extraction] compact extraction windows=775/1210 date=64474
+2026-08-29 01:08:56,333 INFO [src.pipeline.extraction] compact extraction windows=800/1210 date=64759
+2026-08-29 01:08:56,421 INFO [src.pipeline.extraction] compact extraction windows=825/1210 date=65037
+2026-08-29 01:08:56,509 INFO [src.pipeline.extraction] compact extraction windows=850/1210 date=65332
+2026-08-29 01:08:56,596 INFO [src.pipeline.extraction] compact extraction windows=875/1210 date=65624
+2026-08-29 01:08:56,683 INFO [src.pipeline.extraction] compact extraction windows=900/1210 date=65904
+2026-08-29 01:08:56,772 INFO [src.pipeline.extraction] compact extraction windows=925/1210 date=66197
+2026-08-29 01:08:56,858 INFO [src.pipeline.extraction] compact extraction windows=950/1210 date=66482
+2026-08-29 01:08:56,945 INFO [src.pipeline.extraction] compact extraction windows=975/1210 date=66784
+2026-08-29 01:08:57,033 INFO [src.pipeline.extraction] compact extraction windows=1000/1210 date=67062
+2026-08-29 01:08:57,120 INFO [src.pipeline.extraction] compact extraction windows=1025/1210 date=67347
+2026-08-29 01:08:57,208 INFO [src.pipeline.extraction] compact extraction windows=1050/1210 date=67649
+2026-08-29 01:08:57,295 INFO [src.pipeline.extraction] compact extraction windows=1075/1210 date=67934
+2026-08-29 01:08:57,381 INFO [src.pipeline.extraction] compact extraction windows=1100/1210 date=68212
+2026-08-29 01:08:57,468 INFO [src.pipeline.extraction] compact extraction windows=1125/1210 date=68507
+2026-08-29 01:08:57,554 INFO [src.pipeline.extraction] compact extraction windows=1150/1210 date=68799
+2026-08-29 01:08:57,641 INFO [src.pipeline.extraction] compact extraction windows=1175/1210 date=69079
+2026-08-29 01:08:57,728 INFO [src.pipeline.extraction] compact extraction windows=1200/1210 date=69372
+2026-08-29 01:08:57,763 INFO [src.pipeline.extraction] compact extraction windows=1210/1210 date=69587
+2026-08-29 01:09:27,656 INFO [src.pipeline.workflow] task=10/16 config={'dataset': 'ETTm1', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 96, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 01:09:27,698 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/ETTm1/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 01:50:39,659 INFO [src.pipeline.extraction] compact extraction windows=1/110 date=55744
+2026-08-29 01:50:40,024 INFO [src.pipeline.extraction] compact extraction windows=25/110 date=58792
+2026-08-29 01:50:40,400 INFO [src.pipeline.extraction] compact extraction windows=50/110 date=61967
+2026-08-29 01:50:40,776 INFO [src.pipeline.extraction] compact extraction windows=75/110 date=65142
+2026-08-29 01:50:41,152 INFO [src.pipeline.extraction] compact extraction windows=100/110 date=68317
+2026-08-29 01:50:41,302 INFO [src.pipeline.extraction] compact extraction windows=110/110 date=69587
+2026-08-29 01:50:42,866 INFO [src.pipeline.workflow] task=11/16 config={'dataset': 'ETTm2', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 96, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 96, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 01:50:42,913 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/ETTm2/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 02:31:05,335 INFO [src.pipeline.extraction] compact extraction windows=1/1210 date=55464
+2026-08-29 02:31:05,419 INFO [src.pipeline.extraction] compact extraction windows=25/1210 date=55807
+2026-08-29 02:31:05,499 INFO [src.pipeline.extraction] compact extraction windows=50/1210 date=56099
+2026-08-29 02:31:05,580 INFO [src.pipeline.extraction] compact extraction windows=75/1210 date=56379
+2026-08-29 02:31:05,661 INFO [src.pipeline.extraction] compact extraction windows=100/1210 date=56672
+2026-08-29 02:31:05,742 INFO [src.pipeline.extraction] compact extraction windows=125/1210 date=56957
+2026-08-29 02:31:05,822 INFO [src.pipeline.extraction] compact extraction windows=150/1210 date=57259
+2026-08-29 02:31:05,902 INFO [src.pipeline.extraction] compact extraction windows=175/1210 date=57537
+2026-08-29 02:31:05,984 INFO [src.pipeline.extraction] compact extraction windows=200/1210 date=57822
+2026-08-29 02:31:06,064 INFO [src.pipeline.extraction] compact extraction windows=225/1210 date=58124
+2026-08-29 02:31:06,145 INFO [src.pipeline.extraction] compact extraction windows=250/1210 date=58409
+2026-08-29 02:31:06,227 INFO [src.pipeline.extraction] compact extraction windows=275/1210 date=58687
+2026-08-29 02:31:06,308 INFO [src.pipeline.extraction] compact extraction windows=300/1210 date=58982
+2026-08-29 02:31:06,389 INFO [src.pipeline.extraction] compact extraction windows=325/1210 date=59274
+2026-08-29 02:31:06,470 INFO [src.pipeline.extraction] compact extraction windows=350/1210 date=59554
+2026-08-29 02:31:06,550 INFO [src.pipeline.extraction] compact extraction windows=375/1210 date=59847
+2026-08-29 02:31:06,632 INFO [src.pipeline.extraction] compact extraction windows=400/1210 date=60132
+2026-08-29 02:31:06,712 INFO [src.pipeline.extraction] compact extraction windows=425/1210 date=60434
+2026-08-29 02:31:06,793 INFO [src.pipeline.extraction] compact extraction windows=450/1210 date=60712
+2026-08-29 02:31:06,874 INFO [src.pipeline.extraction] compact extraction windows=475/1210 date=60997
+2026-08-29 02:31:06,955 INFO [src.pipeline.extraction] compact extraction windows=500/1210 date=61299
+2026-08-29 02:31:07,037 INFO [src.pipeline.extraction] compact extraction windows=525/1210 date=61584
+2026-08-29 02:31:07,118 INFO [src.pipeline.extraction] compact extraction windows=550/1210 date=61862
+2026-08-29 02:31:07,199 INFO [src.pipeline.extraction] compact extraction windows=575/1210 date=62157
+2026-08-29 02:31:07,281 INFO [src.pipeline.extraction] compact extraction windows=600/1210 date=62449
+2026-08-29 02:31:07,361 INFO [src.pipeline.extraction] compact extraction windows=625/1210 date=62729
+2026-08-29 02:31:07,441 INFO [src.pipeline.extraction] compact extraction windows=650/1210 date=63022
+2026-08-29 02:31:07,522 INFO [src.pipeline.extraction] compact extraction windows=675/1210 date=63307
+2026-08-29 02:31:07,603 INFO [src.pipeline.extraction] compact extraction windows=700/1210 date=63609
+2026-08-29 02:31:07,685 INFO [src.pipeline.extraction] compact extraction windows=725/1210 date=63887
+2026-08-29 02:31:07,765 INFO [src.pipeline.extraction] compact extraction windows=750/1210 date=64172
+2026-08-29 02:31:07,846 INFO [src.pipeline.extraction] compact extraction windows=775/1210 date=64474
+2026-08-29 02:31:07,928 INFO [src.pipeline.extraction] compact extraction windows=800/1210 date=64759
+2026-08-29 02:31:08,009 INFO [src.pipeline.extraction] compact extraction windows=825/1210 date=65037
+2026-08-29 02:31:08,090 INFO [src.pipeline.extraction] compact extraction windows=850/1210 date=65332
+2026-08-29 02:31:08,170 INFO [src.pipeline.extraction] compact extraction windows=875/1210 date=65624
+2026-08-29 02:31:08,250 INFO [src.pipeline.extraction] compact extraction windows=900/1210 date=65904
+2026-08-29 02:31:08,331 INFO [src.pipeline.extraction] compact extraction windows=925/1210 date=66197
+2026-08-29 02:31:08,411 INFO [src.pipeline.extraction] compact extraction windows=950/1210 date=66482
+2026-08-29 02:31:08,492 INFO [src.pipeline.extraction] compact extraction windows=975/1210 date=66784
+2026-08-29 02:31:08,573 INFO [src.pipeline.extraction] compact extraction windows=1000/1210 date=67062
+2026-08-29 02:31:08,653 INFO [src.pipeline.extraction] compact extraction windows=1025/1210 date=67347
+2026-08-29 02:31:08,735 INFO [src.pipeline.extraction] compact extraction windows=1050/1210 date=67649
+2026-08-29 02:31:08,815 INFO [src.pipeline.extraction] compact extraction windows=1075/1210 date=67934
+2026-08-29 02:31:08,895 INFO [src.pipeline.extraction] compact extraction windows=1100/1210 date=68212
+2026-08-29 02:31:08,976 INFO [src.pipeline.extraction] compact extraction windows=1125/1210 date=68507
+2026-08-29 02:31:09,056 INFO [src.pipeline.extraction] compact extraction windows=1150/1210 date=68799
+2026-08-29 02:31:09,137 INFO [src.pipeline.extraction] compact extraction windows=1175/1210 date=69079
+2026-08-29 02:31:09,218 INFO [src.pipeline.extraction] compact extraction windows=1200/1210 date=69372
+2026-08-29 02:31:09,250 INFO [src.pipeline.extraction] compact extraction windows=1210/1210 date=69587
+2026-08-29 02:31:37,001 INFO [src.pipeline.workflow] task=12/16 config={'dataset': 'ETTm2', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 96, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 02:31:37,024 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/ETTm2/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 03:12:28,805 INFO [src.pipeline.extraction] compact extraction windows=1/110 date=55744
+2026-08-29 03:12:29,169 INFO [src.pipeline.extraction] compact extraction windows=25/110 date=58792
+2026-08-29 03:12:29,546 INFO [src.pipeline.extraction] compact extraction windows=50/110 date=61967
+2026-08-29 03:12:29,922 INFO [src.pipeline.extraction] compact extraction windows=75/110 date=65142
+2026-08-29 03:12:30,298 INFO [src.pipeline.extraction] compact extraction windows=100/110 date=68317
+2026-08-29 03:12:30,448 INFO [src.pipeline.extraction] compact extraction windows=110/110 date=69587
+2026-08-29 03:12:31,832 INFO [src.pipeline.workflow] task=13/16 config={'dataset': 'time/coastal_t_s_h_part11', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 03:12:31,855 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/time/coastal_t_s_h_part11/config.json keys=['date_col', 'target_cols']
+2026-08-29 03:13:01,185 INFO [src.pipeline.extraction] compact extraction windows=1/143 date=6238
+2026-08-29 03:13:01,210 INFO [src.pipeline.extraction] compact extraction windows=25/143 date=6581
+2026-08-29 03:13:01,235 INFO [src.pipeline.extraction] compact extraction windows=50/143 date=6873
+2026-08-29 03:13:01,261 INFO [src.pipeline.extraction] compact extraction windows=75/143 date=7161
+2026-08-29 03:13:01,285 INFO [src.pipeline.extraction] compact extraction windows=100/143 date=7446
+2026-08-29 03:13:01,309 INFO [src.pipeline.extraction] compact extraction windows=125/143 date=7731
+2026-08-29 03:13:01,327 INFO [src.pipeline.extraction] compact extraction windows=143/143 date=8050
+2026-08-29 03:13:02,909 INFO [src.pipeline.workflow] task=14/16 config={'dataset': 'time/coastal_t_s_h_part11', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 03:13:02,924 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/time/coastal_t_s_h_part11/config.json keys=['date_col', 'target_cols']
+2026-08-29 03:13:34,715 INFO [src.pipeline.extraction] compact extraction windows=1/13 date=6526
+2026-08-29 03:13:34,820 INFO [src.pipeline.extraction] compact extraction windows=13/13 date=8050
+2026-08-29 03:13:35,832 INFO [src.pipeline.workflow] task=15/16 config={'dataset': 'time/ne_china_wind_h', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 03:13:35,849 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/time/ne_china_wind_h/config.json keys=['date_col', 'target_cols']
+2026-08-29 03:14:09,129 INFO [src.pipeline.extraction] compact extraction windows=1/154 date=6723
+2026-08-29 03:14:09,160 INFO [src.pipeline.extraction] compact extraction windows=25/154 date=7066
+2026-08-29 03:14:09,196 INFO [src.pipeline.extraction] compact extraction windows=50/154 date=7358
+2026-08-29 03:14:09,229 INFO [src.pipeline.extraction] compact extraction windows=75/154 date=7646
+2026-08-29 03:14:09,261 INFO [src.pipeline.extraction] compact extraction windows=100/154 date=7931
+2026-08-29 03:14:09,294 INFO [src.pipeline.extraction] compact extraction windows=125/154 date=8216
+2026-08-29 03:14:09,326 INFO [src.pipeline.extraction] compact extraction windows=150/154 date=8535
+2026-08-29 03:14:09,331 INFO [src.pipeline.extraction] compact extraction windows=154/154 date=8662
+2026-08-29 03:14:11,403 INFO [src.pipeline.workflow] task=16/16 config={'dataset': 'time/ne_china_wind_h', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 03:14:11,417 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/time/ne_china_wind_h/config.json keys=['date_col', 'target_cols']
+2026-08-29 03:14:46,153 INFO [src.pipeline.extraction] compact extraction windows=1/14 date=7011
+2026-08-29 03:14:46,284 INFO [src.pipeline.extraction] compact extraction windows=14/14 date=8662
+2026-08-29 03:14:55,729 INFO [src.pipeline.workflow] family=deadline_tsrag_comparison mode=full tasks=16 stages=['adapt']
+2026-08-29 03:14:55,917 INFO [src.pipeline.workflow] task=1/16 config={'dataset': 'Electricity', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos2', 'retrieval_covariate_mode': 'past_and_future', 'method': 'full_ridge_shared', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 20, 'candidate_k_grid': (1, 5, 10, 15), 'used_k': None, 'distance_space': 'raw', 'distance_metric': 'euclidean', 'retrieval_scope': 'all', 'fixed_datastore': False, 'fixed_training_set': False, 'include_fitting_windows': True, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': None, 'align_period': True, 'store_stride': 24, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': True, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 03:14:55,946 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/electricity/config.json keys=['aggr', 'date_col', 'drop_users']
+2026-08-29 03:15:10,958 WARNING [py.warnings] /fssmall/home/h61084/codes/online_adaptation/src/proposal/extraction.py:69: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:206.)
+  x = torch.as_tensor(
+
+2026-08-29 03:50:11,511 INFO [src.pipeline.workflow] task=2/16 config={'dataset': 'Electricity', 'lookback': 512, 'horizon': 64, 'backbone': 'chronos_bolt', 'retrieval_covariate_mode': 'none', 'method': 'tsrag', 'n_datastore_dates': 100, 'n_store_windows': 10000, 'n_fit': 10, 'fitting_scope': 'same_user', 'alpha': 0.01, 'max_k': 5, 'candidate_k_grid': (5,), 'used_k': 5, 'distance_space': 'tsrag', 'distance_metric': 'euclidean', 'retrieval_scope': 'same_user', 'fixed_datastore': True, 'fixed_training_set': False, 'include_fitting_windows': False, 'eval_start_date': 0.8, 'eval_end_date': None, 'split_ratios': (0.3, 0.5, 0.2), 'align_period': False, 'store_stride': 1, 'fit_stride': 24, 'homogeneous_only': False, 'fit_loss': 'mse', 'candidate': 'cov', 'tune_alpha': False, 'period': 24, 'validation_ratio': 0.2, 'alpha_grid': (0.1, 0.01, 0.001)}
+2026-08-29 03:50:11,543 INFO [src.data.load_dataset] loaded dataset config path=/fssmall/home/h61084/codes/datasets/electricity/config.json keys=['aggr', 'date_col', 'drop_users']

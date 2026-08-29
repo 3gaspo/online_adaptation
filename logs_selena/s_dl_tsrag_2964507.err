@@ -1,0 +1,22 @@
+Error executing job with overrides: ['family=deadline_tsrag_comparison', 'mode=full', 'datasets=null', 'ranges=null', 'deadline_part=priority', 'deadline_finalize=false', 'data_root=/fssmall/home/h61084/codes/datasets', 'drop_users=null', 'weights_root=/fssmall/home/h61084/codes/weights', 'outputs_root=/scratch/users/h61084/codes/online_adaptation/outputs_selena', 'device=cuda', 'seed=1', 'purpose=publication', 'n_datastore_dates=null', 'n_fit=10', 'fixed_datastore=null', 'fixed_training_set=null', 'eval_start_date=null', 'eval_end_date=null', 'fitting_scope=same_user', 'alpha=0.01', 'max_k=null', 'candidate_k_grid=null', 'used_k=null', 'tune_alpha=true', 'ridge_validation_ratio=0.2', 'ridge_alpha_grid=[0.1,0.01,0.001]', 'tsrag_k=null', 'query_stride=127', 'store_stride=null', 'fit_stride=null', 'align_period=null', 'period=0', 'retrieval_covariate_mode=null', 'catboost_iterations=300', 'conflict_policy=overwrite_exact', 'skip_completed=true']
+Traceback (most recent call last):
+  File "/fssmall/home/h61084/codes/online_adaptation/src/scripts/adapt.py", line 11, in main
+    run_stage(cfg, "adapt")
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 753, in run_stage
+    run_workflow(cfg, stages_override={stage})
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 705, in run_workflow
+    _run_adaptation(
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/workflow.py", line 494, in _run_adaptation
+    outputs = evaluate_online_tsrag(
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/tsrag.py", line 112, in evaluate_online_tsrag
+    model = _load_model(
+            ^^^^^^^^^^^^
+  File "/fssmall/home/h61084/codes/online_adaptation/src/pipeline/tsrag.py", line 61, in _load_model
+    from src.external_models.tsrag.arm import ChronosBoltModelForForecastingWithRetrieval
+  File "/fssmall/home/h61084/codes/online_adaptation/src/external_models/tsrag/arm.py", line 20, in <module>
+    from src.external_models.chronos_bolt import (
+ImportError: cannot import name 'ChronosBoltModelForForecasting' from 'src.external_models.chronos_bolt' (/fssmall/home/h61084/codes/online_adaptation/src/external_models/chronos_bolt.py)
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+srun: error: sean0014: task 0: Exited with exit code 1
