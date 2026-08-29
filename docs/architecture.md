@@ -40,5 +40,9 @@ flowchart LR
    fitting window, and forecast.
 6. Compare methods only on identical query dates.
 
+The CSV loader applies `missing_values` after configured aggregation. It
+defaults to zero fill, can reject NaNs with `error`, and always rejects
+infinite values.
+
 The proposal owns no Slurm, Hydra, reporting, or plotting logic. Frozen
 backbone architecture remains in official packages.

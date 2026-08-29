@@ -60,6 +60,15 @@ class DatasetConfigTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "1 missing values"):
                 load_csv_dataset(root, dataset_name="tiny", missing_values="error")
 
+            pd.DataFrame(
+                {
+                    "date": pd.date_range("2024-01-01", periods=2, freq="h"),
+                    "a": [1.0, float("inf")],
+                }
+            ).to_csv(root / "tiny.csv", index=False)
+            with self.assertRaisesRegex(ValueError, "1 infinite values"):
+                load_csv_dataset(root, dataset_name="tiny")
+
 
 if __name__ == "__main__":
     unittest.main()

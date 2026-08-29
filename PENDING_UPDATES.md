@@ -1,5 +1,20 @@
 # Pending updates
 
+- 2026-08-29: Reconciled the current deadline protocol and synchronized
+  replacement jobs across the architecture, cluster handoff, result recap,
+  guideline, and evidence summary. Jobs 2964505/2964506 reached their final
+  adaptations without terminal markers; 2964508 completed 12 remainder
+  adaptations before the hash-label table failure; 2964507 completed 16
+  extractions and one ridge adaptation before the Chronos-Bolt import failure.
+  CSV loading also rejects infinity while retaining default NaN zero fill.
+  Focused dataset/reporting/deadline checks and the documentation validator
+  passed; the rebuilt PDFs were visually inspected. No accuracy evidence
+  exists yet. Deferred integration: deploy the current code, resume TS-RAG
+  with `STAGES=adapt,tables`, and regenerate the fixed comparison with
+  `STAGES=tables`; completed exact inputs remain reusable.
+
+Last successful maintenance: 2026-08-29 00:26 +02:00.
+
 - 2026-08-28: Reduced every fitting configuration to 10 dates and capped every
   datastore at 10,000 total cross-user windows while retaining smaller
   requested date counts. Repaired compact virtual-array neighbor slicing and
@@ -16,8 +31,8 @@
   2964439; remove the intended and mistakenly TSFM-routed Selena output trees;
   mirror code; rerun both fixed anchors, the dependent remainder, and the
   priority ridge/TS-RAG comparison; inspect real contextual and TS-RAG timing.
-  The guideline PDF and evidence-owned executive-summary protocol prose remain
-  for maintenance reconciliation; no accuracy claim changed.
+  The guideline and evidence-owned executive-summary protocol prose were
+  reconciled in the 2026-08-29 maintenance pass; no accuracy claim changed.
 
 - 2026-08-28: Corrected deadline execution placement to Selena-only. Added four
   scratch-routed `an`/`an_preemptable` fronts for the online per-user, fixed
@@ -59,8 +74,8 @@
   DGX-to-Selena code sync,
   submit the three priority fronts and dependent fixed remainder, inspect the
   first real timing artifacts, and rerun every affected deadline result; no
-  earlier result is reusable. The updated guideline PDF remains to be rendered
-  during maintenance.
+  earlier result is reusable. The updated guideline PDF was rendered and
+  inspected during the 2026-08-29 maintenance pass.
 
 - 2026-08-28: Made result transfer tiered: sync now defaults to aggregate
   lightweight analysis artifacts, `detailed` adds row-level/per-run
@@ -900,4 +915,3 @@ lifecycle, artifact, and publisher checks remain pending.
 - README/LaTeX and reruns: usage and the scientific protocol are unchanged, so
   no documentation claim changed. The affected TS-RAG job and downstream final
   table must be rerun; old failed artifacts are not reusable.
-

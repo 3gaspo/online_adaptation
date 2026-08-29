@@ -298,6 +298,10 @@ def load_csv_dataset(
         except Exception:
             pass
 
+    source_numeric = raw.select_dtypes(include=[np.number])
+    source_infinite_count = int(np.isinf(source_numeric.to_numpy()).sum())
+    if source_infinite_count:
+        raise ValueError(f"dataset contains {source_infinite_count} infinite values")
     raw = _aggregate(raw, aggr, aggr_period)
     missing_count = int(raw.isna().sum().sum())
     if missing_count and missing_values == "error":
@@ -311,6 +315,9 @@ def load_csv_dataset(
         raise KeyError(f"CSV target columns not found: {missing}")
 
     values = _drop_users(raw[value_cols].copy(), drop_users)
+    infinite_count = int(np.isinf(values.to_numpy(dtype=float)).sum())
+    if infinite_count:
+        raise ValueError(f"dataset contains {infinite_count} infinite values")
     if rename_users:
         values.columns = [f"user_{idx}" for idx in range(values.shape[1])]
     if values.empty:

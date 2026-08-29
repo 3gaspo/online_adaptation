@@ -1,6 +1,17 @@
-Updated: 2026-08-28
+Updated: 2026-08-29
 
 CURRENT SCHEDULER STATE
+- Replacement online-per-user anchor 2964505 and fixed-shared anchor 2964506
+  both reached their final Solar adaptation in synchronized stdout and have
+  empty stderr. Their logs predate terminal workflow markers, so their final
+  scheduler states are not independently verified locally.
+- Fixed-protocol remainder 2964508 completed all 12 requested adaptations and
+  then failed in the table stage because extraction-specific hashes split
+  equivalent vanilla rows into different model labels. Its synchronized
+  24-row detailed result is valid input, but the comparison table is not.
+- Priority TS-RAG replacement 2964507 completed all 16 extractions and the
+  first Electricity ridge adaptation, then failed when its source-adapted ARM
+  imported a forecasting class from the thin official Chronos-Bolt adapter.
 - s_dl_fixed, job 2964440, failed during the first adaptation task after both
   fixed extractions completed. Virtual-array indexing truncated context time
   axes and Chronos rejected a context shorter than 168 values.
@@ -11,8 +22,7 @@ CURRENT SCHEDULER STATE
   invalid and should be cancelled rather than published.
 - s_online_main, job 2955394, failed immediately because the obsolete
   quota-failed run still had a `running` manifest.
-- The dependent fixed-protocol remainder cannot provide a valid result after
-  its fixed anchor failed. No current-protocol scientific result completed.
+- No current-protocol final comparison has completed.
 
 RETAINED DIAGNOSTIC HISTORY
 - s_online_main, job 2913487, test profile on Selena, failed under the obsolete
@@ -20,13 +30,13 @@ RETAINED DIAGNOSTIC HISTORY
   reusable; retained logs are diagnostic evidence only.
 
 NEXT EXECUTION
-- The current contract uses 10 fitting dates and at most 10,000 total
-  cross-user datastore windows. It also repairs contextual-window slicing and
-  moves TS-RAG inputs to CPU before Chronos tokenization.
-- Cancel job 2964439, remove the old online-adaptation extraction/adaptation
-  trees from both the intended scratch root and the mistakenly inherited TSFM
-  output root, mirror the checkpointed code, then rerun every deadline job.
-- Submit the fixed remainder only after both replacement anchors succeed.
+- Deploy the current code, which isolates the pinned TS-RAG Chronos-Bolt core,
+  collapses equivalent vanilla sources to one readable backbone label, and
+  emits terminal task, stage, and workflow records.
+- Resume TS-RAG with `STAGES=adapt,tables`; completed extractions and the first
+  ridge adaptation remain reusable under the current contract.
+- Regenerate the fixed comparison with `STAGES=tables`; no fixed-protocol
+  extraction or adaptation rerun is required.
 
 RUNTIME ROOTS
 - DGX: project-local outputs/ and logs/.

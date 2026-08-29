@@ -1,63 +1,88 @@
 \documentclass[11pt]{article}
 \usepackage[a4paper,margin=2.4cm]{geometry}
-\usepackage{booktabs,hyperref}
+\usepackage{booktabs,hyperref,tabularx,array}
 \setlength{\emergencystretch}{3em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65\baselineskip}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \title{Fully Online Retrieval Adaptation\\Executive Summary}
 \author{}
-\date{28 August 2026}
+\date{29 August 2026}
 
 \begin{document}
 \maketitle
 \small
 
 \section*{Current evidence}
-No cluster experiment has yet completed in this new project. Consequently,
-there is no accuracy conclusion, selected ablation value, or claim that online
-adaptation improves a frozen backbone.
+No current-code cluster experiment has completed and been analyzed.
+Consequently there is no accuracy conclusion, selected ablation value, or
+claim that online adaptation improves a frozen backbone.
 
 \section*{Implemented protocol}
-The project now precomputes T0, T1+T2, and T3 indexes before extraction. Each
-query retrieves from exactly $N_{\mathrm{datastore\ dates}}$ mature origins,
-and the ridge or gate fits on exactly $N_{\mathrm{fit}}$ already matured dates
-for the query user. The defaults are 100 datastore dates, 100 fitting dates per
-query user, all-user raw Euclidean retrieval, same-user fitting, and a
-non-fixed datastore and training set. An all-user fitting scope remains
-available. At every forecast, the
-oldest 80\% of the causal fitting window trains candidate ridges and the newest
-20\% selects $\alpha\in\{10^{-1},10^{-2},10^{-3}\}$ and
-$K\in\{1,5,10,15\}$; the chosen pair is then refitted on the complete window.
+The project precomputes T0, T1+T2, and T3 indexes before extraction. Each query
+retrieves from mature origins only, and ridge or gate fitting uses exactly 10
+already matured dates for the query user by default. Retrieval considers at
+most 10,000 candidate windows across users. The default scopes remain
+all-user raw Euclidean retrieval, same-user fitting, and non-fixed datastore
+and training sets; explicit fixed variants and all-user fitting remain
+available.
 
-Extraction is persistent and independently manifested, allowing changes to
-adaptation parameters to reuse matching features. Ridge writes rolling
-coefficient means and standard deviations; CatBoost writes rolling feature
-importance means and standard deviations. Ridge also records each per-query
-selected pair and validation loss. The fixed-protocol ablation crosses explicit
-fixed-datastore and fixed-training-set booleans while retaining one identical
-T3 query grid. Reports reject date mismatches and average models only across
-the same dataset and $L{:}H$ configurations.
+At every forecast, the oldest 80\% of the causal fitting window trains
+candidate ridges and the newest 20\% selects
+$\alpha\in\{10^{-1},10^{-2},10^{-3}\}$ and
+$K\in\{1,5,10,15\}$; the chosen pair is refitted on the complete fitting
+window. CSV NaNs are filled with zero after aggregation unless
+\texttt{missing\_values=error}; infinite values are rejected.
 
-\section*{Planned evidence}
-The first required evidence is the Electricity test profile from
-\path{slurm/dgx/main/01_main_online_ridge.slurm}. It must establish that checkpoint
-loading, causal extraction, full-capacity datastore limits, the matched ridge,
-convex, Bayes, direct-covariate, and vanilla rows, identical-date reporting,
-and cache size are operational. The second smoke run is
-\path{slurm/dgx/main/02_tsrag_comparison.slurm}. It must validate the native
-TS-RAG fixed same-variable training datastore, $K=5$, and the shared
-$512{:}64$ evaluation grid.
+Extraction is persistent and independently manifested, so matched adaptation
+parameters can reuse matching features. Reports require identical query dates.
+The fixed-protocol ablation crosses explicit fixed-datastore and
+fixed-training-set booleans while retaining the same T3 grid.
 
-Only after these checks should the small profile be run on Electricity, Solar,
-and Traffic. The full profile then adds raw ETT and prepared TIME datasets.
-The resulting ablations will characterize alpha/K sensitivity without using
-final evaluation outcomes for selection, determine whether
-$N_{\mathrm{datastore\ dates}}$ and $N_{\mathrm{fit}}$ should differ, and how retrieval
-and fitting scope interact across users.
+\section*{Diagnostic cluster evidence}
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}lY@{}}
+\toprule
+\textbf{Job} & \textbf{Observed cause and interpretation} \\
+\midrule
+2964440 & Compact virtual-array context was truncated below the required
+168-step lookback; fixed-protocol accuracy was never evaluated. \\
+2964441 & TS-RAG tokenizer tensors were on CUDA while bucket boundaries
+remained on CPU; TS-RAG accuracy was never evaluated. \\
+2964508 & All 12 fixed remainder adaptations completed; reporting failed
+because extraction hashes split equivalent vanilla model labels. \\
+2964507 & All 16 extractions and the first ridge adaptation completed; the
+source-adapted TS-RAG ARM then imported a missing class from the thin official
+Chronos-Bolt adapter. \\
+2964505 / 2964506 & Both anchors reached their final Solar adaptation with
+empty stderr, but their old logs have no terminal marker, so final scheduler
+states are not independently verified locally. \\
+2964439 & Older online run belongs to the superseded runtime contract and is
+not eligible even if it later terminates. \\
+2955394 / 2913487 & Obsolete running-manifest and quota-bound execution paths;
+diagnostic only. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The current code slices compact contexts correctly, completes tokenizer/bucket
+operations on CPU before device transfer, isolates the pinned TS-RAG
+Chronos-Bolt core, collapses equivalent vanilla sources to one readable model
+label, and emits explicit terminal records. These implementation failures do
+not select an adaptation method or hyperparameter.
+
+\section*{Next evidence}
+Deploy the current code. Resume priority TS-RAG with only the adaptation and
+table stages, reusing its 16 extractions and completed first ridge result.
+Regenerate the fixed-protocol table from the already completed adaptations.
+The broader Electricity, Solar, Traffic, and later full-profile grid should
+follow only after these current-code smoke paths are valid.
 
 \section*{Interpretation limit}
-The Chronos-Bolt SOTA table places causal online MSE beside published TS-RAG
-and Cross-RAG MSE only as contextual evidence. The dedicated TS-RAG workflow
-does reproduce its fixed same-variable retrieval scope and split boundaries,
-but preprocessing and metric-scale differences still have to be checked before
-combining local and published numbers.
+Published TS-RAG and Cross-RAG MSE values remain contextual. The dedicated
+TS-RAG workflow matches its fixed same-variable retrieval scope and split
+boundaries, but preprocessing and metric scales must be checked before local
+and published results are combined.
 
 \end{document}
