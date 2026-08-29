@@ -1,0 +1,1788 @@
+{
+  "created_at_utc": "2026-08-29T15:40:11.827370+00:00",
+  "launch_id": "selena_2969807",
+  "obtained": {
+    "count": 16,
+    "inputs": [
+      {
+        "label": "Online full ridge (chronos2)",
+        "manifest_id": "e44d16bb-8f0d-4c33-ab47-8b1176ee4950",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/electricity/512_64/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": null,
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "b4d0bed8cd2c4062893595fb3197844b9e5e470e0da26530c8e0dfe09369df81",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "TS-RAG (chronos_bolt)",
+        "manifest_id": "66416780-97f3-446a-843e-e16321711fec",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/electricity/512_64/chronos_bolt/tsrag/10/same_user/0.01/false/0.2/0.1-0.01-0.001/5/5/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            5
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos_bolt",
+              "dataset": "Electricity",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "tsrag",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": false,
+                "max_k": 5,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "none",
+                "retrieval_scope": "same_user"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": false,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 1
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "tsrag",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": false,
+          "used_k": 5,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "3cfd4e35571bbeb91d74dc898ba4a6370eb0178ceb236e250905f7029d7b3e5c",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "Online full ridge (chronos2)",
+        "manifest_id": "e6afeb14-c34c-4d2e-9253-b59bcecdda57",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/etth1/512_64/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "ETTh1",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": null,
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "12a045315491f66e42fc000281d388d9332e3b7412ae8a1b6f72752b43037f15",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "TS-RAG (chronos_bolt)",
+        "manifest_id": "fb8a20f1-5a19-484e-84d2-0890826f8807",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/etth1/512_64/chronos_bolt/tsrag/10/same_user/0.01/false/0.2/0.1-0.01-0.001/5/5/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            5
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos_bolt",
+              "dataset": "ETTh1",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "tsrag",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": false,
+                "max_k": 5,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "none",
+                "retrieval_scope": "same_user"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": false,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 1
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "tsrag",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": false,
+          "used_k": 5,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "5e8848d28437ec45a99b0d62d54dc4a966200e3339a17b00010760141f0e7a02",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "Online full ridge (chronos2)",
+        "manifest_id": "3518078c-42e1-4a7d-84d3-0083d2e3c591",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/etth2/512_64/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "ETTh2",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": null,
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "60c4849d7968f868fa2db89221c8b0c02bfdcc008d530b50c552bf8a062edc15",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "TS-RAG (chronos_bolt)",
+        "manifest_id": "9c2f9f4d-eb99-46e4-a11e-70d4ca43af88",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/etth2/512_64/chronos_bolt/tsrag/10/same_user/0.01/false/0.2/0.1-0.01-0.001/5/5/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            5
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos_bolt",
+              "dataset": "ETTh2",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "tsrag",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": false,
+                "max_k": 5,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "none",
+                "retrieval_scope": "same_user"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": false,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 1
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "tsrag",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": false,
+          "used_k": 5,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "8b562ca42fb3bdcf421511da95a3e3a18604aa2de3af9977862f08058bc242c0",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "Online full ridge (chronos2)",
+        "manifest_id": "3c27063b-2734-4253-a293-7f35e593c829",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/ettm1/512_64/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "ETTm1",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 96,
+              "query_stride": 127,
+              "split_ratios": null,
+              "store_stride": 96
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "e0435616ba0e6157299ca9d90b6ce291f30593cee2439a4457ca0e66795a5bc5",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "TS-RAG (chronos_bolt)",
+        "manifest_id": "2510eda9-938c-4be7-a4a9-c5d1bb36c55c",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/ettm1/512_64/chronos_bolt/tsrag/10/same_user/0.01/false/0.2/0.1-0.01-0.001/5/5/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            5
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos_bolt",
+              "dataset": "ETTm1",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "tsrag",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": false,
+                "max_k": 5,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "none",
+                "retrieval_scope": "same_user"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": false,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 96,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 1
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "tsrag",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": false,
+          "used_k": 5,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "07b5c8466e8fa8f923cd02da915ad9992b99f194c09f25801c1f0da14ae84ef0",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "Online full ridge (chronos2)",
+        "manifest_id": "3954ad11-e082-4a94-8f70-d876087f0e13",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/ettm2/512_64/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "ETTm2",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 96,
+              "query_stride": 127,
+              "split_ratios": null,
+              "store_stride": 96
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "33fcb121421f97d169cfa83d851e3db68b39d02ddbb458afe2af0a7853641e7f",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "TS-RAG (chronos_bolt)",
+        "manifest_id": "49d0628c-d056-4ebd-aa6a-fdac30c12514",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/ettm2/512_64/chronos_bolt/tsrag/10/same_user/0.01/false/0.2/0.1-0.01-0.001/5/5/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            5
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos_bolt",
+              "dataset": "ETTm2",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "tsrag",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": false,
+                "max_k": 5,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "none",
+                "retrieval_scope": "same_user"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": false,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 96,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 1
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "tsrag",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": false,
+          "used_k": 5,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "9fb995aacd504f257a450110f16c1a115e8d044c9c1b73897dcc224ed17aca02",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "Online full ridge (chronos2)",
+        "manifest_id": "d1ad4957-02ef-49b4-8acf-e84ed272dd4d",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/solar/512_64/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": null,
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "6359f2a12428a63a7759b110b1e2888882ea771d26508ee9f6d86f3b2e8764b8",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "TS-RAG (chronos_bolt)",
+        "manifest_id": "392b5335-407e-408e-a7cd-d1a907560d0e",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/solar/512_64/chronos_bolt/tsrag/10/same_user/0.01/false/0.2/0.1-0.01-0.001/5/5/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            5
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos_bolt",
+              "dataset": "Solar",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "tsrag",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": false,
+                "max_k": 5,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "none",
+                "retrieval_scope": "same_user"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": false,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 1
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "tsrag",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": false,
+          "used_k": 5,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "129187717a293722ea552e566182ac8016f08bb41c936524146d90588cbb4c5b",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "Online full ridge (chronos2)",
+        "manifest_id": "a0cb7f15-0661-4265-a592-593373011be2",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/time-coastal_t_s_h_part11/512_64/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "time/coastal_t_s_h_part11",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": null,
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "290e77e8122ba794712dceaa938c42682bc12a39c129945c8a7d0728b322d03b",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "TS-RAG (chronos_bolt)",
+        "manifest_id": "66ab976b-471a-44ef-942d-606afbb816d2",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/time-coastal_t_s_h_part11/512_64/chronos_bolt/tsrag/10/same_user/0.01/false/0.2/0.1-0.01-0.001/5/5/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            5
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos_bolt",
+              "dataset": "time/coastal_t_s_h_part11",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "tsrag",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": false,
+                "max_k": 5,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "none",
+                "retrieval_scope": "same_user"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": false,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 1
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "tsrag",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": false,
+          "used_k": 5,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "d4b40e43a7968e4147e2ef9ee7030b2b45c34225bbe87ef92ef81ed2531c1753",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "Online full ridge (chronos2)",
+        "manifest_id": "6edd72c9-546a-4b96-b12f-8514d1aa59fe",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/time-ne_china_wind_h/512_64/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "time/ne_china_wind_h",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": null,
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "ea74c335ab14ece66227f89edb37683d79a03ed0a3c302f96d2e36fbe782d0fc",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "TS-RAG (chronos_bolt)",
+        "manifest_id": "e5ba933f-4edc-4842-b4dd-7ecd19510fa2",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_tsrag_comparison/time-ne_china_wind_h/512_64/chronos_bolt/tsrag/10/same_user/0.01/false/0.2/0.1-0.01-0.001/5/5/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            5
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos_bolt",
+              "dataset": "time/ne_china_wind_h",
+              "horizon": 64,
+              "lookback": 512,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "tsrag",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": false,
+                "max_k": 5,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "none",
+                "retrieval_scope": "same_user"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": false,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": 0.8,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 1
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "tsrag",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": false,
+          "used_k": 5,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "477004ed2cf0e9e1bac6915b23d81092e8f7eed09790ffed3613f9aa077bdf46",
+        "purposes": [
+          "publication"
+        ]
+      }
+    ]
+  },
+  "requested": {
+    "config_policy": "distinct",
+    "filters": {
+      "common_date_policy": "identical_dates_required_within_dataset_setting",
+      "configuration_average_policy": "equal_mean_on_dataset_setting_intersection_across_all_models",
+      "expected": [
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "Online full ridge (chronos2)"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "Electricity",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "TS-RAG (chronos_bolt)"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "Online full ridge (chronos2)"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "Solar",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "TS-RAG (chronos_bolt)"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "ETTh1",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "Online full ridge (chronos2)"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "ETTh1",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "TS-RAG (chronos_bolt)"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "ETTh2",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "Online full ridge (chronos2)"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "ETTh2",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "TS-RAG (chronos_bolt)"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "ETTm1",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "Online full ridge (chronos2)"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "ETTm1",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "TS-RAG (chronos_bolt)"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "ETTm2",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "Online full ridge (chronos2)"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "ETTm2",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "TS-RAG (chronos_bolt)"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "time/coastal_t_s_h_part11",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "Online full ridge (chronos2)"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "time/coastal_t_s_h_part11",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "TS-RAG (chronos_bolt)"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "time/ne_china_wind_h",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "Online full ridge (chronos2)"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "time/ne_china_wind_h",
+          "horizon": 64,
+          "lookback": 512,
+          "model": "TS-RAG (chronos_bolt)"
+        }
+      ],
+      "files": {
+        "average_csv": "average_results.csv",
+        "average_tex": "average_results.tex",
+        "detailed_csv": "detailed_results.csv",
+        "detailed_tex": "detailed_results.tex"
+      },
+      "pipeline_config": {},
+      "purposes": [
+        "publication"
+      ],
+      "seeds": [
+        1
+      ],
+      "selected_run_average_policy": "equal_run_mean_on_identical_dates",
+      "vanilla_source_groups": [
+        {
+          "backbone": "chronos2",
+          "dataset": "ETTh1",
+          "dependency_signatures": [
+            "7b0ecc7faee719dafd78343c1311b07637a4a3d5e76a37a57a33f5947078fe9e"
+          ],
+          "model": "Vanilla (chronos2)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "ETTh1",
+          "dependency_signatures": [
+            "f2714a9be71999009caa01a3cdbb3a2c741ee3d98bfab93170a2c1c843f02b77"
+          ],
+          "model": "Vanilla (chronos_bolt)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "ETTh2",
+          "dependency_signatures": [
+            "697063c113fcf41430376a40c9f0d55b5100458ba684f213ec367ac4d9883f89"
+          ],
+          "model": "Vanilla (chronos2)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "ETTh2",
+          "dependency_signatures": [
+            "8973bcd7d8c2d6b2b59ffea2d21a6cf34c6759cf17bdcddf1c0e904268405c2d"
+          ],
+          "model": "Vanilla (chronos_bolt)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "ETTm1",
+          "dependency_signatures": [
+            "3cc0339c67c44075fa8df9153d347da49d66da43a4154cdcd65605d4598df816"
+          ],
+          "model": "Vanilla (chronos2)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "ETTm1",
+          "dependency_signatures": [
+            "589cb7b079d4396dfc4b0af27a22df596d1dc20243ad2c20e6a2fc282795a1c4"
+          ],
+          "model": "Vanilla (chronos_bolt)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "ETTm2",
+          "dependency_signatures": [
+            "5a159de9e8db5657ae57c5d1b36e0313d7e40dd27257d4ddba7e872de107f343"
+          ],
+          "model": "Vanilla (chronos2)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "ETTm2",
+          "dependency_signatures": [
+            "86d7e701101868fd6060f5cc3abf85183c62ac11fd7f3000be5264f69bdda1bf"
+          ],
+          "model": "Vanilla (chronos_bolt)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "dependency_signatures": [
+            "4a340125f2303d36ee82a6f9dd32e69a6d462b7aaf5d4bd6ec4b7c166a3369bc"
+          ],
+          "model": "Vanilla (chronos2)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "Electricity",
+          "dependency_signatures": [
+            "ee1bb4e199c85d750589b41b049f78a2c8a124744b633e8ce50a9a6404fa86e8"
+          ],
+          "model": "Vanilla (chronos_bolt)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "dependency_signatures": [
+            "2080d9e62e6e0a081f81f4a91d66f4e42c8c985bb3e38a11eaa56ab4bc913f5f"
+          ],
+          "model": "Vanilla (chronos2)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "Solar",
+          "dependency_signatures": [
+            "23112e0d193e3e18a0e094ed9ba6019c6bf66dfd1aaaf7b70049456e62e48afd"
+          ],
+          "model": "Vanilla (chronos_bolt)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "time/coastal_t_s_h_part11",
+          "dependency_signatures": [
+            "d2a66754019646594e093c1f14239f5ba2bb282560ca1e5ff89f421b930585b5"
+          ],
+          "model": "Vanilla (chronos2)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "time/coastal_t_s_h_part11",
+          "dependency_signatures": [
+            "aa06d1e04cf78f84079ab862278689a9be34249dcfe32f03a8ce0090f3b23c62"
+          ],
+          "model": "Vanilla (chronos_bolt)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "time/ne_china_wind_h",
+          "dependency_signatures": [
+            "2b9d5d58764650674a7cc9059a3282b94001f480260e87280633b031f7ddf1da"
+          ],
+          "model": "Vanilla (chronos2)",
+          "setting": "512:64"
+        },
+        {
+          "backbone": "chronos_bolt",
+          "dataset": "time/ne_china_wind_h",
+          "dependency_signatures": [
+            "0a63fc99ef35ad3b5b4e34814bff9bbca6f916d8cb21071727857b88fae0186e"
+          ],
+          "model": "Vanilla (chronos_bolt)",
+          "setting": "512:64"
+        }
+      ]
+    },
+    "repeat_policy": "selected"
+  },
+  "schema_version": 1
+}
