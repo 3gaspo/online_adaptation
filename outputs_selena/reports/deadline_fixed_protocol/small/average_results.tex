@@ -1,0 +1,15 @@
+\begin{tabular}{llrrrrrr}
+\toprule
+Model & MSE & nMSE & MAE & nMAE & $\Delta$ nMSE (\%) & $\Delta$ MSE (\%) & Win rate (\%) \\
+\midrule
+Vanilla (chronos2) & 1309457.4928 & 0.2519 & 91.6047 & 0.2339 & 0.0000 & 0.0000 & 0.0000 \\
+fixed\_datastore=False, fixed\_training\_set=False, fitting\_scope=all\_\_dependency.online\_extraction.identity.model\_config.fixed\_datastore-false & 1996296.4538 & 0.2740 & 105.0674 & 0.2526 & -7.9047 & -25.3947 & 44.3852 \\
+fixed\_datastore=False, fixed\_training\_set=False, fitting\_scope=same\_user\_\_dependency.online\_extraction.identity.model\_config.fixed\_datastore-false & 1914695.6077 & 0.2977 & 101.7226 & 0.2622 & -20.5883 & -37.4563 & 40.5635 \\
+fixed\_datastore=False, fixed\_training\_set=True, fitting\_scope=all\_\_dependency.online\_extraction.identity.model\_config.fixed\_datastore-false & 1346783.8535 & 0.2671 & 93.2974 & 0.2523 & -6.4222 & -2.6472 & 41.1542 \\
+fixed\_datastore=False, fixed\_training\_set=True, fitting\_scope=same\_user\_\_dependency.online\_extraction.identity.model\_config.fixed\_datastore-false & 1356170.9380 & 0.2838 & 97.2579 & 0.2626 & -14.5993 & -10.2035 & 38.9732 \\
+fixed\_datastore=True, fixed\_training\_set=False, fitting\_scope=all\_\_dependency.online\_extraction.identity.model\_config.fixed\_datastore-true & 1533952.7002 & 0.2809 & 100.9773 & 0.2567 & -12.0101 & -11.2985 & 40.7527 \\
+fixed\_datastore=True, fixed\_training\_set=False, fitting\_scope=same\_user\_\_dependency.online\_extraction.identity.model\_config.fixed\_datastore-true & 1641139.6130 & 0.3419 & 102.0501 & 0.2768 & -41.9511 & -36.0745 & 38.3773 \\
+fixed\_datastore=True, fixed\_training\_set=True, fitting\_scope=all\_\_dependency.online\_extraction.identity.model\_config.fixed\_datastore-true & 1601074.9008 & 0.2889 & 102.8697 & 0.2696 & -14.7983 & -14.3829 & 35.5860 \\
+fixed\_datastore=True, fixed\_training\_set=True, fitting\_scope=same\_user\_\_dependency.online\_extraction.identity.model\_config.fixed\_datastore-true & 1693960.8911 & 0.2988 & 105.2783 & 0.2676 & -21.2798 & -25.0666 & 37.3083 \\
+\bottomrule
+\end{tabular}

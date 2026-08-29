@@ -1,0 +1,1733 @@
+{
+  "created_at_utc": "2026-08-29T19:10:19.951847+00:00",
+  "launch_id": "selena_2972069",
+  "obtained": {
+    "count": 16,
+    "inputs": [
+      {
+        "label": "fixed_datastore=True, fixed_training_set=False, fitting_scope=all__dependency.online_extraction.identity.model_config.fixed_datastore-true",
+        "manifest_id": "b7f99ec0-78a0-48e7-a455-fefec648de62",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/electricity/168_24/chronos2/full_ridge_shared/10/all/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_1/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "all",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "a9078ede0a5ea00cf29b3386e88ece29110e16a34f12f6eaf8943303762ffa9b",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=False, fixed_training_set=False, fitting_scope=all__dependency.online_extraction.identity.model_config.fixed_datastore-false",
+        "manifest_id": "b30bc848-4419-4991-b931-5774cd8c7e8a",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/electricity/168_24/chronos2/full_ridge_shared/10/all/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "all",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "aa91f600d421bea0a58f3a3d5bde0592403ac05eafc5982c5fe425d548560bf3",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=True, fixed_training_set=True, fitting_scope=all__dependency.online_extraction.identity.model_config.fixed_datastore-true",
+        "manifest_id": "91fa7acd-65f8-43a5-b6bc-e652fa0fb923",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/electricity/168_24/chronos2/full_ridge_shared/10/all/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/true/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": true,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "all",
+          "fixed_training_set": true,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "7810f23c9b02d30c214ae30839029c2770dc29e3a40423f92771d7184b1b5a63",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=False, fixed_training_set=True, fitting_scope=all__dependency.online_extraction.identity.model_config.fixed_datastore-false",
+        "manifest_id": "fdac34cf-5677-4e3b-9c19-23c1c7e12a29",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/electricity/168_24/chronos2/full_ridge_shared/10/all/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/true/mse/cov/run_1/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": true,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "all",
+          "fixed_training_set": true,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "93b801598ddd63fbfb69765dd3d4e0b6cb8eefc0d189f24f7d56db7f9e779c95",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=True, fixed_training_set=False, fitting_scope=same_user__dependency.online_extraction.identity.model_config.fixed_datastore-true",
+        "manifest_id": "741efcc5-9866-4cc5-be3f-521d3623afdc",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/electricity/168_24/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_1/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "9711b861af71c14f9a3f076662bb79fb51824b6623e985429dc15008226c8c3a",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=False, fixed_training_set=False, fitting_scope=same_user__dependency.online_extraction.identity.model_config.fixed_datastore-false",
+        "manifest_id": "4f5fc966-8c80-4937-96be-92e0e654c044",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/electricity/168_24/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "c6ce8b093e836da62e374c05006e2a2d67750f8b7e961a44f338d6b5efe5d852",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=True, fixed_training_set=True, fitting_scope=same_user__dependency.online_extraction.identity.model_config.fixed_datastore-true",
+        "manifest_id": "bad6ccd6-5094-4378-8cd2-ea3616b6ab28",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/electricity/168_24/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/true/mse/cov/run_1/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": true,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": true,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "64ee45ce548c49e8550ceda3eff6c89dd88c41d3e3e7445ca3e828f18956db37",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=False, fixed_training_set=True, fitting_scope=same_user__dependency.online_extraction.identity.model_config.fixed_datastore-false",
+        "manifest_id": "ff1e7ed4-aa79-4124-994c-1575e772ca84",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/electricity/168_24/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/true/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Electricity",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": true,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": true,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "f5740dc2df1a3fe53407c1786e2fe5a9f13a0ca0a4a0864dc9d2843fe5749d71",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=False, fixed_training_set=False, fitting_scope=all__dependency.online_extraction.identity.model_config.fixed_datastore-false",
+        "manifest_id": "86824e1d-c665-44bf-a7ba-32d0af144927",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/solar/168_24/chronos2/full_ridge_shared/10/all/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "all",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "63efbbc388e7a361f361864829591768186365afa4d3694c91f3693f8a9a1c79",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=True, fixed_training_set=False, fitting_scope=all__dependency.online_extraction.identity.model_config.fixed_datastore-true",
+        "manifest_id": "5eb52df7-d258-454a-8979-477b776d4b52",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/solar/168_24/chronos2/full_ridge_shared/10/all/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_1/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "all",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "ed6fe968b83918f85c579dab71bc0685007d969cc1a1fd53a9033cca89239b29",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=True, fixed_training_set=True, fitting_scope=all__dependency.online_extraction.identity.model_config.fixed_datastore-true",
+        "manifest_id": "9b68b358-7c89-4859-8a47-0615bdb538fd",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/solar/168_24/chronos2/full_ridge_shared/10/all/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/true/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": true,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "all",
+          "fixed_training_set": true,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "30f290de5a3c28a70d044eca3b06676fdae0854829451065dbe0572be34d9922",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=False, fixed_training_set=True, fitting_scope=all__dependency.online_extraction.identity.model_config.fixed_datastore-false",
+        "manifest_id": "849717e0-e14d-412a-b0f6-64efce70d5de",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/solar/168_24/chronos2/full_ridge_shared/10/all/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/true/mse/cov/run_1/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": true,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "all",
+          "fixed_training_set": true,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "8a998a1485d8fa5d6ea377b5b6752f2f2a2ecba59fa7887bd014f008d6289c1c",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=False, fixed_training_set=False, fitting_scope=same_user__dependency.online_extraction.identity.model_config.fixed_datastore-false",
+        "manifest_id": "503895b2-5fb2-4510-bffd-a2f12deb2254",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/solar/168_24/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "2fc77c0c934ed80c13491d507fd4f8972f89ab68f6dfc6b8db99882e8da2df5d",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=True, fixed_training_set=False, fitting_scope=same_user__dependency.online_extraction.identity.model_config.fixed_datastore-true",
+        "manifest_id": "f59f9e14-be9b-4afb-a030-cb7edc387458",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/solar/168_24/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/false/mse/cov/run_1/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": false,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": false,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "d46f6bb197d86bf677309fc6c2473159aed0b51bb25e17e5ea67e77421cee374",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=True, fixed_training_set=True, fitting_scope=same_user__dependency.online_extraction.identity.model_config.fixed_datastore-true",
+        "manifest_id": "d1286503-16ce-4ddc-89ba-8db329474008",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/solar/168_24/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/true/mse/cov/run_1/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": true,
+                "fixed_training_set": true,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": true,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "7ae946df4a14b0e7eae6438e5cf87ac6ffb08de3cda983d13de4faa50896e87e",
+        "purposes": [
+          "publication"
+        ]
+      },
+      {
+        "label": "fixed_datastore=False, fixed_training_set=True, fitting_scope=same_user__dependency.online_extraction.identity.model_config.fixed_datastore-false",
+        "manifest_id": "96048bb2-ccfd-45eb-81ab-a085fb1cf8ec",
+        "path": "/fslarge/scratch/users/h61084/codes/online_adaptation/outputs_selena/online_adaptation/deadline_fixed_protocol/solar/168_24/chronos2/full_ridge_shared/10/same_user/0.01/true/0.2/0.1-0.01-0.001/1-5-10-15/none/true/mse/cov/run_0/manifest.json",
+        "pipeline_config": {
+          "alpha": 0.01,
+          "alpha_grid": [
+            0.1,
+            0.01,
+            0.001
+          ],
+          "candidate": "cov",
+          "candidate_k_grid": [
+            1,
+            5,
+            10,
+            15
+          ],
+          "catboost_depth": 4,
+          "catboost_iterations": 300,
+          "catboost_learning_rate": 0.03,
+          "catboost_refit_stride": 1,
+          "dependency.online_extraction": {
+            "experiment": {},
+            "identity": {
+              "backbone": "chronos2",
+              "dataset": "Solar",
+              "horizon": 24,
+              "lookback": 168,
+              "model_config": {
+                "distance_metric": "euclidean",
+                "distance_space": "raw",
+                "fit_stride": 24,
+                "fixed_datastore": false,
+                "fixed_training_set": true,
+                "homogeneous": "all",
+                "include_fitting_windows": true,
+                "max_k": 20,
+                "n_datastore_dates": 100,
+                "n_fit": 10,
+                "n_store_windows": 10000,
+                "retrieval_covariate_mode": "past_and_future",
+                "retrieval_scope": "all"
+              },
+              "model_config_order": [
+                "retrieval_covariate_mode",
+                "distance_space",
+                "distance_metric",
+                "max_k",
+                "retrieval_scope",
+                "n_store_windows",
+                "n_datastore_dates",
+                "n_fit",
+                "fit_stride",
+                "fixed_datastore",
+                "fixed_training_set",
+                "include_fitting_windows",
+                "homogeneous"
+              ]
+            },
+            "pipeline": {
+              "align_period": true,
+              "artifact_schema": "online_extraction_v1",
+              "eval_end_date": null,
+              "eval_start_date": null,
+              "fit_stride": 24,
+              "n_store_windows": 10000,
+              "normalization": "none",
+              "period": 24,
+              "query_stride": 127,
+              "split_ratios": [
+                0.3,
+                0.5,
+                0.2
+              ],
+              "store_stride": 24
+            },
+            "schema_version": 1,
+            "seeds": [
+              1
+            ]
+          },
+          "fit_loss": "mse",
+          "fitting_scope": "same_user",
+          "fixed_training_set": true,
+          "method": "full_ridge_shared",
+          "n_fit": 10,
+          "seed": 1,
+          "tune_alpha": true,
+          "used_k": null,
+          "validation_ratio": 0.2
+        },
+        "pipeline_signature": "efaa02c9c1bbf1002c9a52628001d19a6eb96f90ceddafe70ff4d5c07946685c",
+        "purposes": [
+          "publication"
+        ]
+      }
+    ]
+  },
+  "requested": {
+    "config_policy": "distinct",
+    "filters": {
+      "common_date_policy": "identical_dates_required_within_dataset_setting",
+      "configuration_average_policy": "equal_mean_on_dataset_setting_intersection_across_all_models",
+      "expected": [
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=False, fixed_training_set=False, fitting_scope=same_user"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=False, fixed_training_set=False, fitting_scope=all"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=False, fixed_training_set=True, fitting_scope=same_user"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=False, fixed_training_set=True, fitting_scope=all"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=True, fixed_training_set=False, fitting_scope=same_user"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=True, fixed_training_set=False, fitting_scope=all"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=True, fixed_training_set=True, fitting_scope=same_user"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=True, fixed_training_set=True, fitting_scope=all"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=False, fixed_training_set=False, fitting_scope=same_user"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=False, fixed_training_set=False, fitting_scope=all"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=False, fixed_training_set=True, fitting_scope=same_user"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=False, fixed_training_set=True, fitting_scope=all"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=True, fixed_training_set=False, fitting_scope=same_user"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=True, fixed_training_set=False, fitting_scope=all"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=True, fixed_training_set=True, fitting_scope=same_user"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "horizon": 24,
+          "lookback": 168,
+          "model": "fixed_datastore=True, fixed_training_set=True, fitting_scope=all"
+        }
+      ],
+      "files": {
+        "average_csv": "average_results.csv",
+        "average_tex": "average_results.tex",
+        "detailed_csv": "detailed_results.csv",
+        "detailed_tex": "detailed_results.tex"
+      },
+      "pipeline_config": {},
+      "purposes": [
+        "publication"
+      ],
+      "seeds": [
+        1
+      ],
+      "selected_run_average_policy": "equal_run_mean_on_identical_dates",
+      "vanilla_source_groups": [
+        {
+          "backbone": "chronos2",
+          "dataset": "Electricity",
+          "dependency_signatures": [
+            "1a1598d9410400db7d4bdd8e67e5fa80be2b5b8df2fa4b1e8351d6c794167754",
+            "7368609ae66ec92c354d60d8571201a70a570f0ba8b29b829127dcd3dd97d3b5",
+            "76d4dc64770338d91964057719655a972c96549a88052c6133784a7168635861",
+            "a8e57566d5d80d272b0e15c0897d57de545371b3f2b1d204fd83c792c8fae249"
+          ],
+          "maximum_absolute_metric_drift": 0.4237175626331009,
+          "maximum_relative_metric_drift": 8.178649681015754e-07,
+          "model": "Vanilla (chronos2)",
+          "selected_dependency_signature": "1a1598d9410400db7d4bdd8e67e5fa80be2b5b8df2fa4b1e8351d6c794167754",
+          "setting": "168:24",
+          "source_policy": "first"
+        },
+        {
+          "backbone": "chronos2",
+          "dataset": "Solar",
+          "dependency_signatures": [
+            "5a0d5b166129d15f5ba1e8c50b49255cd4cea17cc0ee435726a1074892153b0f",
+            "ad6b02504ed43ab42f39625b8da25776f311692cb7a4d2472d04b9258bf8e3a0",
+            "ae924c15244960513f1ecd632750c1110bf4f418f743cead9bf4d45c64bc0a53",
+            "f70568bb257c4ceae60d525beaebaa6e7d4a3267397844e3f4493c7ef836e90d"
+          ],
+          "maximum_absolute_metric_drift": 6.779317038763111e-05,
+          "maximum_relative_metric_drift": 1.6001539442029695e-07,
+          "model": "Vanilla (chronos2)",
+          "selected_dependency_signature": "5a0d5b166129d15f5ba1e8c50b49255cd4cea17cc0ee435726a1074892153b0f",
+          "setting": "168:24",
+          "source_policy": "first"
+        }
+      ],
+      "vanilla_source_policy": "first"
+    },
+    "repeat_policy": "selected"
+  },
+  "schema_version": 1
+}
