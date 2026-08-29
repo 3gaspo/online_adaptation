@@ -69,7 +69,10 @@ sbatch slurm/selena/deadline/tsrag_priority_t3_selena.slurm
 The fixed remainder should use an `afterok` dependency on both fixed anchor
 jobs. The priority TS-RAG front covers Electricity, Solar, all four ETT panels,
 and three preselected TIME panels; broader TIME coverage remains in the main
-full profile.
+full profile. Its table-only recovery temporarily selects the first
+dependency-signature-sorted vanilla source after requiring identical dates and
+aggregation support, and records the selected signature and cross-source drift
+in the report manifest; every other report remains strict.
 
 The [experiment catalog](docs/experiment_catalog.md) states what each main,
 deadline, and ablation front varies. Exact causal sets, feature definitions,

@@ -754,6 +754,9 @@ def run_workflow(
             ),
             purposes=[os.environ.get("TABLE_PURPOSE", str(cfg.purpose))],
             seeds=[int(cfg.seed)],
+            vanilla_source_policy=os.environ.get(
+                "TABLE_VANILLA_SOURCE_POLICY", "strict"
+            ),
         )
         if family == "sota_backbone_ablation":
             build_published_sota_table(

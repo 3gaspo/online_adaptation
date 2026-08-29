@@ -1,5 +1,19 @@
 # Pending updates
 
+- 2026-08-29: Added an explicit temporary `first` vanilla-source policy only
+  to the deadline fixed-remainder table front so its completed 2x2x2 ridge
+  grid can be analyzed despite negligible extraction-specific floating drift.
+  The policy still requires identical evaluation dates and aggregation
+  support, chooses the first dependency-signature-sorted source, and records
+  the chosen signature plus maximum absolute and relative drift. All other
+  reports remain strict. Affected contracts: fixed deadline table recovery,
+  report provenance, focused reporting tests, and README. Focused check:
+  `python src/tests/test_reporting_selection.py` passed in the thesis notebook
+  runtime. Deferred integration: deploy to Selena, run the fixed remainder
+  front with `STAGES=tables`, synchronize the diagnostic report, and remove
+  this policy when canonical cross-configuration vanilla caching is added. No
+  extraction or adaptation rerun is required.
+
 - 2026-08-29: Reconciled the current deadline protocol and synchronized
   replacement jobs across the architecture, cluster handoff, result recap,
   guideline, and evidence summary. Jobs 2964505/2964506 reached their final

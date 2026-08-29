@@ -18,6 +18,7 @@ def _complete_run(
     query_stride: int,
     dates: tuple[int, ...],
     mse: float,
+    vanilla_mse: float = 1.0,
 ) -> Path:
     allocation = allocate_run(
         identity,
@@ -51,10 +52,10 @@ def _complete_run(
             "mae": mse,
             "nmse": mse,
             "nmae": mse,
-            "vanilla_mse": 1.0,
-            "vanilla_mae": 1.0,
-            "vanilla_nmse": 1.0,
-            "vanilla_nmae": 1.0,
+            "vanilla_mse": vanilla_mse,
+            "vanilla_mae": vanilla_mse,
+            "vanilla_nmse": vanilla_mse,
+            "vanilla_nmae": vanilla_mse,
             "win_rate": 1.0,
             "windows": 1,
             "values": 2,
@@ -176,6 +177,68 @@ def test_vanilla_labels_collapse_equivalent_dataset_specific_sources() -> None:
         assert all(item["dependency_signatures"] for item in sources)
 
 
+def test_first_vanilla_source_policy_records_drift() -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        identity = root / "results/ridge"
+        _complete_run(
+            identity,
+            query_stride=1,
+            dates=(1, 2, 3),
+            mse=0.4,
+            vanilla_mse=1.0,
+        )
+        _complete_run(
+            identity,
+            query_stride=2,
+            dates=(1, 2, 3),
+            mse=0.6,
+            vanilla_mse=1.0 + 1e-8,
+        )
+        expected = [
+            {
+                "dataset": "synthetic",
+                "lookback": 4,
+                "horizon": 2,
+                "backbone": "chronos2",
+                "model": "ridge",
+            }
+        ]
+        try:
+            build_online_tables(
+                results_root=root / "results",
+                output_dir=root / "strict",
+                expected=expected,
+                purposes=["publication"],
+                seeds=[1],
+            )
+        except ValueError as error:
+            assert "vanilla sources disagree" in str(error)
+        else:
+            raise AssertionError("strict vanilla policy accepted distinct metrics")
+
+        report = build_online_tables(
+            results_root=root / "results",
+            output_dir=root / "first",
+            expected=expected,
+            purposes=["publication"],
+            seeds=[1],
+            vanilla_source_policy="first",
+        )
+        manifest = json.loads(report["manifest"].read_text(encoding="utf-8"))
+        filters = manifest["requested"]["filters"]
+        assert filters["vanilla_source_policy"] == "first"
+        source = filters["vanilla_source_groups"][0]
+        assert source["selected_dependency_signature"] in source[
+            "dependency_signatures"
+        ]
+        assert source["maximum_absolute_metric_drift"] > 0.0
+        assert source["maximum_relative_metric_drift"] > 0.0
+        detailed = list(csv.DictReader(report["detailed_csv"].open(encoding="utf-8")))
+        vanilla = next(row for row in detailed if row["model"].startswith("Vanilla"))
+        assert float(vanilla["mse"]) in {1.0, 1.0 + 1e-8}
+
+
 def test_profile_contract() -> None:
     project_root = Path(__file__).resolve().parents[2]
     runner = (project_root / "src/slurm/run_family.sh").read_text(encoding="utf-8")
@@ -189,6 +252,11 @@ def test_profile_contract() -> None:
     workflow = (project_root / "src/pipeline/workflow.py").read_text(encoding="utf-8")
     assert 'completed status=success config=%s' in workflow
     assert 'completed status=failed config=%s' in workflow
+    remainder = (
+        project_root
+        / "slurm/selena/deadline/fixed_ablation_remainder_selena.slurm"
+    ).read_text(encoding="utf-8")
+    assert 'TABLE_VANILLA_SOURCE_POLICY="${TABLE_VANILLA_SOURCE_POLICY:-first}"' in remainder
 
     arm = (project_root / "src/external_models/tsrag/arm.py").read_text(encoding="utf-8")
     assert "from .chronos_bolt import" in arm
@@ -202,4 +270,5 @@ def test_profile_contract() -> None:
 if __name__ == "__main__":
     test_distinct_average_and_nested_filter_selection()
     test_vanilla_labels_collapse_equivalent_dataset_specific_sources()
+    test_first_vanilla_source_policy_records_drift()
     test_profile_contract()

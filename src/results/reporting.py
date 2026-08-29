@@ -122,6 +122,50 @@ def _require_equivalent_vanilla(
                 )
 
 
+def _require_matching_vanilla_support(
+    row_sets: list[list[dict[str, Any]]],
+    *,
+    context: str,
+) -> None:
+    """Require identical dates and aggregation support before diagnostic reuse."""
+    reference = {int(row["query_date"]): row for row in row_sets[0]}
+    for rows in row_sets[1:]:
+        candidate = {int(row["query_date"]): row for row in rows}
+        if set(candidate) != set(reference):
+            raise ValueError(f"vanilla sources use different evaluation dates for {context}")
+        for date, expected in reference.items():
+            observed = candidate[date]
+            if any(
+                int(observed[field]) != int(expected[field])
+                for field in ("windows", "values")
+            ):
+                raise ValueError(
+                    f"vanilla sources use different aggregation support for "
+                    f"{context} at query_date={date}"
+                )
+
+
+def _vanilla_source_drift(
+    row_sets: list[list[dict[str, Any]]],
+) -> tuple[float, float]:
+    """Return maximum absolute and relative metric drift from the first source."""
+    fields = ("vanilla_mse", "vanilla_nmse", "vanilla_mae", "vanilla_nmae")
+    reference = {int(row["query_date"]): row for row in row_sets[0]}
+    max_absolute = 0.0
+    max_relative = 0.0
+    for rows in row_sets[1:]:
+        candidate = {int(row["query_date"]): row for row in rows}
+        for date, expected in reference.items():
+            observed = candidate[date]
+            for field in fields:
+                expected_value = float(expected[field])
+                absolute = abs(float(observed[field]) - expected_value)
+                relative = absolute / max(abs(expected_value), 1e-12)
+                max_absolute = max(max_absolute, absolute)
+                max_relative = max(max_relative, relative)
+    return max_absolute, max_relative
+
+
 def _dependency_key(manifest: dict[str, Any]) -> str:
     pipeline = manifest.get("config", {}).get("pipeline", {})
     dependency = pipeline.get("dependency.online_extraction", {})
@@ -169,8 +213,11 @@ def build_online_tables(
     repeat_policy: str = "selected",
     purposes: list[str] | None = None,
     seeds: list[int] | None = None,
+    vanilla_source_policy: str = "strict",
 ) -> dict[str, Path]:
     """Build tables after intersecting dates across compared runs per setting."""
+    if vanilla_source_policy not in {"strict", "first"}:
+        raise ValueError("vanilla_source_policy must be strict or first")
     expected_keys = None
     if expected is not None:
         expected_keys = {
@@ -328,16 +375,26 @@ def build_online_tables(
                     )
                 )
         for backbone, sources in sorted(vanilla_groups.items()):
+            sources = sorted(sources, key=lambda item: item[0])
             row_sets = [rows for _, rows in sources]
             context = f"{dataset} {lookback}:{horizon} backbone={backbone}"
-            _require_equivalent_vanilla(row_sets, context=context)
+            _require_matching_vanilla_support(row_sets, context=context)
+            if vanilla_source_policy == "strict":
+                _require_equivalent_vanilla(row_sets, context=context)
+                vanilla_rows = _average_rows(row_sets)
+                selected_dependency = None
+            else:
+                selected_dependency, vanilla_rows = sources[0]
+            max_absolute_drift, max_relative_drift = _vanilla_source_drift(
+                row_sets
+            )
             label = f"Vanilla ({backbone})"
             detailed.append(
                 {
                     "dataset": dataset,
                     "setting": f"{lookback}:{horizon}",
                     "model": label,
-                    **_summarize(_average_rows(row_sets), vanilla=True),
+                    **_summarize(vanilla_rows, vanilla=True),
                     "dates": len(common_dates),
                 }
             )
@@ -350,6 +407,10 @@ def build_online_tables(
                     "dependency_signatures": sorted(
                         {dependency for dependency, _ in sources}
                     ),
+                    "source_policy": vanilla_source_policy,
+                    "selected_dependency_signature": selected_dependency,
+                    "maximum_absolute_metric_drift": max_absolute_drift,
+                    "maximum_relative_metric_drift": max_relative_drift,
                 }
             )
         for entry, rows in zip(group, filtered, strict=True):
@@ -428,6 +489,7 @@ def build_online_tables(
             "configuration_average_policy": (
                 "equal_mean_on_dataset_setting_intersection_across_all_models"
             ),
+            "vanilla_source_policy": vanilla_source_policy,
             "vanilla_source_groups": vanilla_source_groups,
             "files": {
                 "detailed_csv": detailed_path.name,
